@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра</title>
 
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/fonts.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/mobile.css">
+    <!-- ?v=9 — номер версии: меняем его при каждом обновлении сайта,
+         чтобы браузер не брал старые стили и скрипты из кэша -->
+    <link rel="stylesheet" href="css/reset.css?v=9">
+    <link rel="stylesheet" href="css/fonts.css?v=9">
+    <link rel="stylesheet" href="css/style.css?v=9">
+    <link rel="stylesheet" href="css/mobile.css?v=9">
 </head>
 
 <body>
@@ -294,6 +296,50 @@
 
                     <!-- после поездки экран уходит в черноту (дальше — следующая сцена) -->
                     <div class="street__blackout"></div>
+
+                    <!-- последствия выбора «официальное такси»: текст на чёрном, потом удар по деньгам и безопасности -->
+                    <div class="outcome">
+                        <div class="outcome__flash"></div>
+
+                        <p class="outcome__text">
+                            <span class="outcome__inner">
+                                Водитель всю дорогу разговаривал по телефону,
+                                <br>
+                                не включил ТАКСОМЕТР
+                                <br>
+                                и назвал цену «для иностранцев»
+                            </span>
+                        </p>
+
+                        <div class="outcome__stats">
+                            <div class="outcome__stat outcome__stat--money">
+                                <img class="outcome__icon outcome__icon--money" src="img/money-icon.svg" alt="Деньги">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">320</span>
+                                    <span class="outcome__unit">$</span>
+                                </div>
+
+                                <span class="outcome__delta">−60$</span>
+                            </div>
+
+                            <div class="outcome__stat outcome__stat--safety">
+                                <img class="outcome__icon outcome__icon--safety" src="img/safety-icon.svg" alt="Безопасность">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">97</span>
+                                    <span class="outcome__unit">%</span>
+                                </div>
+
+                                <span class="outcome__delta">−10%</span>
+
+                                <div class="outcome__scale">
+                                    <img class="outcome__scale-empty" src="img/scale.svg" alt="">
+                                    <img class="outcome__scale-fill" src="img/scale-fill.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="hero__noise"></div>
@@ -304,10 +350,10 @@
 
     </main>
 
-    <script src="js/sound.js"></script>
-    <script src="js/preloader.js"></script>
-    <script src="js/game-header.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/sound.js?v=9"></script>
+    <script src="js/preloader.js?v=9"></script>
+    <script src="js/game-header.js?v=9"></script>
+    <script src="js/script.js?v=9"></script>
 </body>
 
 </html>

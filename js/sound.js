@@ -99,8 +99,13 @@ function playChannel(name, fromStart) {
     channel.level = 1;
     applyVolume();
 
+    // некоторые браузеры (Safari) ругаются, если перематывать ещё не загруженный звук — тогда просто играем с начала
     if (fromStart) {
-        channel.audio.currentTime = channel.startTime;
+        try {
+            channel.audio.currentTime = channel.startTime;
+        } catch (error) {
+            // перемотать не вышло — не страшно
+        }
     }
 
     // до первого клика браузер звук не включит — тогда просто молчим, ошибки не будет
@@ -186,8 +191,8 @@ function setupSound() {
 
     createChannel("typewriter", "sounds/typewriter.mp3", typewriterStartTime);
 
-    // звук машины — вторая половина исходного файла (машина уже едет), повторяется по кругу
-    createChannel("car", "sounds/car.m4a", 0);
+    // звук машины во время поездки, повторяется по кругу
+    createChannel("car", "sounds/car-ride.m4a", 0);
 
     loadSoundSettings();
     applyVolume();

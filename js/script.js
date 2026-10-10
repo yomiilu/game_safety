@@ -1311,9 +1311,283 @@ function updateChoice(progress) {
 }
 
 
+// ---------- последствия выбора «официальное такси» ----------
+// на чёрном экране после поездки печатается текст, потом — удар по деньгам и безопасности
+
+// когда появляется текст и когда — цифры (в экранах прокрутки от начала поездки)
+const outcomeTextFrom = 5.1;
+const outcomeStatsFrom = 5.7;
+
+// что было и что стало
+const outcomeMoneyFrom = 320;
+const outcomeMoneyTo = 260;
+const outcomeSafetyFrom = 97;
+const outcomeSafetyTo = 87;
+
+// длительность падения каждой цифры и пауза между ними (мс)
+const outcomeCountDuration = 1300;
+const outcomePause = 500;
+
+const outcome = {
+    element: null,
+    flash: null,
+    stats: null,
+    money: null,
+    safety: null,
+    chars: [],
+    isShown: false,
+    isTextFinished: false,
+    isStatsPlayed: false,
+    runId: 0
+};
+
+
+function setupOutcome() {
+    outcome.element = document.querySelector(".outcome");
+    outcome.flash = outcome.element.querySelector(".outcome__flash");
+    outcome.stats = outcome.element.querySelector(".outcome__stats");
+
+    outcome.money = {
+        stat: outcome.element.querySelector(".outcome__stat--money"),
+        number: outcome.element.querySelector(".outcome__stat--money .outcome__number")
+    };
+
+    outcome.safety = {
+        stat: outcome.element.querySelector(".outcome__stat--safety"),
+        number: outcome.element.querySelector(".outcome__stat--safety .outcome__number"),
+        fill: outcome.element.querySelector(".outcome__scale-fill")
+    };
+
+    // текст раскладываем на невидимые буквы — место под него занято сразу.
+    // строки в html разделены <br>, их сохраняем
+    const textElement = outcome.element.querySelector(".outcome__inner");
+    const textLines = readLines(textElement.innerHTML);
+
+    textElement.innerHTML = "";
+
+    textLines.forEach(function (line, lineIndex) {
+        for (let i = 0; i < line.length; i++) {
+            const char = document.createElement("span");
+
+            char.className = "outcome__char";
+            char.textContent = line[i];
+            textElement.appendChild(char);
+
+            outcome.chars.push({
+                element: char,
+                isSpace: line[i] === " ",
+                isLineEnd: i === line.length - 1
+            });
+        }
+
+        if (lineIndex < textLines.length - 1) {
+            textElement.appendChild(document.createElement("br"));
+        }
+    });
+
+    resetOutcomeStats();
+}
+
+
+function resetOutcomeStats() {
+    outcome.isStatsPlayed = false;
+    outcome.stats.classList.remove("outcome__stats--visible");
+
+    [outcome.money.stat, outcome.safety.stat].forEach(function (stat) {
+        stat.classList.remove("outcome__stat--hit", "outcome__stat--dropped");
+    });
+
+    outcome.money.number.textContent = outcomeMoneyFrom;
+    outcome.safety.number.textContent = outcomeSafetyFrom;
+    outcome.safety.fill.style.setProperty("--level", outcomeSafetyFrom + "%");
+
+    setGameHeader({
+        money: outcomeMoneyFrom,
+        safety: outcomeSafetyFrom
+    });
+}
+
+
+function showOutcomeText() {
+    outcome.isShown = true;
+    outcome.isTextFinished = false;
+    outcome.runId = outcome.runId + 1;
+
+    const runId = outcome.runId;
+
+    outcome.element.classList.add("outcome--visible");
+
+    outcome.chars.forEach(function (char) {
+        char.element.classList.remove("outcome__char--visible");
+    });
+
+    function typeNextChar(index) {
+        if (runId !== outcome.runId) {
+            return;
+        }
+
+        if (index >= outcome.chars.length) {
+            outcome.isTextFinished = true;
+            stopTypewriterSound("outcome");
+            return;
+        }
+
+        const char = outcome.chars[index];
+
+        char.element.classList.add("outcome__char--visible");
+
+        let delay = typingMinDelay + Math.random() * (typingMaxDelay - typingMinDelay);
+
+        if (char.isSpace) {
+            delay = delay + typingSpacePause;
+        }
+
+        if (char.isLineEnd) {
+            delay = delay + typingLinePause;
+        }
+
+        setTimeout(function () {
+            typeNextChar(index + 1);
+        }, delay);
+    }
+
+    setTimeout(function () {
+        if (runId !== outcome.runId) {
+            return;
+        }
+
+        startTypewriterSound("outcome");
+        typeNextChar(0);
+    }, speechTypingDelay);
+}
+
+
+function hideOutcome() {
+    outcome.isShown = false;
+    outcome.isTextFinished = false;
+    outcome.runId = outcome.runId + 1;
+
+    outcome.element.classList.remove("outcome--visible");
+    stopTypewriterSound("outcome");
+
+    resetOutcomeStats();
+}
+
+
+// плавно «отщёлкиваем» число от from до to; onStep получает текущее значение
+function countDown(from, to, onStep, onDone, runId) {
+    const startTime = performance.now();
+
+    function step(now) {
+        if (runId !== outcome.runId) {
+            return;
+        }
+
+        const t = Math.min((now - startTime) / outcomeCountDuration, 1);
+
+        // сначала быстро, к концу замедляется
+        const eased = 1 - Math.pow(1 - t, 3);
+
+        onStep(from + (to - from) * eased);
+
+        if (t < 1) {
+            requestAnimationFrame(step);
+        } else {
+            onDone();
+        }
+    }
+
+    requestAnimationFrame(step);
+}
+
+
+// удар по одной цифре: краснеет, трясётся, вспышка по краям, сверху падает «минус»
+function hitStat(item, from, to, onStep, onDone, runId) {
+    item.stat.classList.add("outcome__stat--hit");
+    item.stat.classList.add("outcome__stat--dropped");
+
+    outcome.flash.classList.remove("outcome__flash--on");
+    void outcome.flash.offsetWidth;
+    outcome.flash.classList.add("outcome__flash--on");
+
+    countDown(from, to, onStep, function () {
+        item.stat.classList.remove("outcome__stat--hit");
+        onDone();
+    }, runId);
+}
+
+
+function playOutcomeStats() {
+    outcome.isStatsPlayed = true;
+    outcome.stats.classList.add("outcome__stats--visible");
+
+    const runId = outcome.runId;
+
+    setTimeout(function () {
+        if (runId !== outcome.runId) {
+            return;
+        }
+
+        hitStat(outcome.money, outcomeMoneyFrom, outcomeMoneyTo, function (value) {
+            outcome.money.number.textContent = Math.round(value);
+        }, function () {
+            setTimeout(function () {
+                if (runId !== outcome.runId) {
+                    return;
+                }
+
+                hitStat(outcome.safety, outcomeSafetyFrom, outcomeSafetyTo, function (value) {
+                    outcome.safety.number.textContent = Math.round(value);
+                    outcome.safety.fill.style.setProperty("--level", value.toFixed(1) + "%");
+                }, function () {
+                    // дальше игра идёт уже с новыми цифрами
+                    setGameHeader({
+                        money: outcomeMoneyTo,
+                        safety: outcomeSafetyTo
+                    });
+                }, runId);
+            }, outcomePause);
+        }, runId);
+    }, outcomePause);
+}
+
+
+function updateOutcome(progress) {
+    const isOfficialRoute = drive.isActive && choice.selected === "official";
+
+    if (!isOfficialRoute) {
+        if (outcome.isShown) {
+            hideOutcome();
+        }
+
+        return;
+    }
+
+    const textFrom = drive.start + outcomeTextFrom;
+    const statsFrom = drive.start + outcomeStatsFrom;
+
+    if (!outcome.isShown && progress >= textFrom) {
+        showOutcomeText();
+    }
+
+    // прокрутили назад — всё прячется, цифры возвращаются
+    if (outcome.isShown && progress < textFrom - speechGap) {
+        hideOutcome();
+        return;
+    }
+
+    if (outcome.isShown && outcome.isTextFinished && !outcome.isStatsPlayed && progress >= statsFrom) {
+        playOutcomeStats();
+    }
+}
+
+
 // ---------- главный цикл ----------
 
 function animate(now) {
+    // следующий кадр планируем сразу — даже если в этом что-то пойдёт не так, анимации не остановятся
+    requestAnimationFrame(animate);
+
     const progress = getScrollProgress();
 
     eyes.forEach(function (eye, index) {
@@ -1334,8 +1608,7 @@ function animate(now) {
     updateChoice(progress);
     updateDialogue(progress);
     updateDrive(progress, now);
-
-    requestAnimationFrame(animate);
+    updateOutcome(progress);
 }
 
 
@@ -1370,6 +1643,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupDialogue();
     setupChoice();
     setupDrive();
+    setupOutcome();
     setupClickSkip();
     // первый текст начинает печататься после клика по «начать» в прелоадере
     setupPreloader(startIntroText);
