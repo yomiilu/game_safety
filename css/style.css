@@ -1,4 +1,12 @@
-/* десктоп и планшет: все размеры во vw, 1px из макета = 0.0694vw (база 1440) */
+/* десктоп и планшет: все размеры считаются от макета 1440 × 900.
+   --u — «один vw макета»: на обычных экранах (16:10 и уже) это ровно 1vw,
+   а на широких мониторах размер берётся от высоты, чтобы ничего не вылезало за экран.
+   то есть calc(10 * var(--u)) — это те же 10vw из макета */
+
+:root {
+    --u: min(1vw, 1.6vh);
+}
+
 
 body {
     font-family: "Kom Post", sans-serif;
@@ -28,7 +36,7 @@ body.is-choice-locked {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2.7778vw;
+    gap: calc(2.7778 * var(--u));
     width: 100vw;
     height: 100vh;
     background-color: #0F0F0F;
@@ -47,19 +55,19 @@ body.is-choice-locked {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.6667vw;
+    gap: calc(1.6667 * var(--u));
 }
 
 /* несколько шкал подряд — как одна длинная шкала */
 .preloader__bar {
     display: flex;
-    gap: 0.5000vw;
+    gap: calc(0.5000 * var(--u));
 }
 
 .preloader__scale {
     position: relative;
-    width: 19.5000vw;
-    height: 1.0833vw;
+    width: calc(19.5000 * var(--u));
+    height: calc(1.0833 * var(--u));
 }
 
 /* шкала тёмная, а фон чёрный — делаем её светлой */
@@ -84,8 +92,8 @@ body.is-choice-locked {
 
 .preloader__percent {
     font-family: "Kom Post", sans-serif;
-    font-size: 1.6667vw;
-    line-height: 1.6667vw;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(1.6667 * var(--u));
     font-weight: 400;
     color: #C1C1C1;
 }
@@ -94,15 +102,15 @@ body.is-choice-locked {
    (место под неё занято сразу, поэтому полоса не прыгает) */
 .preloader__start {
     position: relative;
-    width: 23.1250vw;
-    height: 6.9271vw;
+    width: calc(23.1250 * var(--u));
+    height: calc(6.9271 * var(--u));
     padding: 0;
     background: none;
     border: none;
     cursor: pointer;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(1.3889vw);
+    transform: translateY(calc(1.3889 * var(--u)));
     transition: opacity 0.5s ease 0.2s, visibility 0.5s ease 0.2s, transform 0.5s ease 0.2s;
 }
 
@@ -135,8 +143,8 @@ body.is-choice-locked {
     width: 100%;
     height: 92%;
     font-family: "Kom Post", sans-serif;
-    font-size: 2.6389vw;
-    line-height: 2.6389vw;
+    font-size: calc(2.6389 * var(--u));
+    line-height: calc(2.6389 * var(--u));
     font-weight: 400;
     color: #686868;
 }
@@ -153,25 +161,25 @@ body.is-choice-locked {
 /* звук живёт справа сверху, сразу под шапкой игры */
 .sound {
     position: fixed;
-    top: 7.2917vw;
-    right: 2.7778vw;
+    top: calc(7.2917 * var(--u));
+    right: calc(2.7778 * var(--u));
     transition: top 0.6s ease;
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 0.8333vw;
+    gap: calc(0.8333 * var(--u));
 }
 
 /* когда шапки нет (выбор, улица) — звук поднимается в самый угол */
 body.is-choosing .sound,
 body.is-street .sound {
-    top: 2.0833vw;
+    top: calc(2.0833 * var(--u));
 }
 
 .sound__button {
     position: relative;
-    width: 2.2222vw;
-    height: 2.2222vw;
+    width: calc(2.2222 * var(--u));
+    height: calc(2.2222 * var(--u));
     padding: 0;
     background: none;
     border: none;
@@ -206,9 +214,9 @@ body.is-street .sound {
 
 /* ползунок громкости: --filled задаёт js */
 .sound__slider {
-    width: 6.9444vw;
-    height: 0.2083vw;
-    border-radius: 0.1389vw;
+    width: calc(6.9444 * var(--u));
+    height: calc(0.2083 * var(--u));
+    border-radius: calc(0.1389 * var(--u));
     background: linear-gradient(
         to right,
         #FFFFFF 0%,
@@ -228,8 +236,8 @@ body.is-street .sound {
 }
 
 .sound__slider::-webkit-slider-thumb {
-    width: 0.8333vw;
-    height: 0.8333vw;
+    width: calc(0.8333 * var(--u));
+    height: calc(0.8333 * var(--u));
     border: none;
     border-radius: 50%;
     background-color: #FFFFFF;
@@ -239,8 +247,8 @@ body.is-street .sound {
 }
 
 .sound__slider::-moz-range-thumb {
-    width: 0.8333vw;
-    height: 0.8333vw;
+    width: calc(0.8333 * var(--u));
+    height: calc(0.8333 * var(--u));
     border: none;
     border-radius: 50%;
     background-color: #FFFFFF;
@@ -274,8 +282,8 @@ body.is-street .sound {
     z-index: 2;
     transform: translate(-50%, -50%);
     font-family: "Kom Post", sans-serif;
-    font-size: 2.4306vw;
-    line-height: 2.9167vw;
+    font-size: calc(2.4306 * var(--u));
+    line-height: calc(2.9167 * var(--u));
     font-weight: 400;
     color: #FFFFFF;
     text-align: center;
@@ -296,9 +304,9 @@ body.is-street .sound {
 /* курсор не занимает места, поэтому текст не сдвигается, пока он бегает */
 .hero__cursor {
     display: inline-block;
-    width: 0.1389vw;
-    height: 2.4306vw;
-    margin-right: -0.1389vw;
+    width: calc(0.1389 * var(--u));
+    height: calc(2.4306 * var(--u));
+    margin-right: calc(-0.1389 * var(--u));
     vertical-align: middle;
     background-color: #FFFFFF;
     animation: cursor-blink 0.9s steps(1) infinite;
@@ -334,7 +342,7 @@ body.is-street .sound {
     width: 100%;
     height: 100%;
     background: radial-gradient(
-        circle 27.7778vw at var(--light-x, 50%) var(--light-y, 50%),
+        circle calc(27.7778 * var(--u)) at var(--light-x, 50%) var(--light-y, 50%),
         rgba(255, 255, 255, 0.07) 0%,
         rgba(255, 255, 255, 0.025) 45%,
         rgba(255, 255, 255, 0) 100%
@@ -355,22 +363,26 @@ body.is-street .sound {
     pointer-events: none;
 }
 
-/* в темноте остаётся только свет от курсора — поярче, чем обычный */
+/* свет от курсора на всех чёрных экранах (первая темнота, выбор, чёрный экран после поездки).
+   лежит поверх сцен, но под зерном; насколько он виден — решает js через --light-level */
 .hero__dark-light {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 6;
+    z-index: 7;
     width: 100%;
     height: 100%;
     background: radial-gradient(
-        circle 27.7778vw at var(--light-x, 50%) var(--light-y, 50%),
-        rgba(255, 255, 255, 0.12) 0%,
-        rgba(255, 255, 255, 0.04) 45%,
+        circle calc(36.1111 * var(--u)) at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0.1) 20%,
+        rgba(255, 255, 255, 0.05) 45%,
+        rgba(255, 255, 255, 0.015) 75%,
         rgba(255, 255, 255, 0) 100%
     );
-    opacity: calc(var(--dark, 0) * (1 - var(--game, 0)));
+    opacity: var(--light-level, 0);
     pointer-events: none;
+    transition: opacity 0.4s ease;
 }
 
 /* тёмные края экрана, медленно «дышат» */
@@ -400,7 +412,7 @@ body.is-street .sound {
     width: 200%;
     height: 200%;
     background-image: url("../img/noise.svg");
-    background-size: 13.8889vw 13.8889vw;
+    background-size: calc(13.8889 * var(--u)) calc(13.8889 * var(--u));
     background-repeat: repeat;
     opacity: 0.09;
     pointer-events: none;
@@ -441,19 +453,19 @@ body.is-street .sound {
     }
 
     20% {
-        transform: translate(-3.4722vw, 2.0833vw);
+        transform: translate(calc(-3.4722 * var(--u)), calc(2.0833 * var(--u)));
     }
 
     40% {
-        transform: translate(2.7778vw, -3.4722vw);
+        transform: translate(calc(2.7778 * var(--u)), calc(-3.4722 * var(--u)));
     }
 
     60% {
-        transform: translate(-2.0833vw, -1.3889vw);
+        transform: translate(calc(-2.0833 * var(--u)), calc(-1.3889 * var(--u)));
     }
 
     80% {
-        transform: translate(3.4722vw, 2.7778vw);
+        transform: translate(calc(3.4722 * var(--u)), calc(2.7778 * var(--u)));
     }
 
     100% {
@@ -468,13 +480,13 @@ body.is-street .sound {
     }
 
     15% {
-        transform: translate(calc(-50% + 0.2778vw), -50%);
-        text-shadow: -0.2083vw 0 rgba(255, 0, 40, 0.7), 0.2083vw 0 rgba(0, 120, 255, 0.7);
+        transform: translate(calc(-50% + calc(0.2778 * var(--u))), -50%);
+        text-shadow: calc(-0.2083 * var(--u)) 0 rgba(255, 0, 40, 0.7), calc(0.2083 * var(--u)) 0 rgba(0, 120, 255, 0.7);
     }
 
     30% {
-        transform: translate(calc(-50% - 0.3472vw), calc(-50% + 0.0694vw));
-        text-shadow: 0.2778vw 0 rgba(255, 0, 40, 0.7), -0.2778vw 0 rgba(0, 120, 255, 0.7);
+        transform: translate(calc(-50% - calc(0.3472 * var(--u))), calc(-50% + calc(0.0694 * var(--u))));
+        text-shadow: calc(0.2778 * var(--u)) 0 rgba(255, 0, 40, 0.7), calc(-0.2778 * var(--u)) 0 rgba(0, 120, 255, 0.7);
     }
 
     50% {
@@ -483,8 +495,8 @@ body.is-street .sound {
     }
 
     65% {
-        transform: translate(calc(-50% + 0.1389vw), -50%);
-        text-shadow: -0.1389vw 0 rgba(255, 0, 40, 0.6), 0.1389vw 0 rgba(0, 120, 255, 0.6);
+        transform: translate(calc(-50% + calc(0.1389 * var(--u))), -50%);
+        text-shadow: calc(-0.1389 * var(--u)) 0 rgba(255, 0, 40, 0.6), calc(0.1389 * var(--u)) 0 rgba(0, 120, 255, 0.6);
     }
 
     80% {
@@ -569,17 +581,18 @@ body.is-street .sound {
 /* персонажи: выходят из-за края экрана по скроллу (сдвиг и шаги задаёт js) */
 .game__character {
     position: absolute;
-    bottom: 2.0833vw;
+    bottom: calc(2.0833 * var(--u));
     transform-origin: 50% 100%;
     will-change: transform;
 }
 
-/* главный герой — слева */
+/* главный герой — слева. персонажи и плашки стоят от центра экрана,
+   чтобы на широких мониторах сцена не разъезжалась по краям */
 .game__character--boy {
-    left: 8.3333vw;
-    width: 23.1944vw;
-    height: 41.2500vw;
-    transform: translateX(-140%);
+    left: calc(50% - calc(41.6667 * var(--u)));
+    width: calc(23.1944 * var(--u));
+    height: calc(41.2500 * var(--u));
+    transform: translateX(-100vw);
 }
 
 /* у героя две позы: картинки лежат друг на друге и меняются плавным переходом */
@@ -599,7 +612,7 @@ body.is-street .sound {
 /* вторая поза шире первой, но выровнена по тому же левому краю.
    max-width: none — иначе reset.css не даёт ей вылезти за рамку и мальчик сжимается */
 .game__pose--2 {
-    width: 29.3750vw;
+    width: calc(29.3750 * var(--u));
     max-width: none;
     opacity: 0;
 }
@@ -614,33 +627,33 @@ body.is-street .sound {
 
 /* таксист — справа, ближе к краю (тот же масштаб, что у героя) */
 .game__character--taxi {
-    right: 8.3333vw;
-    width: 12.9167vw;
-    height: 42.2917vw;
-    transform: translateX(220%);
+    right: calc(50% - calc(41.6667 * var(--u)));
+    width: calc(12.9167 * var(--u));
+    height: calc(42.2917 * var(--u));
+    transform: translateX(100vw);
 }
 
 
 /* плашки с репликами: хвостик смотрит на голову того, кто говорит */
 .speech {
     position: absolute;
-    width: 31.9444vw;
-    height: 11.3194vw;
+    width: calc(31.9444 * var(--u));
+    height: calc(11.3194 * var(--u));
     opacity: 0;
     transform: scale(0.85);
     transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .speech--boy {
-    bottom: 36.1111vw;
-    left: 27.4306vw;
+    bottom: calc(36.1111 * var(--u));
+    left: calc(50% - calc(22.5694 * var(--u)));
     transform-origin: 0% 100%;
 }
 
 /* у таксиста плашка зеркальная: хвостик справа внизу */
 .speech--taxi {
-    right: 21.5278vw;
-    bottom: 36.1111vw;
+    right: calc(50% - calc(28.4722 * var(--u)));
+    bottom: calc(36.1111 * var(--u));
     transform-origin: 100% 100%;
 }
 
@@ -667,13 +680,13 @@ body.is-street .sound {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1.3889vw;
+    padding: 0 calc(1.3889 * var(--u));
 }
 
 .speech__inner {
     font-family: "Kom Post", sans-serif;
-    font-size: 1.6667vw;
-    line-height: 2.2222vw;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.2222 * var(--u));
     font-weight: 400;
     color: #686868;
     text-align: center;
@@ -724,7 +737,7 @@ body.is-street .sound {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2.7778vw;
+    gap: calc(2.7778 * var(--u));
     width: 100%;
     height: 100%;
     opacity: 0;
@@ -750,23 +763,23 @@ body.is-street .sound {
 }
 
 .choice__eye--1 {
-    top: 3.4722vw;
-    left: 3.4722vw;
+    top: calc(3.4722 * var(--u));
+    left: calc(3.4722 * var(--u));
 }
 
 .choice__eye--2 {
-    top: 2.7778vw;
-    right: 4.1667vw;
+    top: calc(2.7778 * var(--u));
+    right: calc(4.1667 * var(--u));
 }
 
 .choice__eye--3 {
-    bottom: 4.1667vw;
-    left: 12.5000vw;
+    bottom: calc(4.1667 * var(--u));
+    left: calc(12.5000 * var(--u));
 }
 
 .choice__eye--4 {
-    right: 9.7222vw;
-    bottom: 2.7778vw;
+    right: calc(9.7222 * var(--u));
+    bottom: calc(2.7778 * var(--u));
 }
 
 /* заголовок и варианты — поверх глаз */
@@ -778,8 +791,8 @@ body.is-street .sound {
 
 .choice__title {
     font-family: "Kom Post", sans-serif;
-    font-size: 2.6389vw;
-    line-height: 2.6389vw;
+    font-size: calc(2.6389 * var(--u));
+    line-height: calc(2.6389 * var(--u));
     font-weight: 400;
     color: #FFFFFF;
     text-align: center;
@@ -787,20 +800,20 @@ body.is-street .sound {
 
 .choice__options {
     display: flex;
-    gap: 3.4722vw;
+    gap: calc(3.4722 * var(--u));
 }
 
 /* вариант — рукописная плашка, как кнопка «начать» */
 .choice__option {
     position: relative;
-    width: 34.7222vw;
-    height: 10.4167vw;
+    width: calc(34.7222 * var(--u));
+    height: calc(10.4167 * var(--u));
     padding: 0;
     background: none;
     border: none;
     cursor: pointer;
     opacity: 1;
-    transform: translateY(1.3889vw);
+    transform: translateY(calc(1.3889 * var(--u)));
     transition: transform 0.35s ease, opacity 0.06s ease;
 }
 
@@ -860,10 +873,10 @@ body.is-street .sound {
     justify-content: center;
     width: 100%;
     height: 92%;
-    padding: 0 3.4722vw;
+    padding: 0 calc(3.4722 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: 1.6667vw;
-    line-height: 2.2222vw;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.2222 * var(--u));
     font-weight: 400;
     color: #686868;
     text-align: center;
@@ -956,7 +969,7 @@ body.is-street .sound {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6.2500vw;
+    gap: calc(6.2500 * var(--u));
     width: 100%;
     height: 100%;
     opacity: 0;
@@ -991,10 +1004,10 @@ body.is-street .sound {
 
 .outcome__text {
     position: relative;
-    max-width: 55.5556vw;
+    max-width: calc(55.5556 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: 2.2222vw;
-    line-height: 3.0556vw;
+    font-size: calc(2.2222 * var(--u));
+    line-height: calc(3.0556 * var(--u));
     font-weight: 400;
     color: #FFFFFF;
     text-align: center;
@@ -1013,9 +1026,9 @@ body.is-street .sound {
     position: relative;
     display: flex;
     align-items: flex-start;
-    gap: 8.3333vw;
+    gap: calc(8.3333 * var(--u));
     opacity: 0;
-    transform: translateY(2.0833vw);
+    transform: translateY(calc(2.0833 * var(--u)));
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
@@ -1029,27 +1042,27 @@ body.is-street .sound {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.3889vw;
+    gap: calc(1.3889 * var(--u));
 }
 
 /* значки тёмные — на чёрном делаем их светлыми */
 .outcome__icon {
-    height: 5.5556vw;
+    height: calc(5.5556 * var(--u));
     filter: invert(1);
 }
 
 .outcome__icon--money {
-    width: 5.7639vw;
+    width: calc(5.7639 * var(--u));
 }
 
 .outcome__icon--safety {
-    width: 4.3611vw;
+    width: calc(4.3611 * var(--u));
 }
 
 .outcome__value {
     display: flex;
     align-items: baseline;
-    gap: 0.6944vw;
+    gap: calc(0.6944 * var(--u));
     font-family: "Kom Post", sans-serif;
     font-weight: 400;
     color: #FFFFFF;
@@ -1057,13 +1070,13 @@ body.is-street .sound {
 }
 
 .outcome__number {
-    font-size: 8.3333vw;
-    line-height: 8.3333vw;
+    font-size: calc(8.3333 * var(--u));
+    line-height: calc(8.3333 * var(--u));
 }
 
 .outcome__unit {
-    font-size: 4.1667vw;
-    line-height: 4.1667vw;
+    font-size: calc(4.1667 * var(--u));
+    line-height: calc(4.1667 * var(--u));
 }
 
 /* пока число падает — оно красное и трясётся, значок дрожит */
@@ -1080,15 +1093,15 @@ body.is-street .sound {
 /* «−60$» и «−10%» падают сверху и остаются висеть */
 .outcome__delta {
     position: absolute;
-    top: 4.1667vw;
-    right: -5.5556vw;
+    top: calc(4.1667 * var(--u));
+    right: calc(-5.5556 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: 2.7778vw;
-    line-height: 2.7778vw;
+    font-size: calc(2.7778 * var(--u));
+    line-height: calc(2.7778 * var(--u));
     font-weight: 400;
     color: #FF4D4D;
     opacity: 0;
-    transform: translateY(-2.7778vw) rotate(-8deg);
+    transform: translateY(calc(-2.7778 * var(--u))) rotate(-8deg);
     transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
@@ -1100,9 +1113,9 @@ body.is-street .sound {
 /* шкала безопасности: светлая, заливку обрезает js через --level */
 .outcome__scale {
     position: relative;
-    width: 25.0000vw;
-    height: 1.3889vw;
-    margin-top: 0.6944vw;
+    width: calc(25.0000 * var(--u));
+    height: calc(1.3889 * var(--u));
+    margin-top: calc(0.6944 * var(--u));
 }
 
 .outcome__scale-empty,
@@ -1129,15 +1142,15 @@ body.is-street .sound {
     }
 
     25% {
-        transform: translate(-0.2083vw, 0.1389vw);
+        transform: translate(calc(-0.2083 * var(--u)), calc(0.1389 * var(--u)));
     }
 
     50% {
-        transform: translate(0.2083vw, -0.1389vw);
+        transform: translate(calc(0.2083 * var(--u)), calc(-0.1389 * var(--u)));
     }
 
     75% {
-        transform: translate(-0.1389vw, -0.2083vw);
+        transform: translate(calc(-0.1389 * var(--u)), calc(-0.2083 * var(--u)));
     }
 
     100% {
@@ -1191,7 +1204,7 @@ body.is-street .game-header {
     left: 0;
     z-index: 9;
     width: 100vw;
-    height: 5.9028vw;
+    height: calc(5.9028 * var(--u));
     opacity: var(--game, 0);
     pointer-events: none;
 }
@@ -1214,24 +1227,24 @@ body.is-choosing .game-header {
 .game-header__stats {
     position: absolute;
     top: 0;
-    left: 2.7778vw;
+    left: calc(2.7778 * var(--u));
     display: flex;
     align-items: center;
-    gap: 3.4722vw;
-    height: 4.8611vw;
+    gap: calc(3.4722 * var(--u));
+    height: calc(4.8611 * var(--u));
 }
 
 .game-header__stat {
     display: flex;
     align-items: center;
-    gap: 0.8333vw;
+    gap: calc(0.8333 * var(--u));
 }
 
 /* все тексты шапки одного размера — 38px на десктопе */
 .game-header__text {
     font-family: "Kom Post", sans-serif;
-    font-size: 2.6389vw;
-    line-height: 2.6389vw;
+    font-size: calc(2.6389 * var(--u));
+    line-height: calc(2.6389 * var(--u));
     font-weight: 400;
     color: #3E3E3E;
     white-space: nowrap;
@@ -1244,21 +1257,21 @@ body.is-choosing .game-header {
 }
 
 .game-header__icon--money {
-    width: 3.6111vw;
-    height: 3.4722vw;
+    width: calc(3.6111 * var(--u));
+    height: calc(3.4722 * var(--u));
 }
 
 .game-header__icon--safety {
-    width: 2.7257vw;
-    height: 3.4722vw;
+    width: calc(2.7257 * var(--u));
+    height: calc(3.4722 * var(--u));
 }
 
 /* шкала безопасности: пустые ячейки + залитые, обрезанные по --level */
 .game-header__scale {
     position: relative;
-    width: 16.2500vw;
-    height: 0.9028vw;
-    margin-left: 0.6944vw;
+    width: calc(16.2500 * var(--u));
+    height: calc(0.9028 * var(--u));
+    margin-left: calc(0.6944 * var(--u));
 }
 
 .game-header__scale-empty {
@@ -1283,11 +1296,11 @@ body.is-choosing .game-header {
 .game-header__chapter {
     position: absolute;
     top: 0;
-    right: 2.7778vw;
+    right: calc(2.7778 * var(--u));
     display: flex;
     align-items: center;
-    gap: 1.0417vw;
-    height: 4.8611vw;
+    gap: calc(1.0417 * var(--u));
+    height: calc(4.8611 * var(--u));
 }
 
 
@@ -1352,8 +1365,8 @@ body.is-choosing .game-header {
 /* ---------- глаз a (eye1) ---------- */
 
 .eye--a {
-    width: 25.9028vw;
-    height: 16.3889vw;
+    width: calc(25.9028 * var(--u));
+    height: calc(16.3889 * var(--u));
 }
 
 .eye__socket--a {
@@ -1381,25 +1394,25 @@ body.is-choosing .game-header {
 
 /* закрытый глаз a: веко по ширине и положению совпадает с разрезом открытого */
 .eye__closed--a {
-    top: 3.8542vw;
-    left: 1.6667vw;
-    width: 22.7778vw;
-    height: 15.2361vw;
+    top: calc(3.8542 * var(--u));
+    left: calc(1.6667 * var(--u));
+    width: calc(22.7778 * var(--u));
+    height: calc(15.2361 * var(--u));
 }
 
 .eye__pupil--a {
-    top: 6.7797vw;
-    left: 8.4210vw;
-    width: 8.1944vw;
-    height: 4.7917vw;
+    top: calc(6.7797 * var(--u));
+    left: calc(8.4210 * var(--u));
+    width: calc(8.1944 * var(--u));
+    height: calc(4.7917 * var(--u));
 }
 
 
 /* ---------- глаз b (eye2) ---------- */
 
 .eye--b {
-    width: 22.0833vw;
-    height: 18.3333vw;
+    width: calc(22.0833 * var(--u));
+    height: calc(18.3333 * var(--u));
 }
 
 .eye__socket--b {
@@ -1424,27 +1437,27 @@ body.is-choosing .game-header {
 
 /* закрытый глаз b повёрнут, чтобы повторять наклон открытого */
 .eye__closed--b {
-    top: 3.2639vw;
-    left: 0.9028vw;
-    width: 19.1667vw;
-    height: 11.9444vw;
+    top: calc(3.2639 * var(--u));
+    left: calc(0.9028 * var(--u));
+    width: calc(19.1667 * var(--u));
+    height: calc(11.9444 * var(--u));
     transform: rotate(-17deg);
     transform-origin: 51.45% 48.26%;
 }
 
 .eye__pupil--b {
-    top: 7.0402vw;
-    left: 5.6707vw;
-    width: 8.9583vw;
-    height: 7.0139vw;
+    top: calc(7.0402 * var(--u));
+    left: calc(5.6707 * var(--u));
+    width: calc(8.9583 * var(--u));
+    height: calc(7.0139 * var(--u));
 }
 
 
 /* ---------- глаз c (eye3) ---------- */
 
 .eye--c {
-    width: 18.4028vw;
-    height: 10.4861vw;
+    width: calc(18.4028 * var(--u));
+    height: calc(10.4861 * var(--u));
 }
 
 .eye__socket--c {
@@ -1468,46 +1481,47 @@ body.is-choosing .game-header {
 
 /* закрытый верхний глаз повёрнут, чтобы повторять наклон открытого */
 .eye__closed--c {
-    top: -0.6597vw;
-    left: 0.2153vw;
-    width: 18.7500vw;
-    height: 12.0417vw;
+    top: calc(-0.6597 * var(--u));
+    left: calc(0.2153 * var(--u));
+    width: calc(18.7500 * var(--u));
+    height: calc(12.0417 * var(--u));
     transform: rotate(27deg);
     transform-origin: 48.09% 49.32%;
 }
 
 .eye__pupil--c {
-    top: 4.0356vw;
-    left: 6.9120vw;
-    width: 7.3611vw;
-    height: 3.4028vw;
+    top: calc(4.0356 * var(--u));
+    left: calc(6.9120 * var(--u));
+    width: calc(7.3611 * var(--u));
+    height: calc(3.4028 * var(--u));
 }
 
 
 /* ---------- расстановка глаз на первом экране ---------- */
+/* по горизонтали — от центра экрана, чтобы на широких мониторах глаза оставались вокруг текста */
 /* верхние глаза — от верха экрана, средние — от центра экрана, нижний — от низа экрана */
 
 .hero__eye--1 {
-    top: 4.8611vw;
-    left: 27.7778vw;
+    top: calc(4.8611 * var(--u));
+    left: calc(50% - calc(22.2222 * var(--u)));
 }
 
 .hero__eye--2 {
-    top: 4.8611vw;
-    left: 53.8194vw;
+    top: calc(4.8611 * var(--u));
+    left: calc(50% + calc(3.8194 * var(--u)));
 }
 
 .hero__eye--3 {
-    top: calc(50% - 15.2778vw);
-    left: 4.1667vw;
+    top: calc(50% - calc(15.2778 * var(--u)));
+    left: calc(50% - calc(45.8333 * var(--u)));
 }
 
 .hero__eye--4 {
-    bottom: 4.1667vw;
-    left: 13.8889vw;
+    bottom: calc(4.1667 * var(--u));
+    left: calc(50% - calc(36.1111 * var(--u)));
 }
 
 .hero__eye--5 {
-    top: calc(50% - 1.3889vw);
-    left: 70.8333vw;
+    top: calc(50% - calc(1.3889 * var(--u)));
+    left: calc(50% + calc(20.8333 * var(--u)));
 }

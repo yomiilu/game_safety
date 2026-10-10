@@ -44,6 +44,12 @@ let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
 
 
+// «один vw макета» в пикселях — то же, что --u в css: min(1vw, 1.6vh)
+function getDesignUnit() {
+    return Math.min(window.innerWidth, window.innerHeight * 1.6) / 100;
+}
+
+
 function setupEyes() {
     const eyeElements = document.querySelectorAll(".eye");
 
@@ -119,7 +125,7 @@ function updatePupil(eye, now) {
 
 // ---------- глаз убегает от курсора ----------
 
-// запас вокруг глаза (в vw), ближе которого курсор подойти не может
+// запас вокруг глаза (в «vw макета», как --u в css), ближе которого курсор подойти не может
 const fleeMargin = 2;
 
 // как резко глаз отскакивает и как медленно возвращается на место
@@ -138,7 +144,7 @@ function getOvalDistance(dx, dy, radiusX, radiusY) {
 
 function updateFlee(eye) {
     const rect = eye.element.getBoundingClientRect();
-    const margin = window.innerWidth * fleeMargin / 100;
+    const margin = getDesignUnit() * fleeMargin;
 
     const radiusX = rect.width / 2 + margin;
     const radiusY = rect.height / 2 + margin;
@@ -529,6 +535,27 @@ function updateDarkness(progress) {
 
     // шапка стоит вне первого экрана, поэтому --game ставим на всю страницу
     document.body.style.setProperty("--game", game.toFixed(3));
+
+    updateCursorLight(dark * (1 - game));
+}
+
+
+// свет от курсора виден на любом чёрном экране:
+// первая темнота перед аэропортом, экран выбора и чёрный экран после поездки
+function updateCursorLight(firstDarkness) {
+    let level = firstDarkness;
+
+    const isChoiceBlack = choice.isShown && !document.body.classList.contains("is-street");
+
+    if (isChoiceBlack) {
+        level = 1;
+    }
+
+    if (drive.isActive) {
+        level = Math.max(level, drive.blackout);
+    }
+
+    light.element.style.setProperty("--light-level", level.toFixed(3));
 }
 
 
@@ -536,20 +563,20 @@ function updateDarkness(progress) {
 
 // selector — какой персонаж
 // start, end — на каком отрезке прокрутки он выходит
-// fromX — откуда выходит: сдвиг в % своей ширины (минус — из-за левого края, плюс — из-за правого)
+// side — из-за какого края экрана выходит: "left" или "right"
 // waitForLine — не выходит, пока эта реплика не допечатана (необязательно)
 const characterSettings = [
     {
         selector: ".game__character--boy",
         start: 3.5,
         end: 4.5,
-        fromX: -140
+        side: "left"
     },
     {
         selector: ".game__character--taxi",
         start: 5.04,
         end: 6.09,
-        fromX: 220,
+        side: "right",
         waitForLine: ".speech--boy-1"
     }
 ];
@@ -571,7 +598,7 @@ function setupCharacters() {
             element: document.querySelector(settings.selector),
             start: settings.start,
             end: settings.end,
-            fromX: settings.fromX,
+            side: settings.side,
             waitForLine: settings.waitForLine,
             walk: 0
         });
@@ -608,7 +635,19 @@ function updateCharacter(character, progress) {
 
     // в конце пути — мягкое торможение
     const walk = 1 - (1 - raw) * (1 - raw);
-    const x = character.fromX * (1 - walk);
+
+    // откуда выходит: ровно из-за края экрана (на любом мониторе), с небольшим запасом
+    const element = character.element;
+    const screenWidth = element.parentElement.offsetWidth;
+    const reserve = element.offsetWidth * 0.2;
+
+    let startX = screenWidth - element.offsetLeft + reserve;
+
+    if (character.side === "left") {
+        startX = -(element.offsetLeft + element.offsetWidth + reserve);
+    }
+
+    const x = startX * (1 - walk);
 
     // подпрыгивание и лёгкое покачивание на каждом шаге, к концу затихает
     const step = Math.sin(raw * Math.PI * walkSteps);
@@ -616,7 +655,7 @@ function updateCharacter(character, progress) {
     const y = -Math.abs(step) * walkBounce * fade;
     const tilt = step * 1.5 * fade;
 
-    character.element.style.transform = "translate(" + x.toFixed(2) + "%, " + y.toFixed(2) + "%) rotate(" + tilt.toFixed(2) + "deg)";
+    character.element.style.transform = "translate(" + x.toFixed(1) + "px, " + y.toFixed(2) + "%) rotate(" + tilt.toFixed(2) + "deg)";
 }
 
 
@@ -992,6 +1031,7 @@ function hideStreet() {
 
     drive.isActive = false;
     drive.current = 0;
+    drive.blackout = 0;
     streetBlackout.style.opacity = 0;
 
     stopCarSound();
@@ -1081,6 +1121,8 @@ let streetBlackout = null;
 
 const drive = {
     isActive: false,
+    // насколько улица уже ушла в черноту после поездки (0–1)
+    blackout: 0,
     isSoundOn: false,
     start: 0,
     current: 0,
@@ -1257,6 +1299,7 @@ function updateDrive(progress, now) {
     const blackout = smoothStep(blackoutStart, blackoutStart + blackoutLength, progress);
 
     streetBlackout.style.opacity = blackout.toFixed(3);
+    drive.blackout = blackout;
 
     updateCarSound();
 }
