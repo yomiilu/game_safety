@@ -55,6 +55,8 @@ function setupEyes() {
             pupil: eyeElement.querySelector(".eye__pupil"),
             type: type,
             isMirror: eyeElement.classList.contains("eye--mirror"),
+            // глаза на экране выбора всегда открыты — по скроллу не закрываются
+            isAlwaysOpen: eyeElement.classList.contains("eye--always-open"),
             currentX: 0,
             currentY: 0,
             tremorX: 0,
@@ -833,10 +835,57 @@ function updateDialogue(progress) {
 }
 
 
+// ---------- ВРЕМЕННО: пропуск реплик по клику ----------
+// клик в любом месте (кроме кнопок, ползунка и экрана выбора) сразу допечатывает текущую реплику.
+// чтобы убрать — поставь false
+const allowClickSkip = true;
+
+
+function skipCurrentLine() {
+    if (currentLine < 0) {
+        return;
+    }
+
+    const line = lines[currentLine];
+
+    if (line.isFinished) {
+        return;
+    }
+
+    // останавливаем печать и показываем фразу целиком
+    line.runId = line.runId + 1;
+    line.isFinished = true;
+
+    setLineCharsVisible(line, true);
+    stopTypewriterSound();
+}
+
+
+function setupClickSkip() {
+    if (!allowClickSkip) {
+        return;
+    }
+
+    document.addEventListener("click", function (event) {
+        if (event.target.closest("button, input, .choice, .preloader")) {
+            return;
+        }
+
+        skipCurrentLine();
+    });
+}
+
+
 // ---------- выбор игрока ----------
 
 // с какой отметки прокрутки появляется выбор (и только когда последняя реплика допечатана)
 const choiceFrom = 8.4;
+
+// через сколько (мс) варианты успевают выехать
+const choiceReadyDelay = 1000;
+
+// через сколько (мс) после выбора появляется следующая сцена
+const streetDelay = 900;
 
 const choice = {
     element: null,
@@ -852,6 +901,7 @@ function setupChoice() {
     choice.element = document.querySelector(".choice");
     choice.game = document.querySelector(".game");
     choice.options = document.querySelectorAll(".choice__option");
+    street = document.querySelector(".street");
 
     choice.options.forEach(function (option) {
         option.addEventListener("click", function () {
@@ -868,6 +918,7 @@ function selectChoice(option) {
         otherOption.classList.toggle("choice__option--selected", otherOption === option);
     });
 
+    choice.element.classList.add("choice--ready");
     choice.element.classList.add("choice--made");
 
     // сообщаем остальному коду, что выбор сделан (пригодится для следующих сцен)
@@ -876,6 +927,48 @@ function selectChoice(option) {
             choice: choice.selected
         }
     }));
+
+    const selected = choice.selected;
+
+    setTimeout(function () {
+        // за это время игрок мог прокрутить назад и передумать
+        if (choice.isShown && choice.selected === selected) {
+            showStreet(selected);
+        }
+    }, streetDelay);
+}
+
+
+// ---------- сцена 2: улица ----------
+
+let street = null;
+
+
+function showStreet(selected) {
+    street.classList.remove("street--official", "street--driver");
+    street.classList.add("street--" + selected);
+    street.classList.add("street--visible");
+
+    document.body.classList.add("is-street");
+}
+
+
+function hideStreet() {
+    street.classList.remove("street--visible");
+    document.body.classList.remove("is-street");
+}
+
+
+// прокрутили назад к диалогу — выбор сбрасывается, можно выбрать заново
+function resetChoice() {
+    choice.selected = null;
+    choice.element.classList.remove("choice--made");
+
+    choice.options.forEach(function (option) {
+        option.classList.remove("choice__option--selected");
+    });
+
+    hideStreet();
 }
 
 
@@ -886,13 +979,25 @@ function updateChoice(progress) {
         choice.isShown = true;
         choice.element.classList.add("choice--visible");
         choice.game.classList.add("game--choice");
+        document.body.classList.add("is-choosing");
+
+        // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
+        setTimeout(function () {
+            if (choice.isShown) {
+                choice.element.classList.add("choice--ready");
+            }
+        }, choiceReadyDelay);
     }
 
     // прокрутили назад — выбор прячется, снова видна последняя реплика
     if (choice.isShown && progress < choiceFrom - speechGap) {
         choice.isShown = false;
         choice.element.classList.remove("choice--visible");
+        choice.element.classList.remove("choice--ready");
         choice.game.classList.remove("game--choice");
+        document.body.classList.remove("is-choosing");
+
+        resetChoice();
     }
 }
 
@@ -905,7 +1010,9 @@ function animate(now) {
     eyes.forEach(function (eye, index) {
         updateFlee(eye);
         updatePupil(eye, now);
-        updateEyeClose(eye, index, progress);
+        if (!eye.isAlwaysOpen) {
+            updateEyeClose(eye, index, progress);
+        }
     });
 
     updateLight();
@@ -952,6 +1059,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupCharacters();
     setupDialogue();
     setupChoice();
+    setupClickSkip();
     // первый текст начинает печататься после клика по «начать» в прелоадере
     setupPreloader(startIntroText);
 
