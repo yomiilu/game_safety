@@ -1,0 +1,879 @@
+/* десктоп и планшет: все размеры во vw, 1px из макета = 0.0694vw (база 1440) */
+
+body {
+    font-family: "Kom Post", sans-serif;
+    background-color: #0F0F0F;
+    overflow-x: hidden;
+}
+
+.page {
+    position: relative;
+    width: 100vw;
+}
+
+
+/* ---------- звук: кнопка и громкость ---------- */
+
+/* звук живёт справа сверху, сразу под шапкой игры */
+.sound {
+    position: fixed;
+    top: 7.2917vw;
+    right: 2.7778vw;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.8333vw;
+}
+
+.sound__button {
+    position: relative;
+    width: 2.2222vw;
+    height: 2.2222vw;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.sound__button:hover {
+    opacity: 1;
+}
+
+.sound__icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.sound__icon--off {
+    display: none;
+}
+
+.sound__button--muted .sound__icon--on {
+    display: none;
+}
+
+.sound__button--muted .sound__icon--off {
+    display: block;
+}
+
+/* ползунок громкости: --filled задаёт js */
+.sound__slider {
+    width: 6.9444vw;
+    height: 0.2083vw;
+    border-radius: 0.1389vw;
+    background: linear-gradient(
+        to right,
+        #FFFFFF 0%,
+        #FFFFFF var(--filled, 60%),
+        rgba(255, 255, 255, 0.25) var(--filled, 60%),
+        rgba(255, 255, 255, 0.25) 100%
+    );
+    cursor: pointer;
+    opacity: 0.8;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: opacity 0.2s ease;
+}
+
+.sound__slider:hover {
+    opacity: 1;
+}
+
+.sound__slider::-webkit-slider-thumb {
+    width: 0.8333vw;
+    height: 0.8333vw;
+    border: none;
+    border-radius: 50%;
+    background-color: #FFFFFF;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.sound__slider::-moz-range-thumb {
+    width: 0.8333vw;
+    height: 0.8333vw;
+    border: none;
+    border-radius: 50%;
+    background-color: #FFFFFF;
+    cursor: pointer;
+}
+
+
+/* ---------- первый экран ---------- */
+
+/* секция высокая, а экран внутри «прилипает» — пока листаем, глаза закрываются и меняется текст */
+.hero {
+    position: relative;
+    width: 100vw;
+    height: 1000vh;
+    background-color: #0F0F0F;
+}
+
+.hero__screen {
+    position: sticky;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0F0F0F;
+    overflow: hidden;
+}
+
+.hero__title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+    font-family: "Kom Post", sans-serif;
+    font-size: 2.4306vw;
+    line-height: 2.9167vw;
+    font-weight: 400;
+    color: #FFFFFF;
+    text-align: center;
+    white-space: nowrap;
+}
+
+
+/* ---------- печатная машинка ---------- */
+
+.hero__char {
+    opacity: 0;
+}
+
+.hero__char--visible {
+    opacity: 1;
+}
+
+/* курсор не занимает места, поэтому текст не сдвигается, пока он бегает */
+.hero__cursor {
+    display: inline-block;
+    width: 0.1389vw;
+    height: 2.4306vw;
+    margin-right: -0.1389vw;
+    vertical-align: middle;
+    background-color: #FFFFFF;
+    animation: cursor-blink 0.9s steps(1) infinite;
+}
+
+.hero__cursor--done {
+    animation: cursor-blink 0.9s steps(1) 4 forwards;
+}
+
+@keyframes cursor-blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+/* ---------- крипота на фоне ---------- */
+
+/* тусклое пятно света, которое тянется за курсором (координаты задаёт js) */
+.hero__light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle 27.7778vw at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(255, 255, 255, 0.07) 0%,
+        rgba(255, 255, 255, 0.025) 45%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    pointer-events: none;
+}
+
+/* в конце скролла экран полностью уходит в черноту (--dark от 0 до 1 задаёт js) */
+.hero__darkness {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: var(--dark, 0);
+    pointer-events: none;
+}
+
+/* в темноте остаётся только свет от курсора — поярче, чем обычный */
+.hero__dark-light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle 27.7778vw at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.04) 45%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    opacity: calc(var(--dark, 0) * (1 - var(--game, 0)));
+    pointer-events: none;
+}
+
+/* тёмные края экрана, медленно «дышат» */
+.hero__vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0) 35%,
+        rgba(0, 0, 0, 0.55) 75%,
+        rgba(0, 0, 0, 0.9) 100%
+    );
+    pointer-events: none;
+    animation: vignette-breath 6s ease-in-out infinite;
+}
+
+/* плёночное зерно */
+.hero__noise {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    z-index: 7;
+    width: 200%;
+    height: 200%;
+    background-image: url("../img/noise.svg");
+    background-size: 13.8889vw 13.8889vw;
+    background-repeat: repeat;
+    opacity: 0.09;
+    pointer-events: none;
+    animation: noise-shake 0.6s steps(6) infinite;
+}
+
+/* моргание лампы: класс вешает js в случайный момент */
+.hero--flicker .eye {
+    animation: lamp-flicker 0.45s linear;
+}
+
+.hero--flicker .hero__title {
+    animation: lamp-flicker 0.45s linear;
+}
+
+/* иногда (не каждый раз) текст при моргании ещё и дёргается с красно-синим двоением */
+.hero--flicker.hero--glitch .hero__title {
+    animation: lamp-flicker 0.45s linear, title-glitch 0.45s steps(1);
+}
+
+@keyframes vignette-breath {
+    0% {
+        opacity: 0.85;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.85;
+    }
+}
+
+@keyframes noise-shake {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    20% {
+        transform: translate(-3.4722vw, 2.0833vw);
+    }
+
+    40% {
+        transform: translate(2.7778vw, -3.4722vw);
+    }
+
+    60% {
+        transform: translate(-2.0833vw, -1.3889vw);
+    }
+
+    80% {
+        transform: translate(3.4722vw, 2.7778vw);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes title-glitch {
+    0% {
+        transform: translate(-50%, -50%);
+        text-shadow: none;
+    }
+
+    15% {
+        transform: translate(calc(-50% + 0.2778vw), -50%);
+        text-shadow: -0.2083vw 0 rgba(255, 0, 40, 0.7), 0.2083vw 0 rgba(0, 120, 255, 0.7);
+    }
+
+    30% {
+        transform: translate(calc(-50% - 0.3472vw), calc(-50% + 0.0694vw));
+        text-shadow: 0.2778vw 0 rgba(255, 0, 40, 0.7), -0.2778vw 0 rgba(0, 120, 255, 0.7);
+    }
+
+    50% {
+        transform: translate(-50%, -50%);
+        text-shadow: none;
+    }
+
+    65% {
+        transform: translate(calc(-50% + 0.1389vw), -50%);
+        text-shadow: -0.1389vw 0 rgba(255, 0, 40, 0.6), 0.1389vw 0 rgba(0, 120, 255, 0.6);
+    }
+
+    80% {
+        transform: translate(-50%, -50%);
+        text-shadow: none;
+    }
+
+    100% {
+        transform: translate(-50%, -50%);
+        text-shadow: none;
+    }
+}
+
+@keyframes lamp-flicker {
+    0% {
+        opacity: 1;
+    }
+
+    10% {
+        opacity: 0.15;
+    }
+
+    20% {
+        opacity: 0.9;
+    }
+
+    35% {
+        opacity: 0.05;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    60% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* ---------- игровой экран ---------- */
+
+/* проявляется из темноты (--game от 0 до 1 задаёт js) */
+.game {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    opacity: var(--game, 0);
+    pointer-events: none;
+}
+
+/* фон от самого верха экрана, лишнее обрезается снизу */
+.game__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+}
+
+/* затемнение фона: чёрный с непрозрачностью 40% */
+.game__shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0.4;
+}
+
+
+/* персонажи: выходят из-за края экрана по скроллу (сдвиг и шаги задаёт js) */
+.game__character {
+    position: absolute;
+    bottom: 2.0833vw;
+    transform-origin: 50% 100%;
+    will-change: transform;
+}
+
+/* главный герой — слева */
+.game__character--boy {
+    left: 8.3333vw;
+    width: 23.1944vw;
+    height: 41.2500vw;
+    transform: translateX(-140%);
+}
+
+/* у героя две позы: картинки лежат друг на друге и меняются плавным переходом */
+.game__pose {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transition: opacity 0.6s ease;
+}
+
+.game__pose--1 {
+    width: 100%;
+    opacity: 1;
+}
+
+/* вторая поза шире первой, но выровнена по тому же левому краю.
+   max-width: none — иначе reset.css не даёт ей вылезти за рамку и мальчик сжимается */
+.game__pose--2 {
+    width: 29.3750vw;
+    max-width: none;
+    opacity: 0;
+}
+
+.game__character--pose-2 .game__pose--1 {
+    opacity: 0;
+}
+
+.game__character--pose-2 .game__pose--2 {
+    opacity: 1;
+}
+
+/* таксист — справа, ближе к краю (тот же масштаб, что у героя) */
+.game__character--taxi {
+    right: 8.3333vw;
+    width: 12.9167vw;
+    height: 42.2917vw;
+    transform: translateX(220%);
+}
+
+
+/* плашки с репликами: хвостик смотрит на голову того, кто говорит */
+.speech {
+    position: absolute;
+    width: 31.9444vw;
+    height: 11.3194vw;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.speech--boy {
+    bottom: 36.1111vw;
+    left: 27.4306vw;
+    transform-origin: 0% 100%;
+}
+
+/* у таксиста плашка зеркальная: хвостик справа внизу */
+.speech--taxi {
+    right: 21.5278vw;
+    bottom: 36.1111vw;
+    transform-origin: 100% 100%;
+}
+
+.speech--visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.speech__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* область текста = тело плашки без хвостика, текст ровно по центру */
+.speech__text {
+    position: absolute;
+    top: 3.3%;
+    right: 2.6%;
+    bottom: 8.6%;
+    left: 10.6%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.3889vw;
+}
+
+.speech__inner {
+    font-family: "Kom Post", sans-serif;
+    font-size: 1.6667vw;
+    line-height: 2.2222vw;
+    font-weight: 400;
+    color: #686868;
+    text-align: center;
+}
+
+/* в зеркальной плашке отражаем только картинку, а область текста сдвигаем от хвостика */
+.speech--taxi .speech__bg {
+    transform: scaleX(-1);
+}
+
+.speech--taxi .speech__text {
+    right: 10.6%;
+    left: 2.6%;
+}
+
+.speech__char {
+    opacity: 0;
+}
+
+.speech__char--visible {
+    opacity: 1;
+}
+
+
+/* ---------- шапка игры (общая для всех игровых экранов) ---------- */
+
+.game-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9;
+    width: 100vw;
+    height: 5.9028vw;
+    opacity: var(--game, 0);
+    pointer-events: none;
+}
+
+.game-header__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* слева: деньги и безопасность */
+.game-header__stats {
+    position: absolute;
+    top: 0;
+    left: 2.7778vw;
+    display: flex;
+    align-items: center;
+    gap: 3.4722vw;
+    height: 4.8611vw;
+}
+
+.game-header__stat {
+    display: flex;
+    align-items: center;
+    gap: 0.8333vw;
+}
+
+/* все тексты шапки одного размера — 38px на десктопе */
+.game-header__text {
+    font-family: "Kom Post", sans-serif;
+    font-size: 2.6389vw;
+    line-height: 2.6389vw;
+    font-weight: 400;
+    color: #3E3E3E;
+    white-space: nowrap;
+}
+
+/* значки вместо подписей «на счету» и «уровень безопасности» */
+.game-header__icon {
+    display: block;
+    flex-shrink: 0;
+}
+
+.game-header__icon--money {
+    width: 3.6111vw;
+    height: 3.4722vw;
+}
+
+.game-header__icon--safety {
+    width: 2.7257vw;
+    height: 3.4722vw;
+}
+
+/* шкала безопасности: пустые ячейки + залитые, обрезанные по --level */
+.game-header__scale {
+    position: relative;
+    width: 16.2500vw;
+    height: 0.9028vw;
+    margin-left: 0.6944vw;
+}
+
+.game-header__scale-empty {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.game-header__scale-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    clip-path: inset(0 calc(100% - var(--level, 0%)) 0 0);
+    transition: clip-path 0.6s ease;
+}
+
+/* справа: глава */
+.game-header__chapter {
+    position: absolute;
+    top: 0;
+    right: 2.7778vw;
+    display: flex;
+    align-items: center;
+    gap: 1.0417vw;
+    height: 4.8611vw;
+}
+
+
+/* ---------- глаз: общее ---------- */
+
+.eye {
+    position: absolute;
+    z-index: 1;
+}
+
+.eye--mirror {
+    transform: scaleX(-1);
+}
+
+/* --close от 0 (открыт) до 1 (закрыт) задаёт js по скроллу: открытый глаз плавно перетекает в закрытый */
+.eye__open {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: calc(1 - var(--close, 0));
+}
+
+.eye__closed {
+    position: absolute;
+    opacity: var(--close, 0);
+    pointer-events: none;
+}
+
+.eye__base {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.eye__socket {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.eye__pupil {
+    position: absolute;
+    will-change: transform;
+}
+
+.eye__lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+
+/* ---------- глаз a (eye1) ---------- */
+
+.eye--a {
+    width: 25.9028vw;
+    height: 16.3889vw;
+}
+
+.eye__socket--a {
+    clip-path: polygon(
+        15.01% 54.24%,
+        16.62% 49.58%,
+        21.98% 46.19%,
+        33.78% 42.37%,
+        50.94% 40.25%,
+        63.27% 42.37%,
+        70.24% 43.22%,
+        76.94% 46.61%,
+        82.04% 51.69%,
+        77.75% 61.86%,
+        71.05% 67.80%,
+        61.93% 72.88%,
+        56.03% 75.85%,
+        45.58% 75.85%,
+        34.85% 73.31%,
+        27.61% 70.76%,
+        23.32% 67.37%,
+        15.28% 60.59%
+    );
+}
+
+/* закрытый глаз a: веко по ширине и положению совпадает с разрезом открытого */
+.eye__closed--a {
+    top: 3.8542vw;
+    left: 1.6667vw;
+    width: 22.7778vw;
+    height: 15.2361vw;
+}
+
+.eye__pupil--a {
+    top: 6.7797vw;
+    left: 8.4210vw;
+    width: 8.1944vw;
+    height: 4.7917vw;
+}
+
+
+/* ---------- глаз b (eye2) ---------- */
+
+.eye--b {
+    width: 22.0833vw;
+    height: 18.3333vw;
+}
+
+.eye__socket--b {
+    clip-path: polygon(
+        15.72% 57.20%,
+        20.13% 55.30%,
+        27.99% 51.52%,
+        60.06% 42.80%,
+        72.33% 40.91%,
+        81.76% 39.77%,
+        79.25% 48.86%,
+        73.27% 55.68%,
+        64.78% 62.50%,
+        55.97% 68.18%,
+        47.48% 73.11%,
+        37.74% 75.76%,
+        26.73% 76.89%,
+        21.38% 72.35%,
+        17.61% 64.39%
+    );
+}
+
+/* закрытый глаз b повёрнут, чтобы повторять наклон открытого */
+.eye__closed--b {
+    top: 3.2639vw;
+    left: 0.9028vw;
+    width: 19.1667vw;
+    height: 11.9444vw;
+    transform: rotate(-17deg);
+    transform-origin: 51.45% 48.26%;
+}
+
+.eye__pupil--b {
+    top: 7.0402vw;
+    left: 5.6707vw;
+    width: 8.9583vw;
+    height: 7.0139vw;
+}
+
+
+/* ---------- глаз c (eye3) ---------- */
+
+.eye--c {
+    width: 18.4028vw;
+    height: 10.4861vw;
+}
+
+.eye__socket--c {
+    clip-path: polygon(
+        21.89% 29.80%,
+        38.49% 37.75%,
+        75.09% 56.95%,
+        86.42% 61.59%,
+        88.68% 66.89%,
+        87.92% 72.85%,
+        80.38% 74.83%,
+        75.47% 74.83%,
+        62.64% 75.50%,
+        45.28% 69.54%,
+        32.45% 61.59%,
+        29.06% 54.97%,
+        25.66% 46.36%,
+        23.40% 38.41%
+    );
+}
+
+/* закрытый верхний глаз повёрнут, чтобы повторять наклон открытого */
+.eye__closed--c {
+    top: -0.6597vw;
+    left: 0.2153vw;
+    width: 18.7500vw;
+    height: 12.0417vw;
+    transform: rotate(27deg);
+    transform-origin: 48.09% 49.32%;
+}
+
+.eye__pupil--c {
+    top: 4.0356vw;
+    left: 6.9120vw;
+    width: 7.3611vw;
+    height: 3.4028vw;
+}
+
+
+/* ---------- расстановка глаз на первом экране ---------- */
+/* верхние глаза — от верха экрана, средние — от центра экрана, нижний — от низа экрана */
+
+.hero__eye--1 {
+    top: 4.8611vw;
+    left: 27.7778vw;
+}
+
+.hero__eye--2 {
+    top: 4.8611vw;
+    left: 53.8194vw;
+}
+
+.hero__eye--3 {
+    top: calc(50% - 15.2778vw);
+    left: 4.1667vw;
+}
+
+.hero__eye--4 {
+    bottom: 4.1667vw;
+    left: 13.8889vw;
+}
+
+.hero__eye--5 {
+    top: calc(50% - 1.3889vw);
+    left: 70.8333vw;
+}

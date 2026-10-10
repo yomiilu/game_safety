@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра</title>
+
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+
+<body>
+    <main class="page">
+
+        <div class="sound">
+            <button class="sound__button" type="button" aria-label="Выключить звук">
+                <img class="sound__icon sound__icon--on" src="img/sound-on.svg" alt="">
+                <img class="sound__icon sound__icon--off" src="img/sound-off.svg" alt="">
+            </button>
+
+            <input class="sound__slider" type="range" min="0" max="100" step="1" value="60" aria-label="Громкость">
+        </div>
+
+        <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
+        <header class="game-header">
+            <img class="game-header__bg" src="img/header.svg" alt="">
+
+            <div class="game-header__stats">
+                <div class="game-header__stat">
+                    <img class="game-header__icon game-header__icon--money" src="img/money-icon.svg" alt="На счету">
+                    <span class="game-header__text game-header__money">320$</span>
+                </div>
+
+                <div class="game-header__stat">
+                    <img class="game-header__icon game-header__icon--safety" src="img/safety-icon.svg" alt="Уровень безопасности">
+                    <span class="game-header__text game-header__safety">97%</span>
+
+                    <div class="game-header__scale">
+                        <img class="game-header__scale-empty" src="img/scale.svg" alt="">
+                        <img class="game-header__scale-fill" src="img/scale-fill.svg" alt="">
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-header__chapter">
+                <span class="game-header__text game-header__chapter-number">глава 1/4</span>
+                <span class="game-header__text game-header__chapter-title">“прибытие”</span>
+            </div>
+        </header>
+
+        <section class="hero">
+
+            <div class="hero__screen">
+
+                <div class="hero__light"></div>
+
+                <div class="eye eye--c hero__eye hero__eye--1" data-type="c">
+                    <div class="eye__open">
+                        <img class="eye__base" src="img/eye3.svg" alt="">
+                        <div class="eye__socket eye__socket--c">
+                            <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                        </div>
+                        <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                    </div>
+                    <img class="eye__closed eye__closed--c" src="img/closed3.svg" alt="">
+                </div>
+
+                <div class="eye eye--c eye--mirror hero__eye hero__eye--2" data-type="c">
+                    <div class="eye__open">
+                        <img class="eye__base" src="img/eye3.svg" alt="">
+                        <div class="eye__socket eye__socket--c">
+                            <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                        </div>
+                        <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                    </div>
+                    <img class="eye__closed eye__closed--c" src="img/closed3.svg" alt="">
+                </div>
+
+                <div class="eye eye--b hero__eye hero__eye--3" data-type="b">
+                    <div class="eye__open">
+                        <img class="eye__base" src="img/eye2.svg" alt="">
+                        <div class="eye__socket eye__socket--b">
+                            <img class="eye__pupil eye__pupil--b" src="img/pupil2.svg" alt="">
+                        </div>
+                        <img class="eye__lines" src="img/eye2-lines.svg" alt="">
+                    </div>
+                    <img class="eye__closed eye__closed--b" src="img/closed2.svg" alt="">
+                </div>
+
+                <div class="eye eye--a hero__eye hero__eye--4" data-type="a">
+                    <div class="eye__open">
+                        <img class="eye__base" src="img/eye1.svg" alt="">
+                        <div class="eye__socket eye__socket--a">
+                            <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                        </div>
+                        <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                    </div>
+                    <img class="eye__closed eye__closed--a" src="img/closed1.svg" alt="">
+                </div>
+
+                <div class="eye eye--a eye--mirror hero__eye hero__eye--5" data-type="a">
+                    <div class="eye__open">
+                        <img class="eye__base" src="img/eye1.svg" alt="">
+                        <div class="eye__socket eye__socket--a">
+                            <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                        </div>
+                        <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                    </div>
+                    <img class="eye__closed eye__closed--a" src="img/closed1.svg" alt="">
+                </div>
+
+                <h1 class="hero__title">
+                    никогда не будь уверен
+                    <br>
+                    в собственной безопасности
+                    <br>
+                    во время путешествия
+                </h1>
+
+                <template class="hero__next-text">
+                    попробуй сохранить безопасность
+                    <br>
+                    в путешествии в одиночку
+                    <br>
+                    и не остаться без денег
+                </template>
+
+                <div class="hero__vignette"></div>
+
+                <div class="hero__darkness"></div>
+
+                <div class="hero__dark-light"></div>
+
+                <!-- игровой экран: проявляется из темноты в конце скролла -->
+                <div class="game">
+                    <img class="game__bg" src="img/bg1.svg" alt="">
+                    <div class="game__shade"></div>
+
+                    <!-- главный герой: две позы, между ними плавный переход -->
+                    <div class="game__character game__character--boy">
+                        <img class="game__pose game__pose--1" src="img/main-character.svg" alt="Главный герой">
+                        <img class="game__pose game__pose--2" src="img/main-character-2.svg" alt="">
+                    </div>
+
+                    <img class="game__character game__character--taxi" src="img/taxi-driver.svg" alt="Таксист">
+
+                    <!-- реплики идут по очереди, порядок задан в js (dialogue) -->
+                    <div class="speech speech--boy speech--boy-1">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">наконец-то я в путешествии! Пора вызывать такси, но кажется, ждать придётся целый час…</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--taxi speech--taxi-1">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">хэй, я могу подвезти тебя прямо сейчас до отеля, еще и дешево.</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--taxi speech--taxi-2">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">что думаешь? через час будешь в отеле</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--boy speech--boy-2">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">х-ммм, дай мне подумать</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="hero__noise"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="js/sound.js"></script>
+    <script src="js/game-header.js"></script>
+    <script src="js/script.js"></script>
+</body>
+
+</html>
