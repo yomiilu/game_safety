@@ -6,6 +6,137 @@ body {
     overflow-x: hidden;
 }
 
+/* пока грузится прелоадер, страницу не листаем */
+body.is-loading {
+    overflow: hidden;
+}
+
+
+/* ---------- прелоадер ---------- */
+
+.preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.7778vw;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0F0F0F;
+    opacity: 1;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.preloader--hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* полоса и проценты */
+.preloader__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6667vw;
+}
+
+/* несколько шкал подряд — как одна длинная шкала */
+.preloader__bar {
+    display: flex;
+    gap: 0.5000vw;
+}
+
+.preloader__scale {
+    position: relative;
+    width: 19.5000vw;
+    height: 1.0833vw;
+}
+
+/* шкала тёмная, а фон чёрный — делаем её светлой */
+.preloader__empty {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: invert(1);
+}
+
+.preloader__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: invert(1);
+    clip-path: inset(0 calc(100% - var(--level, 0%)) 0 0);
+}
+
+.preloader__percent {
+    font-family: "Kom Post", sans-serif;
+    font-size: 1.6667vw;
+    line-height: 1.6667vw;
+    font-weight: 400;
+    color: #C1C1C1;
+}
+
+/* кнопка «начать» в плашке: появляется после загрузки под полосой
+   (место под неё занято сразу, поэтому полоса не прыгает) */
+.preloader__start {
+    position: relative;
+    width: 23.1250vw;
+    height: 6.9271vw;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(1.3889vw);
+    transition: opacity 0.5s ease 0.2s, visibility 0.5s ease 0.2s, transform 0.5s ease 0.2s;
+}
+
+.preloader--loaded .preloader__start {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.preloader--loaded .preloader__start:hover {
+    transform: scale(1.05);
+    transition-delay: 0s;
+}
+
+.preloader__start-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.preloader__start-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 92%;
+    font-family: "Kom Post", sans-serif;
+    font-size: 2.6389vw;
+    line-height: 2.6389vw;
+    font-weight: 400;
+    color: #686868;
+}
+
+
 .page {
     position: relative;
     width: 100vw;
@@ -552,6 +683,159 @@ body {
 
 .speech__char--visible {
     opacity: 1;
+}
+
+
+/* ---------- выбор игрока ---------- */
+
+/* игровая сцена темнеет до 90% */
+.game__dim {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.game--choice .game__dim {
+    opacity: 0.9;
+}
+
+.choice {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.7778vw;
+    width: 100%;
+    height: 100%;
+    padding-top: 5.9028vw;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.6s ease 0.3s, visibility 0.6s ease 0.3s;
+}
+
+.choice--visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.choice__title {
+    font-family: "Kom Post", sans-serif;
+    font-size: 2.6389vw;
+    line-height: 2.6389vw;
+    font-weight: 400;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.choice__options {
+    display: flex;
+    gap: 3.4722vw;
+}
+
+/* вариант — рукописная плашка, как кнопка «начать» */
+.choice__option {
+    position: relative;
+    width: 34.7222vw;
+    height: 10.4167vw;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transform: translateY(1.3889vw);
+    transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+/* варианты выезжают снизу по очереди */
+.choice--visible .choice__option {
+    transform: translateY(0);
+    transition-delay: 0.4s;
+}
+
+.choice--visible .choice__option + .choice__option {
+    transition-delay: 0.55s;
+}
+
+.choice--visible .choice__option:hover {
+    transform: scale(1.04) rotate(-1deg);
+    transition-delay: 0s;
+}
+
+.choice--visible .choice__option + .choice__option:hover {
+    transform: scale(1.04) rotate(1deg);
+}
+
+/* после выбора: выбранный вариант остаётся ярким, второй тускнеет */
+.choice--made .choice__option {
+    opacity: 0.3;
+}
+
+.choice--made .choice__option--selected {
+    opacity: 1;
+    transform: scale(1.04);
+}
+
+.choice__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.choice__text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 92%;
+    padding: 0 3.4722vw;
+    font-family: "Kom Post", sans-serif;
+    font-size: 1.6667vw;
+    line-height: 2.2222vw;
+    font-weight: 400;
+    color: #686868;
+    text-align: center;
+}
+
+.choice__hint {
+    font-family: "Kom Post", sans-serif;
+    font-size: 1.2500vw;
+    line-height: 1.2500vw;
+    font-weight: 400;
+    color: #C1C1C1;
+    opacity: 0.7;
+    animation: hint-blink 1.6s ease-in-out infinite;
+}
+
+.choice--made .choice__hint {
+    visibility: hidden;
+}
+
+@keyframes hint-blink {
+    0% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 0.3;
+    }
 }
 
 
