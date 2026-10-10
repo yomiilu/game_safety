@@ -254,7 +254,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 1600vh;
+    height: 1800vh;
     background-color: #0F0F0F;
 }
 
@@ -945,6 +945,221 @@ body.is-street .sound {
     pointer-events: none;
 }
 
+/* ---------- последствия выбора ---------- */
+
+.outcome {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6.2500vw;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.outcome--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* красная тревожная вспышка по краям экрана в момент удара */
+.outcome__flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255, 40, 40, 0) 40%,
+        rgba(255, 40, 40, 0.35) 100%
+    );
+    opacity: 0;
+}
+
+.outcome__flash--on {
+    animation: outcome-flash 0.9s ease-out;
+}
+
+.outcome__text {
+    position: relative;
+    max-width: 55.5556vw;
+    font-family: "Kom Post", sans-serif;
+    font-size: 2.2222vw;
+    line-height: 3.0556vw;
+    font-weight: 400;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.outcome__char {
+    opacity: 0;
+}
+
+.outcome__char--visible {
+    opacity: 1;
+}
+
+/* карточки денег и безопасности: появляются после текста */
+.outcome__stats {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 8.3333vw;
+    opacity: 0;
+    transform: translateY(2.0833vw);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.outcome__stats--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.outcome__stat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.3889vw;
+}
+
+/* значки тёмные — на чёрном делаем их светлыми */
+.outcome__icon {
+    height: 5.5556vw;
+    filter: invert(1);
+}
+
+.outcome__icon--money {
+    width: 5.7639vw;
+}
+
+.outcome__icon--safety {
+    width: 4.3611vw;
+}
+
+.outcome__value {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6944vw;
+    font-family: "Kom Post", sans-serif;
+    font-weight: 400;
+    color: #FFFFFF;
+    transition: color 0.6s ease;
+}
+
+.outcome__number {
+    font-size: 8.3333vw;
+    line-height: 8.3333vw;
+}
+
+.outcome__unit {
+    font-size: 4.1667vw;
+    line-height: 4.1667vw;
+}
+
+/* пока число падает — оно красное и трясётся, значок дрожит */
+.outcome__stat--hit .outcome__value {
+    color: #FF4D4D;
+    animation: outcome-shake 0.09s linear infinite;
+    transition: color 0.1s ease;
+}
+
+.outcome__stat--hit .outcome__icon {
+    animation: outcome-shake 0.12s linear infinite;
+}
+
+/* «−60$» и «−10%» падают сверху и остаются висеть */
+.outcome__delta {
+    position: absolute;
+    top: 4.1667vw;
+    right: -5.5556vw;
+    font-family: "Kom Post", sans-serif;
+    font-size: 2.7778vw;
+    line-height: 2.7778vw;
+    font-weight: 400;
+    color: #FF4D4D;
+    opacity: 0;
+    transform: translateY(-2.7778vw) rotate(-8deg);
+    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.outcome__stat--dropped .outcome__delta {
+    opacity: 1;
+    transform: translateY(0) rotate(-8deg);
+}
+
+/* шкала безопасности: светлая, заливку обрезает js через --level */
+.outcome__scale {
+    position: relative;
+    width: 25.0000vw;
+    height: 1.3889vw;
+    margin-top: 0.6944vw;
+}
+
+.outcome__scale-empty,
+.outcome__scale-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: invert(1);
+}
+
+.outcome__scale-fill {
+    clip-path: inset(0 calc(100% - var(--level, 97%)) 0 0);
+}
+
+.outcome__stat--hit .outcome__scale-fill {
+    filter: invert(36%) sepia(90%) saturate(3000%) hue-rotate(340deg);
+}
+
+@keyframes outcome-shake {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    25% {
+        transform: translate(-0.2083vw, 0.1389vw);
+    }
+
+    50% {
+        transform: translate(0.2083vw, -0.1389vw);
+    }
+
+    75% {
+        transform: translate(-0.1389vw, -0.2083vw);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+@keyframes outcome-flash {
+    0% {
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
 /* деревья на тротуарах: положение, размер и прозрачность задаёт js (по перспективе дороги) */
 .street__tree {
     position: absolute;
@@ -955,6 +1170,11 @@ body.is-street .sound {
 .street--official .street__car--official,
 .street--driver .street__car--driver {
     display: block;
+}
+
+/* экран выбора остаётся под улицей — не даём ему ловить клики */
+body.is-street .choice {
+    pointer-events: none;
 }
 
 /* на улице шапки нет */
