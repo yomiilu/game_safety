@@ -805,6 +805,11 @@ function updateDialogue(progress) {
         target = currentLine;
     }
 
+    // во время выбора плашек на экране нет
+    if (choice.isShown) {
+        target = -1;
+    }
+
     if (target !== currentLine) {
         if (currentLine >= 0) {
             hideLine(lines[currentLine]);
@@ -817,10 +822,78 @@ function updateDialogue(progress) {
         currentLine = target;
     }
 
-    // поза мальчика зависит от того, какая реплика на экране
-    const pose = currentLine >= 0 ? lines[currentLine].pose : 1;
+    // поза мальчика зависит от того, какая реплика на экране (во время выбора — задумчивая)
+    let pose = currentLine >= 0 ? lines[currentLine].pose : 1;
+
+    if (choice.isShown) {
+        pose = 2;
+    }
 
     boyPoses.classList.toggle("game__character--pose-2", pose === 2);
+}
+
+
+// ---------- выбор игрока ----------
+
+// с какой отметки прокрутки появляется выбор (и только когда последняя реплика допечатана)
+const choiceFrom = 8.4;
+
+const choice = {
+    element: null,
+    game: null,
+    options: [],
+    isShown: false,
+    // что выбрал игрок: "driver" — частник, "official" — официальное такси, null — ещё не выбрал
+    selected: null
+};
+
+
+function setupChoice() {
+    choice.element = document.querySelector(".choice");
+    choice.game = document.querySelector(".game");
+    choice.options = document.querySelectorAll(".choice__option");
+
+    choice.options.forEach(function (option) {
+        option.addEventListener("click", function () {
+            selectChoice(option);
+        });
+    });
+}
+
+
+function selectChoice(option) {
+    choice.selected = option.dataset.choice;
+
+    choice.options.forEach(function (otherOption) {
+        otherOption.classList.toggle("choice__option--selected", otherOption === option);
+    });
+
+    choice.element.classList.add("choice--made");
+
+    // сообщаем остальному коду, что выбор сделан (пригодится для следующих сцен)
+    document.dispatchEvent(new CustomEvent("player-choice", {
+        detail: {
+            choice: choice.selected
+        }
+    }));
+}
+
+
+function updateChoice(progress) {
+    const lastLine = lines[lines.length - 1];
+
+    if (!choice.isShown && progress >= choiceFrom && lastLine.isFinished) {
+        choice.isShown = true;
+        choice.element.classList.add("choice--visible");
+        choice.game.classList.add("game--choice");
+    }
+
+    // прокрутили назад — выбор прячется, снова видна последняя реплика
+    if (choice.isShown && progress < choiceFrom - speechGap) {
+        choice.isShown = false;
+        choice.element.classList.remove("choice--visible");
+        choice.game.classList.remove("game--choice");
+    }
 }
 
 
@@ -842,6 +915,7 @@ function animate(now) {
         updateCharacter(character, progress);
     });
 
+    updateChoice(progress);
     updateDialogue(progress);
 
     requestAnimationFrame(animate);
@@ -877,7 +951,9 @@ document.addEventListener("DOMContentLoaded", function () {
     setupTypewriter();
     setupCharacters();
     setupDialogue();
-    startIntroText();
+    setupChoice();
+    // первый текст начинает печататься после клика по «начать» в прелоадере
+    setupPreloader(startIntroText);
 
     scheduleFlicker();
 

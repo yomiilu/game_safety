@@ -13,6 +13,35 @@
 </head>
 
 <body>
+    <!-- прелоадер: шкалы заполняются по мере загрузки, потом кнопка «начать» -->
+    <div class="preloader">
+        <div class="preloader__loading">
+            <div class="preloader__bar">
+                <div class="preloader__scale">
+                    <img class="preloader__empty" src="img/scale.svg" alt="">
+                    <img class="preloader__fill" src="img/scale-fill.svg" alt="">
+                </div>
+
+                <div class="preloader__scale">
+                    <img class="preloader__empty" src="img/scale.svg" alt="">
+                    <img class="preloader__fill" src="img/scale-fill.svg" alt="">
+                </div>
+
+                <div class="preloader__scale">
+                    <img class="preloader__empty" src="img/scale.svg" alt="">
+                    <img class="preloader__fill" src="img/scale-fill.svg" alt="">
+                </div>
+            </div>
+
+            <p class="preloader__percent">0%</p>
+        </div>
+
+        <button class="preloader__start" type="button">
+            <img class="preloader__start-bg" src="img/start.svg" alt="">
+            <span class="preloader__start-text">начать</span>
+        </button>
+    </div>
+
     <main class="page">
 
         <div class="sound">
@@ -165,7 +194,7 @@
                     <div class="speech speech--taxi speech--taxi-2">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">что думаешь? через час будешь в отеле</span>
+                            <span class="speech__inner">что думаешь? через час будешь в отеле лежать и вкусно есть.</span>
                         </p>
                     </div>
 
@@ -174,6 +203,27 @@
                         <p class="speech__text">
                             <span class="speech__inner">х-ммм, дай мне подумать</span>
                         </p>
+                    </div>
+
+                    <!-- выбор игрока: экран темнеет, появляются два варианта -->
+                    <div class="game__dim"></div>
+
+                    <div class="choice">
+                        <p class="choice__title">что ты выберешь?</p>
+
+                        <div class="choice__options">
+                            <button class="choice__option" type="button" data-choice="driver">
+                                <img class="choice__bg" src="img/start.svg" alt="">
+                                <span class="choice__text">поехать с мужчиной, который предложил хорошую цену, и не стоять в очередях</span>
+                            </button>
+
+                            <button class="choice__option" type="button" data-choice="official">
+                                <img class="choice__bg" src="img/start.svg" alt="">
+                                <span class="choice__text">подождать, но поехать на официальном такси с неизвестной ценой</span>
+                            </button>
+                        </div>
+
+                        <p class="choice__hint">нажми на вариант</p>
                     </div>
                 </div>
 
@@ -186,6 +236,7 @@
     </main>
 
     <script src="js/sound.js"></script>
+    <script src="js/preloader.js"></script>
     <script src="js/game-header.js"></script>
     <script src="js/script.js"></script>
 </body>
