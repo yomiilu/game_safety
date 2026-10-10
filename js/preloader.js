@@ -95,13 +95,13 @@ function trackAudio() {
         }
     }
 
-    if (sound.typewriter.readyState >= 4) {
+    if (sound.channels.typewriter.audio.readyState >= 4) {
         done();
         return;
     }
 
-    sound.typewriter.addEventListener("canplaythrough", done, { once: true });
-    sound.typewriter.addEventListener("error", done, { once: true });
+    sound.channels.typewriter.audio.addEventListener("canplaythrough", done, { once: true });
+    sound.channels.typewriter.audio.addEventListener("error", done, { once: true });
 
     setTimeout(done, audioWaitLimit);
 }

@@ -266,17 +266,34 @@
                             </button>
                         </div>
 
-                        <p class="choice__hint">нажми на вариант</p>
                     </div>
                 </div>
 
                 <!-- сцена 2: улица, проявляется после выбора. машина зависит от выбора -->
                 <div class="street">
-                    <img class="street__bg" src="img/bg2.svg" alt="">
-                    <div class="street__shade"></div>
+                    <!-- сцена с пропорциями фона: машина и деревья привязаны к картинке, а не к экрану -->
+                    <div class="street__stage">
+                        <img class="street__bg" src="img/bg2.svg" alt="">
+                        <div class="street__shade"></div>
 
-                    <img class="street__car street__car--official" src="img/car-taxi.svg" alt="Официальное такси">
-                    <img class="street__car street__car--driver" src="img/car-private.svg" alt="Машина частника">
+                        <!-- деревья на тротуарах: при поездке уезжают вдаль, снизу выплывают новые.
+                             data-lane — по какому тротуару идёт, data-depth — насколько дерево далеко в начале (1 — как на макете) -->
+                        <img class="street__tree" src="img/tree1.svg" alt="" data-lane="left" data-depth="1">
+                        <img class="street__tree" src="img/tree1.svg" alt="" data-lane="left" data-depth="-0.2">
+                        <img class="street__tree" src="img/tree1.svg" alt="" data-lane="left" data-depth="-1.4">
+                        <img class="street__tree" src="img/tree2.svg" alt="" data-lane="right-1" data-depth="1">
+                        <img class="street__tree" src="img/tree2.svg" alt="" data-lane="right-1" data-depth="-0.2">
+                        <img class="street__tree" src="img/tree2.svg" alt="" data-lane="right-1" data-depth="-1.4">
+                        <img class="street__tree" src="img/tree3.svg" alt="" data-lane="right-2" data-depth="1">
+                        <img class="street__tree" src="img/tree3.svg" alt="" data-lane="right-2" data-depth="0.4">
+                        <img class="street__tree" src="img/tree3.svg" alt="" data-lane="right-2" data-depth="-0.8">
+
+                        <img class="street__car street__car--official" src="img/car-taxi.svg" alt="Официальное такси">
+                        <img class="street__car street__car--driver" src="img/car-private.svg" alt="Машина частника">
+                    </div>
+
+                    <!-- после поездки экран уходит в черноту (дальше — следующая сцена) -->
+                    <div class="street__blackout"></div>
                 </div>
 
                 <div class="hero__noise"></div>
