@@ -209,6 +209,49 @@
                     <div class="game__dim"></div>
 
                     <div class="choice">
+                        <!-- глаза следят за курсором, пока игрок выбирает -->
+                        <div class="choice__eyes">
+                            <div class="eye eye--a eye--always-open choice__eye choice__eye--1" data-type="a">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye1.svg" alt="">
+                                    <div class="eye__socket eye__socket--a">
+                                        <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--b eye--mirror eye--always-open choice__eye choice__eye--2" data-type="b">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye2.svg" alt="">
+                                    <div class="eye__socket eye__socket--b">
+                                        <img class="eye__pupil eye__pupil--b" src="img/pupil2.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye2-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--c eye--always-open choice__eye choice__eye--3" data-type="c">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye3.svg" alt="">
+                                    <div class="eye__socket eye__socket--c">
+                                        <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--a eye--mirror eye--always-open choice__eye choice__eye--4" data-type="a">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye1.svg" alt="">
+                                    <div class="eye__socket eye__socket--a">
+                                        <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+
                         <p class="choice__title">что ты выберешь?</p>
 
                         <div class="choice__options">
@@ -225,6 +268,15 @@
 
                         <p class="choice__hint">нажми на вариант</p>
                     </div>
+                </div>
+
+                <!-- сцена 2: улица, проявляется после выбора. машина зависит от выбора -->
+                <div class="street">
+                    <img class="street__bg" src="img/bg2.svg" alt="">
+                    <div class="street__shade"></div>
+
+                    <img class="street__car street__car--official" src="img/car-taxi.svg" alt="Официальное такси">
+                    <img class="street__car street__car--driver" src="img/car-private.svg" alt="Машина частника">
                 </div>
 
                 <div class="hero__noise"></div>
