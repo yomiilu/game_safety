@@ -320,6 +320,7 @@ const nextTextFrom = 1;
 const prevTextFrom = 0.8;
 
 const typewriter = {
+    isTyping: false,
     title: null,
     cursor: null,
     sentences: [],
@@ -399,7 +400,11 @@ function showSentence(sentenceIndex) {
     const cursor = typewriter.cursor;
 
     cursor.classList.remove("hero__cursor--done");
-    startTypewriterSound();
+    typewriter.isTyping = true;
+
+    if (isTitleOnScreen()) {
+        startTypewriterSound("title");
+    }
 
     function eraseNextChar() {
         if (runId !== typewriter.runId) {
@@ -431,7 +436,8 @@ function showSentence(sentenceIndex) {
 
         if (index >= typewriter.chars.length) {
             cursor.classList.add("hero__cursor--done");
-            stopTypewriterSound();
+            typewriter.isTyping = false;
+            stopTypewriterSound("title");
             return;
         }
 
@@ -461,7 +467,26 @@ function showSentence(sentenceIndex) {
 }
 
 
+// заголовок первого экрана виден, пока экран не начал уходить в черноту
+function isTitleOnScreen() {
+    return getScrollProgress() < darkStart;
+}
+
+
 function updateText(progress) {
+    // звук печати заголовка — только пока заголовок на экране
+    if (typewriter.isTyping) {
+        const isOnScreen = progress < darkStart;
+
+        if (!isOnScreen && sound.typewriterOwner === "title") {
+            stopTypewriterSound("title");
+        }
+
+        if (isOnScreen && !sound.isTyping) {
+            startTypewriterSound("title");
+        }
+    }
+
     if (typewriter.shownSentence === -1) {
         return;
     }
@@ -721,7 +746,7 @@ function showLine(line) {
 
         if (index >= line.chars.length) {
             line.isFinished = true;
-            stopTypewriterSound();
+            stopTypewriterSound(line.selector);
             return;
         }
 
@@ -745,7 +770,7 @@ function showLine(line) {
             return;
         }
 
-        startTypewriterSound();
+        startTypewriterSound(line.selector);
         typeNextChar(0);
     }, speechTypingDelay);
 }
@@ -755,7 +780,7 @@ function hideLine(line) {
     // если реплику прервали посреди печати — потом начнём её заново
     if (!line.isFinished) {
         setLineCharsVisible(line, false);
-        stopTypewriterSound();
+        stopTypewriterSound(line.selector);
     }
 
     line.runId = line.runId + 1;
@@ -857,7 +882,7 @@ function skipCurrentLine() {
     line.isFinished = true;
 
     setLineCharsVisible(line, true);
-    stopTypewriterSound();
+    stopTypewriterSound(line.selector);
 }
 
 
@@ -950,12 +975,290 @@ function showStreet(selected) {
     street.classList.add("street--visible");
 
     document.body.classList.add("is-street");
+
+    // поездка начинается с того места, где сделан выбор; дальше можно листать
+    drive.start = getScrollProgress();
+    drive.isActive = true;
+
+    startCarSound();
+    drive.isSoundOn = true;
+    document.body.classList.remove("is-choice-locked");
 }
 
 
 function hideStreet() {
     street.classList.remove("street--visible");
     document.body.classList.remove("is-street");
+
+    drive.isActive = false;
+    drive.current = 0;
+    streetBlackout.style.opacity = 0;
+
+    stopCarSound();
+    drive.isSoundOn = false;
+}
+
+
+// ---------- поездка по улице ----------
+// машина медленно едет к нам, деревья уезжают вдаль к точке схода дороги, снизу выплывают новые.
+// все координаты — в % от сцены улицы (она повторяет пропорции фона)
+
+// точка схода дороги на фоне
+const vanishX = 15.75;
+const vanishY = 33.7;
+
+// пропорции сцены (ширина / высота фона) — нужны, чтобы пересчитать высоту картинок в %
+const stageRatio = 1556 / 898;
+
+// тротуары: где стоит основание дерева «на макете» (глубина 1) и какой оно там высоты
+const treeLanes = {
+    "left": {
+        baseX: 7.125,
+        baseY: 75.39,
+        height: 62.89
+    },
+    "right-1": {
+        baseX: 71.425,
+        baseY: 51.97,
+        height: 46.07
+    },
+    "right-2": {
+        baseX: 87.525,
+        baseY: 57.18,
+        height: 49.88
+    }
+};
+
+// виды деревьев: картинка и её пропорции (высота / ширина)
+const treeTypes = [
+    {
+        src: "img/tree1.svg",
+        ratio: 572 / 327
+    },
+    {
+        src: "img/tree2.svg",
+        ratio: 453 / 253
+    },
+    {
+        src: "img/tree3.svg",
+        ratio: 606 / 281
+    }
+];
+
+// длина поездки в экранах прокрутки и насколько за это время деревья уезжают вдаль
+const driveLength = 4;
+const driveDistance = 3.3;
+
+// плавность: поездка догоняет скролл, а не дёргается вместе с колесом мыши
+const driveSmoothness = 0.06;
+
+// насколько машина «подъезжает» к нам за всю поездку (1.28 — вырастает на 28%)
+const carApproach = 1.28;
+
+// тряска машины: насколько подпрыгивает (в % своей высоты) и как часто (раз в секунду)
+const carBounce = 0.35;
+const carBounceSpeed = 9;
+
+// когда дерево растворяется вдали: при каком размере начинает и при каком исчезает совсем
+const treeFadeFrom = 0.55;
+const treeFadeTo = 0.3;
+
+// когда дерево выплывает снизу: при каком размере оно ещё полупрозрачное и с какой прозрачностью
+const treeAppearFrom = 2.2;
+const treeAppearTo = 1.3;
+const treeAppearOpacity = 0.4;
+
+// деревья идут по кругу: на какой глубине дерево уже полностью растворилось
+// и на сколько его отодвинуть назад (3 дерева на тротуаре × расстояние 1.2 между ними)
+const treeRespawnDepth = 1 / treeFadeTo;
+const treeCyclePeriod = 3.6;
+
+// после поездки улица уходит в черноту (в экранах прокрутки)
+const blackoutDelay = 0.2;
+const blackoutLength = 0.8;
+
+let streetBlackout = null;
+
+const drive = {
+    isActive: false,
+    isSoundOn: false,
+    start: 0,
+    current: 0,
+    trees: [],
+    cars: []
+};
+
+
+function setupDrive() {
+    // какое дерево последним встало на каждый тротуар — следующее будет другим
+    const lastTypeOnLane = {};
+
+    document.querySelectorAll(".street__tree").forEach(function (element) {
+        const depth = Number(element.dataset.depth);
+        const laneName = element.dataset.lane;
+
+        // деревья с макета (глубина 1) остаются как есть, остальные — случайного вида,
+        // но не такого же, как предыдущее дерево на этом тротуаре
+        let type = treeTypes.find(function (treeType) {
+            return element.getAttribute("src") === treeType.src;
+        });
+
+        if (depth !== 1) {
+            const otherTypes = treeTypes.filter(function (treeType) {
+                return treeType !== lastTypeOnLane[laneName];
+            });
+
+            type = otherTypes[Math.floor(Math.random() * otherTypes.length)];
+            element.src = type.src;
+        }
+
+        lastTypeOnLane[laneName] = type;
+
+        drive.trees.push({
+            element: element,
+            lane: treeLanes[element.dataset.lane],
+            type: type,
+            depth: depth,
+            // сколько раз дерево уже уехало вдаль и вернулось снизу
+            cycle: 0
+        });
+    });
+
+    // запоминаем, какое дерево последним выплывет на каждом тротуаре
+    Object.keys(treeLanes).forEach(function (laneName) {
+        treeLanes[laneName].lastSpawned = lastTypeOnLane[laneName];
+    });
+
+    drive.cars = document.querySelectorAll(".street__car");
+    streetBlackout = document.querySelector(".street__blackout");
+
+    // расставляем деревья, как на макете, ещё до поездки
+    updateTrees(0);
+}
+
+
+// дерево на глубине depth: чем дальше, тем меньше и ближе к точке схода
+// дерево уехало вдаль и растворилось — возвращаем его вниз другим видом
+function respawnTree(tree) {
+    const lane = tree.lane;
+
+    const otherTypes = treeTypes.filter(function (treeType) {
+        return treeType !== lane.lastSpawned;
+    });
+
+    tree.type = otherTypes[Math.floor(Math.random() * otherTypes.length)];
+    tree.element.src = tree.type.src;
+
+    lane.lastSpawned = tree.type;
+}
+
+
+function placeTree(tree, distance) {
+    let depth = tree.depth + distance;
+    let cycle = 0;
+
+    // деревья идут по кругу: растворилось вдали — снова выплывает снизу
+    while (depth > treeRespawnDepth) {
+        depth = depth - treeCyclePeriod;
+        cycle = cycle + 1;
+    }
+
+    if (cycle !== tree.cycle) {
+        tree.cycle = cycle;
+        respawnTree(tree);
+    }
+
+    // ещё не выехало снизу экрана
+    if (depth <= 0.25) {
+        tree.element.style.opacity = 0;
+        return;
+    }
+
+    const scale = 1 / depth;
+    const lane = tree.lane;
+
+    // все деревья на одном тротуаре одного роста, ширина — по пропорциям картинки
+    const height = lane.height * scale;
+    const width = height / (tree.type.ratio * stageRatio);
+    const baseX = vanishX + (lane.baseX - vanishX) * scale;
+    const baseY = vanishY + (lane.baseY - vanishY) * scale;
+
+    tree.element.style.width = width + "%";
+    tree.element.style.left = (baseX - width / 2) + "%";
+    tree.element.style.top = (baseY - height) + "%";
+
+    // ближние деревья — поверх дальних
+    tree.element.style.zIndex = Math.round(scale * 100);
+
+    // вдали — растворяется до нуля, у нижнего края — мягко проявляется (не с нуля)
+    const fadeOut = smoothStep(treeFadeTo, treeFadeFrom, scale);
+    const fadeIn = 1 - smoothStep(treeAppearTo, treeAppearFrom, scale) * (1 - treeAppearOpacity);
+
+    tree.element.style.opacity = (fadeOut * fadeIn).toFixed(3);
+}
+
+
+function updateTrees(progress) {
+    const distance = progress * driveDistance;
+
+    drive.trees.forEach(function (tree) {
+        placeTree(tree, distance);
+    });
+}
+
+
+function updateCars(progress, now) {
+    const scale = 1 + (carApproach - 1) * progress;
+
+    // тряска: два наложенных колебания, чтобы было похоже на неровную дорогу
+    const time = now / 1000;
+    const bounce = Math.abs(Math.sin(time * carBounceSpeed)) * carBounce + Math.sin(time * carBounceSpeed * 2.3) * carBounce * 0.3;
+    const tilt = Math.sin(time * carBounceSpeed * 0.7) * 0.25;
+
+    drive.cars.forEach(function (car) {
+        car.style.transform = "scale(" + scale.toFixed(4) + ") translateY(" + (-bounce).toFixed(3) + "%) rotate(" + tilt.toFixed(3) + "deg)";
+    });
+}
+
+
+// звук машины: играет, пока она едет; доехала — быстро затихает, отмотали назад — снова едет
+const carSoundOffAt = 0.97;
+
+
+function updateCarSound() {
+    const isDriving = drive.current < carSoundOffAt;
+
+    if (isDriving && !drive.isSoundOn) {
+        startCarSound();
+        drive.isSoundOn = true;
+    }
+
+    if (!isDriving && drive.isSoundOn) {
+        stopCarSound();
+        drive.isSoundOn = false;
+    }
+}
+
+
+function updateDrive(progress, now) {
+    if (!drive.isActive) {
+        return;
+    }
+
+    const target = Math.min(Math.max((progress - drive.start) / driveLength, 0), 1);
+
+    drive.current = drive.current + (target - drive.current) * driveSmoothness;
+
+    updateTrees(drive.current);
+    updateCars(drive.current, now);
+
+    // доехали — экран уходит в черноту
+    const blackoutStart = drive.start + driveLength + blackoutDelay;
+    const blackout = smoothStep(blackoutStart, blackoutStart + blackoutLength, progress);
+
+    streetBlackout.style.opacity = blackout.toFixed(3);
+
+    updateCarSound();
 }
 
 
@@ -981,6 +1284,11 @@ function updateChoice(progress) {
         choice.game.classList.add("game--choice");
         document.body.classList.add("is-choosing");
 
+        // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал —
+        // так после выбора всегда останется место для поездки
+        window.scrollTo(0, hero.offsetTop + (choiceFrom + 0.02) * window.innerHeight);
+        document.body.classList.add("is-choice-locked");
+
         // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
         setTimeout(function () {
             if (choice.isShown) {
@@ -996,6 +1304,7 @@ function updateChoice(progress) {
         choice.element.classList.remove("choice--ready");
         choice.game.classList.remove("game--choice");
         document.body.classList.remove("is-choosing");
+        document.body.classList.remove("is-choice-locked");
 
         resetChoice();
     }
@@ -1024,6 +1333,7 @@ function animate(now) {
 
     updateChoice(progress);
     updateDialogue(progress);
+    updateDrive(progress, now);
 
     requestAnimationFrame(animate);
 }
@@ -1059,6 +1369,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupCharacters();
     setupDialogue();
     setupChoice();
+    setupDrive();
     setupClickSkip();
     // первый текст начинает печататься после клика по «начать» в прелоадере
     setupPreloader(startIntroText);

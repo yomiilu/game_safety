@@ -11,6 +11,11 @@ body.is-loading {
     overflow: hidden;
 }
 
+/* пока игрок выбирает — страницу не листаем, чтобы для поездки осталось место */
+body.is-choice-locked {
+    overflow: hidden;
+}
+
 
 /* ---------- прелоадер ---------- */
 
@@ -249,7 +254,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 1000vh;
+    height: 1600vh;
     background-color: #0F0F0F;
 }
 
@@ -734,23 +739,23 @@ body.is-street .sound {
     pointer-events: auto;
 }
 
-/* глаза на экране выбора — полупрозрачные, по углам, чтобы не мешать вариантам */
+/* глаза на экране выбора — прозрачность 30%, по углам, чтобы не мешать вариантам */
 .choice__eyes {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 .choice__eye--1 {
-    top: 7.6389vw;
+    top: 3.4722vw;
     left: 3.4722vw;
 }
 
 .choice__eye--2 {
-    top: 6.9444vw;
+    top: 2.7778vw;
     right: 4.1667vw;
 }
 
@@ -766,8 +771,7 @@ body.is-street .sound {
 
 /* заголовок и варианты — поверх глаз */
 .choice__title,
-.choice__options,
-.choice__hint {
+.choice__options {
     position: relative;
     z-index: 2;
 }
@@ -865,35 +869,6 @@ body.is-street .sound {
     text-align: center;
 }
 
-.choice__hint {
-    font-family: "Kom Post", sans-serif;
-    font-size: 1.2500vw;
-    line-height: 1.2500vw;
-    font-weight: 400;
-    color: #C1C1C1;
-    opacity: 0.7;
-    animation: hint-blink 1.6s ease-in-out infinite;
-}
-
-.choice--made .choice__hint {
-    visibility: hidden;
-}
-
-@keyframes hint-blink {
-    0% {
-        opacity: 0.3;
-    }
-
-    50% {
-        opacity: 0.8;
-    }
-
-    100% {
-        opacity: 0.3;
-    }
-}
-
-
 /* ---------- сцена 2: улица ---------- */
 
 /* проявляется из темноты после выбора */
@@ -915,14 +890,23 @@ body.is-street .sound {
     visibility: visible;
 }
 
+/* сцена с пропорциями фона (1556 × 898) — заполняет экран, как object-fit: cover.
+   всё внутри задано в % от сцены, поэтому машина и деревья всегда стоят на своих местах фона */
+.street__stage {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: max(100vw, 173.2739vh);
+    height: max(100vh, 57.7121vw);
+    transform: translateX(-50%);
+}
+
 .street__bg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center top;
 }
 
 /* затемнение фона, как на первом игровом экране */
@@ -939,10 +923,33 @@ body.is-street .sound {
 /* машина на дороге — какая именно, решает выбор игрока */
 .street__car {
     position: absolute;
-    bottom: 8.3333vw;
-    left: 22.2222vw;
+    top: 25.5000%;
+    left: 16.5000%;
+    z-index: 100;
     display: none;
-    width: 62.5000vw;
+    width: 47.0000%;
+    /* машина «едет к нам»: растёт от точки схода дороги (её координаты внутри машины) */
+    transform-origin: -1.6% 18.7%;
+    will-change: transform;
+}
+
+/* чёрный экран после поездки (прозрачность задаёт js) */
+.street__blackout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* деревья на тротуарах: положение, размер и прозрачность задаёт js (по перспективе дороги) */
+.street__tree {
+    position: absolute;
+    opacity: 0;
+    will-change: left, top, width, opacity;
 }
 
 .street--official .street__car--official,
@@ -969,21 +976,10 @@ body.is-street .game-header {
     pointer-events: none;
 }
 
-/* во время выбора шапку тоже накрывает чёрным */
-.game-header::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000000;
+/* во время выбора шапка растворяется в черноту — так верхние глаза видны поверх неё */
+body.is-choosing .game-header {
     opacity: 0;
     transition: opacity 0.8s ease;
-}
-
-body.is-choosing .game-header::after {
-    opacity: 1;
 }
 
 .game-header__bg {
