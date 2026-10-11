@@ -537,6 +537,78 @@ function updateDarkness(progress) {
     document.body.style.setProperty("--game", game.toFixed(3));
 
     updateCursorLight(dark * (1 - game));
+
+    // шапка «активна» (по ней можно кликать), когда она полностью видна
+    const isLightsOut = document.body.classList.contains("is-lights-out");
+    const isHeaderActive = ((game > 0.9 && !document.body.classList.contains("is-choosing")) || document.body.classList.contains("is-hotel")) && !isLightsOut;
+
+    document.body.classList.toggle("is-header-active", isHeaderActive);
+
+    if (!isHeaderActive && chaptersMenu.isOpen) {
+        setChaptersMenuOpen(false);
+    }
+}
+
+
+// ---------- переход к главе из меню ----------
+// предисловие — первый экран с глазами, глава 1 — начало игры в аэропорту
+
+function goToChapter(chapter) {
+    if (chapter === "2") {
+        goToHotel();
+        return;
+    }
+
+    let screens = 0;
+
+    if (chapter === "1") {
+        screens = gameEnd;
+    }
+
+    window.scrollTo(0, hero.offsetTop + screens * window.innerHeight);
+}
+
+
+// глава 2 начинается в отеле. если игрок ещё не выбирал такси — выбор делается за него
+// («поехать с мужчиной»: на этой ветке деньги и безопасность не меняются)
+function goToHotel() {
+    // реплики аэропорта считаем прочитанными — иначе реплики отеля будут их ждать
+    lines.forEach(function (line) {
+        if (line.scene === "airport") {
+            line.isFinished = true;
+            setLineCharsVisible(line, true);
+        }
+    });
+
+    if (!drive.isActive) {
+        if (!choice.isShown) {
+            showChoice();
+        }
+
+        const driverOption = choice.element.querySelector('[data-choice="driver"]');
+
+        selectChoice(driverOption, true);
+    }
+
+    // на ветке «официальное такси» удар по цифрам считаем уже случившимся
+    if (choice.selected === "official" && !outcome.isStatsDone) {
+        outcome.isShown = true;
+        outcome.isTextFinished = true;
+        outcome.isStatsPlayed = true;
+        outcome.isStatsDone = true;
+
+        setGameHeader({
+            money: outcomeMoneyTo,
+            safety: outcomeSafetyTo
+        });
+    }
+
+    // поездка уже позади — машина не едет и не шумит
+    drive.current = 1;
+
+    const base = getHotelBase();
+
+    window.scrollTo(0, hero.offsetTop + base * window.innerHeight);
 }
 
 
@@ -555,6 +627,19 @@ function updateCursorLight(firstDarkness) {
         level = Math.max(level, drive.blackout);
     }
 
+    // отель уже не чёрный экран — свет гаснет вместе с его появлением
+    level = level * (1 - hotel.level);
+
+    // выбор в отеле — снова чёрный экран (пока поверх не проявился номер)
+    if (hotelChoice.isShown && !room.isShown) {
+        level = 1;
+    }
+
+    // в номере погас свет: пока нет фонарика — обычный свет от курсора, с фонариком — только он
+    if (room.isDark) {
+        level = room.isFlashlight ? 0 : 1;
+    }
+
     light.element.style.setProperty("--light-level", level.toFixed(3));
 }
 
@@ -564,6 +649,7 @@ function updateCursorLight(firstDarkness) {
 // selector — какой персонаж
 // start, end — на каком отрезке прокрутки он выходит
 // side — из-за какого края экрана выходит: "left" или "right"
+// scene: "hotel" — start/end считаются от момента, когда отель полностью проявился (необязательно)
 // waitForLine — не выходит, пока эта реплика не допечатана (необязательно)
 const characterSettings = [
     {
@@ -578,6 +664,13 @@ const characterSettings = [
         end: 6.09,
         side: "right",
         waitForLine: ".speech--boy-1"
+    },
+    {
+        selector: ".hotel__boy",
+        scene: "hotel",
+        start: 0.1,
+        end: 1,
+        side: "left"
     }
 ];
 
@@ -599,6 +692,7 @@ function setupCharacters() {
             start: settings.start,
             end: settings.end,
             side: settings.side,
+            scene: settings.scene,
             waitForLine: settings.waitForLine,
             walk: 0
         });
@@ -614,7 +708,27 @@ function findCharacter(selector) {
 
 
 function updateCharacter(character, progress) {
-    let target = Math.min(Math.max((progress - character.start) / (character.end - character.start), 0), 1);
+    let start = character.start;
+    let end = character.end;
+
+    // в отеле отметки считаются от момента, когда отель полностью проявился
+    if (character.scene === "hotel") {
+        const base = getHotelBase();
+
+        if (base === null) {
+            start = Infinity;
+            end = Infinity;
+        } else {
+            start = base + start;
+            end = base + end;
+        }
+    }
+
+    let target = Math.min(Math.max((progress - start) / (end - start), 0), 1);
+
+    if (isNaN(target)) {
+        target = 0;
+    }
 
     // ждём, пока допечатается чужая реплика
     if (character.waitForLine) {
@@ -669,6 +783,13 @@ function updateCharacter(character, progress) {
 // speed — скорость печати (2 — в два раза быстрее обычной)
 // waitForCharacter — ещё и ждёт, пока этот персонаж дойдёт до места (необязательно)
 // pose — какую позу принимает мальчик на этой реплике (необязательно)
+// waitFor — функция: реплика ждёт, пока она не вернёт true (необязательно)
+// scene: "hotel" — from считается от момента, когда отель полностью проявился (необязательно)
+// scene: "room" — from считается от выбора в отеле (номер появляется сразу после него)
+
+// когда в номере гаснет свет (в экранах прокрутки от выбора в отеле)
+const roomDarkFrom = 1;
+
 const dialogue = [
     {
         selector: ".speech--boy-1",
@@ -691,6 +812,43 @@ const dialogue = [
         from: 7.8,
         speed: 1,
         pose: 2
+    },
+    {
+        selector: ".speech--boy-3",
+        scene: "hotel",
+        from: 1.1,
+        speed: 1,
+        waitForCharacter: ".hotel__boy"
+    },
+    {
+        selector: ".speech--boy-4",
+        scene: "hotel",
+        from: 1.8,
+        speed: 1
+    },
+    {
+        selector: ".speech--receptionist-1",
+        scene: "hotel",
+        from: 3.2,
+        speed: 1
+    },
+    {
+        selector: ".speech--receptionist-2",
+        scene: "hotel",
+        from: 3.9,
+        speed: 1
+    },
+    {
+        selector: ".speech--room-1",
+        scene: "room",
+        from: 0.3,
+        speed: 1
+    },
+    {
+        selector: ".room__dark-text",
+        scene: "room",
+        from: roomDarkFrom,
+        speed: 1
     }
 ];
 
@@ -721,6 +879,8 @@ function setupDialogue() {
             from: settings.from,
             speed: settings.speed,
             waitForCharacter: settings.waitForCharacter,
+            waitFor: settings.waitFor,
+            scene: settings.scene || "airport",
             pose: settings.pose || 1,
             chars: [],
             isFinished: false,
@@ -828,10 +988,28 @@ function hideLine(line) {
 
 
 // может ли реплика с этим номером быть на экране
+// с какой отметки прокрутки реплика может появиться
+function getLineFrom(line) {
+    if (line.scene === "hotel") {
+        const base = getHotelBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
+    if (line.scene === "room") {
+        const base = getRoomBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
+    return line.from;
+}
+
+
 function canShowLine(index, progress) {
     const line = lines[index];
 
-    if (progress < line.from) {
+    if (progress < getLineFrom(line)) {
         return false;
     }
 
@@ -843,6 +1021,10 @@ function canShowLine(index, progress) {
         return false;
     }
 
+    if (line.waitFor && !line.waitFor()) {
+        return false;
+    }
+
     return true;
 }
 
@@ -850,7 +1032,7 @@ function canShowLine(index, progress) {
 function updateDialogue(progress) {
     // если прокрутили назад, выше отметки реплики — забываем, что она была допечатана
     lines.forEach(function (line) {
-        if (progress < line.from - speechGap) {
+        if (progress < getLineFrom(line) - speechGap) {
             line.isFinished = false;
         }
     });
@@ -867,12 +1049,12 @@ function updateDialogue(progress) {
     }
 
     // чтобы не мигало на отметке: назад уходим, только когда отъехали от неё с запасом
-    if (target < currentLine && currentLine >= 0 && progress >= lines[currentLine].from - speechGap) {
+    if (target < currentLine && currentLine >= 0 && progress >= getLineFrom(lines[currentLine]) - speechGap) {
         target = currentLine;
     }
 
-    // во время выбора плашек на экране нет
-    if (choice.isShown) {
+    // во время выбора и на улице плашек аэропорта на экране нет (реплики в отеле и номере — можно)
+    if (choice.isShown && (target < 0 || lines[target].scene === "airport")) {
         target = -1;
     }
 
@@ -899,8 +1081,9 @@ function updateDialogue(progress) {
 }
 
 
-// ---------- ВРЕМЕННО: пропуск реплик по клику ----------
-// клик в любом месте (кроме кнопок, ползунка и экрана выбора) сразу допечатывает текущую реплику.
+// ---------- ВРЕМЕННО: пропуск текста по клику ----------
+// клик в любом месте (кроме кнопок, ползунка и экрана выбора) сразу допечатывает
+// то, что сейчас печатается: заголовок первого экрана, реплику или текст на чёрном экране.
 // чтобы убрать — поставь false
 const allowClickSkip = true;
 
@@ -925,6 +1108,46 @@ function skipCurrentLine() {
 }
 
 
+// заголовок первого экрана: сразу показываем нужное предложение целиком
+// (даже если старое ещё стиралось)
+function skipTitle() {
+    if (!typewriter.isTyping) {
+        return;
+    }
+
+    typewriter.runId = typewriter.runId + 1;
+    typewriter.isTyping = false;
+
+    buildChars(typewriter.sentences[typewriter.shownSentence]);
+
+    typewriter.chars.forEach(function (char) {
+        char.element.classList.add("hero__char--visible");
+    });
+
+    typewriter.title.appendChild(typewriter.cursor);
+    typewriter.cursor.classList.add("hero__cursor--done");
+
+    stopTypewriterSound("title");
+}
+
+
+// текст на чёрном экране после поездки
+function skipOutcomeText() {
+    if (!outcome.isShown || outcome.isTextFinished) {
+        return;
+    }
+
+    outcome.runId = outcome.runId + 1;
+    outcome.isTextFinished = true;
+
+    outcome.chars.forEach(function (char) {
+        char.element.classList.add("outcome__char--visible");
+    });
+
+    stopTypewriterSound("outcome");
+}
+
+
 function setupClickSkip() {
     if (!allowClickSkip) {
         return;
@@ -935,7 +1158,9 @@ function setupClickSkip() {
             return;
         }
 
+        skipTitle();
         skipCurrentLine();
+        skipOutcomeText();
     });
 }
 
@@ -962,9 +1187,9 @@ const choice = {
 
 
 function setupChoice() {
-    choice.element = document.querySelector(".choice");
+    choice.element = document.querySelector(".game .choice");
     choice.game = document.querySelector(".game");
-    choice.options = document.querySelectorAll(".choice__option");
+    choice.options = choice.element.querySelectorAll(".choice__option");
     street = document.querySelector(".street");
 
     choice.options.forEach(function (option) {
@@ -975,7 +1200,8 @@ function setupChoice() {
 }
 
 
-function selectChoice(option) {
+// isInstant — улица появляется сразу, без паузы (переход по меню глав)
+function selectChoice(option, isInstant) {
     choice.selected = option.dataset.choice;
 
     choice.options.forEach(function (otherOption) {
@@ -993,6 +1219,12 @@ function selectChoice(option) {
     }));
 
     const selected = choice.selected;
+
+    if (isInstant) {
+        choice.element.classList.add("choice--ready");
+        showStreet(selected);
+        return;
+    }
 
     setTimeout(function () {
         // за это время игрок мог прокрутить назад и передумать
@@ -1318,26 +1550,32 @@ function resetChoice() {
 }
 
 
+function showChoice() {
+    choice.isShown = true;
+    choice.element.classList.add("choice--visible");
+    choice.game.classList.add("game--choice");
+    document.body.classList.add("is-choosing");
+
+    // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал —
+    // так после выбора всегда останется место для поездки
+    window.scrollTo(0, hero.offsetTop + (choiceFrom + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+
+    // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
+    setTimeout(function () {
+        if (choice.isShown) {
+            choice.element.classList.add("choice--ready");
+        }
+    }, choiceReadyDelay);
+}
+
+
 function updateChoice(progress) {
-    const lastLine = lines[lines.length - 1];
+    // выбор появляется после «х-ммм, дай мне подумать» (реплики отеля идут уже после выбора)
+    const lineBeforeChoice = findLine(".speech--boy-2");
 
-    if (!choice.isShown && progress >= choiceFrom && lastLine.isFinished) {
-        choice.isShown = true;
-        choice.element.classList.add("choice--visible");
-        choice.game.classList.add("game--choice");
-        document.body.classList.add("is-choosing");
-
-        // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал —
-        // так после выбора всегда останется место для поездки
-        window.scrollTo(0, hero.offsetTop + (choiceFrom + 0.02) * window.innerHeight);
-        document.body.classList.add("is-choice-locked");
-
-        // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
-        setTimeout(function () {
-            if (choice.isShown) {
-                choice.element.classList.add("choice--ready");
-            }
-        }, choiceReadyDelay);
+    if (!choice.isShown && progress >= choiceFrom && lineBeforeChoice.isFinished) {
+        showChoice();
     }
 
     // прокрутили назад — выбор прячется, снова видна последняя реплика
@@ -1381,6 +1619,8 @@ const outcome = {
     isShown: false,
     isTextFinished: false,
     isStatsPlayed: false,
+    // удар по цифрам доигран до конца
+    isStatsDone: false,
     runId: 0
 };
 
@@ -1434,6 +1674,7 @@ function setupOutcome() {
 
 function resetOutcomeStats() {
     outcome.isStatsPlayed = false;
+    outcome.isStatsDone = false;
     outcome.stats.classList.remove("outcome__stats--visible");
 
     [outcome.money.stat, outcome.safety.stat].forEach(function (stat) {
@@ -1588,6 +1829,8 @@ function playOutcomeStats() {
                         money: outcomeMoneyTo,
                         safety: outcomeSafetyTo
                     });
+
+                    outcome.isStatsDone = true;
                 }, runId);
             }, outcomePause);
         }, runId);
@@ -1625,6 +1868,468 @@ function updateOutcome(progress) {
 }
 
 
+// ---------- сцена 3: отель ----------
+// проявляется из черноты после поездки. на ветке «официальное такси» — только после удара по цифрам
+
+// когда начинает проявляться (в экранах прокрутки от начала поездки) и за сколько экранов
+const hotelFromOfficial = 6.6;
+const hotelFromDriver = 5.6;
+const hotelFadeLength = 0.6;
+
+// когда (от момента полного появления отеля) за стойкой проявляется ресепшионист
+const receptionistFrom = 2.5;
+
+const hotel = {
+    level: 0,
+    element: null,
+    // шапка уже показывает вторую главу
+    isChapterTwo: false
+};
+
+
+// отметка прокрутки, когда отель полностью проявился; null — отеля ещё нет
+function getHotelBase() {
+    if (!drive.isActive) {
+        return null;
+    }
+
+    const isOfficial = choice.selected === "official";
+
+    // на официальной ветке отель ждёт, пока доиграет удар по цифрам
+    if (isOfficial && !outcome.isStatsDone) {
+        return null;
+    }
+
+    const from = drive.start + (isOfficial ? hotelFromOfficial : hotelFromDriver);
+
+    return from + hotelFadeLength;
+}
+
+
+function updateHotel(progress) {
+    let target = 0;
+
+    if (drive.isActive) {
+        const isOfficial = choice.selected === "official";
+        const from = drive.start + (isOfficial ? hotelFromOfficial : hotelFromDriver);
+
+        // на официальной ветке ждём, пока доиграет удар по деньгам и безопасности
+        const isReady = !isOfficial || outcome.isStatsDone;
+
+        if (isReady) {
+            target = smoothStep(from, from + hotelFadeLength, progress);
+        }
+    }
+
+    // плавно догоняем, чтобы появление не дёргалось, если ждали удар по цифрам
+    hotel.level = hotel.level + (target - hotel.level) * 0.08;
+
+    if (Math.abs(target - hotel.level) < 0.001) {
+        hotel.level = target;
+    }
+
+    light.element.style.setProperty("--hotel", hotel.level.toFixed(3));
+
+    const isHotel = hotel.level > 0.5;
+
+    document.body.classList.toggle("is-hotel", isHotel);
+
+    // в отеле начинается вторая глава — меняем шапку и меню, только когда сцена сменилась
+    if (isHotel !== hotel.isChapterTwo) {
+        hotel.isChapterTwo = isHotel;
+        setCurrentChapter(isHotel ? 2 : 1);
+    }
+
+    // ресепшионист: только после второй реплики мальчика
+    const base = getHotelBase();
+    const lastBoyLine = findLine(".speech--boy-4");
+    const isReceptionistShown = base !== null && lastBoyLine.isFinished && progress >= base + receptionistFrom;
+
+    hotel.element.classList.toggle("hotel--receptionist", isReceptionistShown);
+
+    // вторая поза — с первой её реплики и дальше
+    const firstReceptionistLine = lines.indexOf(findLine(".speech--receptionist-1"));
+    const isReceptionistTalking = isReceptionistShown && currentLine >= firstReceptionistLine;
+
+    hotel.element.classList.toggle("hotel--receptionist-talking", isReceptionistTalking);
+}
+
+
+// ---------- выбор в отеле: где поужинать ----------
+// после реплик ресепшиониста отель уходит в черноту и появляются два варианта — как на первом выборе
+
+// когда появляется выбор (в экранах прокрутки от полного появления отеля),
+// и только когда последняя реплика ресепшиониста допечатана
+const hotelChoiceFrom = 4.6;
+
+const hotelChoice = {
+    element: null,
+    options: [],
+    isShown: false,
+    // что выбрал игрок: "delivery" — доставка в номер, "cafe" — местное кафе, null — ещё не выбрал
+    selected: null
+};
+
+
+function setupHotelChoice() {
+    hotelChoice.element = document.querySelector(".choice--hotel");
+    hotelChoice.options = hotelChoice.element.querySelectorAll(".choice__option");
+
+    hotelChoice.options.forEach(function (option) {
+        option.addEventListener("click", function () {
+            selectHotelChoice(option);
+        });
+    });
+}
+
+
+function selectHotelChoice(option) {
+    hotelChoice.selected = option.dataset.choice;
+
+    hotelChoice.options.forEach(function (otherOption) {
+        otherOption.classList.toggle("choice__option--selected", otherOption === option);
+    });
+
+    hotelChoice.element.classList.add("choice--ready");
+    hotelChoice.element.classList.add("choice--made");
+
+    document.dispatchEvent(new CustomEvent("player-choice", {
+        detail: {
+            choice: hotelChoice.selected
+        }
+    }));
+
+    // выбор сделан — дальше можно листать
+    document.body.classList.remove("is-choice-locked");
+
+    const selected = hotelChoice.selected;
+
+    setTimeout(function () {
+        // за это время игрок мог прокрутить назад и передумать
+        if (hotelChoice.isShown && hotelChoice.selected === selected && selected === "delivery") {
+            showRoom();
+        }
+    }, streetDelay);
+}
+
+
+function resetHotelChoice() {
+    hotelChoice.selected = null;
+    hideRoom();
+    hotelChoice.element.classList.remove("choice--made");
+
+    hotelChoice.options.forEach(function (option) {
+        option.classList.remove("choice__option--selected");
+    });
+}
+
+
+function showHotelChoice(mark) {
+    hotelChoice.isShown = true;
+    hotelChoice.element.classList.add("choice--visible");
+    hotel.element.classList.add("hotel--choice");
+    document.body.classList.add("is-hotel-choosing");
+
+    // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал
+    window.scrollTo(0, hero.offsetTop + (mark + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+
+    // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
+    setTimeout(function () {
+        if (hotelChoice.isShown) {
+            hotelChoice.element.classList.add("choice--ready");
+        }
+    }, choiceReadyDelay);
+}
+
+
+function hideHotelChoice() {
+    hotelChoice.isShown = false;
+    hotelChoice.element.classList.remove("choice--visible");
+    hotelChoice.element.classList.remove("choice--ready");
+    hotel.element.classList.remove("hotel--choice");
+    document.body.classList.remove("is-hotel-choosing");
+    document.body.classList.remove("is-choice-locked");
+
+    resetHotelChoice();
+}
+
+
+function updateHotelChoice(progress) {
+    const base = getHotelBase();
+    const mark = base === null ? null : base + hotelChoiceFrom;
+    const lineBeforeChoice = findLine(".speech--receptionist-2");
+
+    if (!hotelChoice.isShown && mark !== null && progress >= mark && lineBeforeChoice.isFinished) {
+        showHotelChoice(mark);
+    }
+
+    // прокрутили назад — выбор прячется, снова виден отель
+    if (hotelChoice.isShown && (mark === null || progress < mark - speechGap)) {
+        hideHotelChoice();
+    }
+}
+
+
+// ---------- сцена 4: номер ----------
+// если выбрали доставку — после выбора проявляется номер, мальчик сидит на кровати
+
+// через сколько (мс) после мысли в темноте появляется фонарик
+const flashlightDelay = 900;
+
+const room = {
+    element: null,
+    switchButton: null,
+    isShown: false,
+    // свет погас
+    isDark: false,
+    // в руке фонарик, ищем выключатель
+    isFlashlight: false,
+    // выключатель нашли и нажали
+    isLit: false,
+    // дверь уже открывалась (человек в балахоне вышел)
+    isScareStarted: false,
+    stranger: null,
+    // номер «запуска» пугалки: если свет включили обратно, старые таймеры ничего не делают
+    scareRunId: 0,
+    eyes: []
+};
+
+// пугалка: через сколько (мс) от её начала открывается дверь,
+// когда в проёме появляется человек в балахоне и когда он начинает медленно идти к нам.
+// идёт он, пока игрок ищет выключатель: успел подойти вплотную — пропадает и выходит снова
+const scareTimeline = [
+    { at: 0, className: "room--door" },
+    { at: 1000, className: "room--stranger" },
+    { at: 1900, className: "room--walk" }
+];
+
+// дверь открывается через столько (мс) после того, как в руке появился фонарик
+const scareDelay = 1500;
+
+// человек в балахоне подошёл вплотную: на столько (мс) он пропадает, потом снова выходит из двери
+const strangerReturnDelay = 1400;
+
+// глаз в темноте: сколько (мс) он смотрит на фонарик, прежде чем зажмуриться и пропасть
+const eyesStareTime = 450;
+
+
+function setupRoom() {
+    room.element = document.querySelector(".room");
+    room.switchButton = document.querySelector(".room__switch");
+    room.stranger = document.querySelector(".room__stranger");
+    room.stranger.addEventListener("animationend", onStrangerArrived);
+
+    room.element.querySelectorAll(".room__eyes").forEach(function (element) {
+        room.eyes.push({
+            element: element,
+            seenAt: 0
+        });
+    });
+
+    // кнопка ловит клики только когда в руке фонарик, а курсор и есть фонарик —
+    // значит, нажать можно, только посветив на выключатель
+    room.switchButton.addEventListener("click", turnLightsOn);
+}
+
+
+// отметка прокрутки, от которой считаются события номера; null — номера нет
+function getRoomBase() {
+    if (!room.isShown) {
+        return null;
+    }
+
+    return getHotelBase() + hotelChoiceFrom;
+}
+
+
+function showRoom() {
+    room.isShown = true;
+    room.element.classList.add("room--visible");
+    document.body.classList.add("is-room");
+}
+
+
+function hideRoom() {
+    room.isShown = false;
+    room.element.classList.remove("room--visible");
+    document.body.classList.remove("is-room");
+
+    resetLights();
+}
+
+
+function turnLightsOut(base) {
+    room.isDark = true;
+    room.element.classList.add("room--dark");
+    document.body.classList.add("is-lights-out");
+
+    // запираем прокрутку, пока выключатель не найден
+    window.scrollTo(0, hero.offsetTop + (base + roomDarkFrom + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+}
+
+
+// дверь открывается, выходит незнакомец и бросается на нас — по таймеру, шаг за шагом
+function playScare() {
+    room.scareRunId = room.scareRunId + 1;
+
+    const runId = room.scareRunId;
+
+    scareTimeline.forEach(function (step) {
+        setTimeout(function () {
+            if (runId === room.scareRunId && room.isDark) {
+                room.element.classList.add(step.className);
+            }
+        }, step.at);
+    });
+}
+
+
+// человек в балахоне подошёл вплотную — резко пропадает, а потом снова идёт от двери
+function onStrangerArrived(event) {
+    if (event.animationName !== "stranger-walk" || !room.isDark) {
+        return;
+    }
+
+    const runId = room.scareRunId;
+
+    room.element.classList.add("room--caught");
+
+    setTimeout(function () {
+        if (runId !== room.scareRunId || !room.isDark) {
+            return;
+        }
+
+        // снимаем и сразу возвращаем класс — так анимация шага начинается заново
+        room.element.classList.remove("room--walk", "room--caught");
+        void room.stranger.offsetWidth;
+        room.element.classList.add("room--walk");
+    }, strangerReturnDelay);
+}
+
+
+// глаза в темноте: попали в круг фонарика — распахиваются, потом зажмуриваются и пропадают
+function updateDarkEyes(now) {
+    if (!room.isFlashlight) {
+        return;
+    }
+
+    const beamRadius = getDesignUnit() * 7.2222 * 0.55;
+
+    room.eyes.forEach(function (eye) {
+        if (eye.seenAt > 0) {
+            if (now - eye.seenAt > eyesStareTime) {
+                eye.element.classList.add("room__eyes--gone");
+            }
+
+            return;
+        }
+
+        const rect = eye.element.getBoundingClientRect();
+        const distance = Math.hypot(rect.left + rect.width / 2 - light.currentX, rect.top + rect.height / 2 - light.currentY);
+
+        if (distance < beamRadius) {
+            eye.seenAt = now;
+            eye.element.classList.add("room__eyes--seen");
+        }
+    });
+}
+
+
+function giveFlashlight() {
+    room.isFlashlight = true;
+    room.element.classList.add("room--flashlight");
+    document.body.classList.add("is-flashlight");
+}
+
+
+function turnLightsOn() {
+    room.isDark = false;
+    room.isFlashlight = false;
+    room.isLit = true;
+
+    room.element.classList.remove("room--dark", "room--flashlight");
+    room.element.classList.add("room--lit");
+    document.body.classList.remove("is-lights-out", "is-flashlight", "is-choice-locked");
+
+    // свет включили — человек в балахоне исчезает
+    stopScare();
+}
+
+
+function stopScare() {
+    room.scareRunId = room.scareRunId + 1;
+    room.element.classList.remove("room--door", "room--stranger", "room--walk", "room--caught");
+}
+
+
+function resetLights() {
+    room.isDark = false;
+    room.isFlashlight = false;
+    room.isLit = false;
+    room.isScareStarted = false;
+
+    room.element.classList.remove("room--dark", "room--flashlight", "room--lit");
+    stopScare();
+    document.body.classList.remove("is-lights-out", "is-flashlight");
+
+    room.eyes.forEach(function (eye) {
+        eye.seenAt = 0;
+        eye.element.classList.remove("room__eyes--seen", "room__eyes--gone");
+    });
+}
+
+
+function updateRoom(progress) {
+    const base = getRoomBase();
+
+    if (base === null) {
+        return;
+    }
+
+    const lineBefore = findLine(".speech--room-1");
+    const darkFrom = base + roomDarkFrom;
+
+    // после реплики про пиццу — по прокрутке резко гаснет свет
+    if (!room.isDark && !room.isLit && progress >= darkFrom && lineBefore.isFinished) {
+        turnLightsOut(base);
+    }
+
+    // мысль в темноте допечатана — через мгновение в руке фонарик
+    const darkText = findLine(".room__dark-text");
+
+    if (room.isDark && darkText.isFinished && !room.isFlashlight && !room.flashlightTimer) {
+        room.flashlightTimer = setTimeout(function () {
+            room.flashlightTimer = null;
+
+            if (room.isDark) {
+                giveFlashlight();
+            }
+        }, flashlightDelay);
+    }
+
+    // фонарик в руке — чуть погодя открывается дверь, и к нам медленно идёт человек в балахоне,
+    // пока игрок ищет выключатель
+    if (room.isFlashlight && !room.isScareStarted) {
+        room.isScareStarted = true;
+
+        const runId = room.scareRunId;
+
+        setTimeout(function () {
+            if (runId === room.scareRunId && room.isDark) {
+                playScare();
+            }
+        }, scareDelay);
+    }
+
+    // свет уже включили и прокрутили назад, выше отметки — всё как было до темноты
+    if (room.isLit && progress < darkFrom - speechGap) {
+        resetLights();
+    }
+}
+
+
 // ---------- главный цикл ----------
 
 function animate(now) {
@@ -1652,6 +2357,10 @@ function animate(now) {
     updateDialogue(progress);
     updateDrive(progress, now);
     updateOutcome(progress);
+    updateHotel(progress);
+    updateHotelChoice(progress);
+    updateRoom(progress);
+    updateDarkEyes(now);
 }
 
 
@@ -1680,11 +2389,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     setupSound();
     setupGameHeader();
+    setupChaptersMenu();
     setupEyes();
     setupTypewriter();
     setupCharacters();
     setupDialogue();
     setupChoice();
+    hotel.element = document.querySelector(".hotel");
+    setupHotelChoice();
+    setupRoom();
     setupDrive();
     setupOutcome();
     setupClickSkip();

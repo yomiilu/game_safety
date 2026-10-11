@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра</title>
 
-    <!-- ?v=12 — номер версии: меняем его при каждом обновлении сайта,
+    <!-- ?v=37 — номер версии: меняем его при каждом обновлении сайта,
          чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=12">
-    <link rel="stylesheet" href="css/fonts.css?v=12">
-    <link rel="stylesheet" href="css/style.css?v=12">
-    <link rel="stylesheet" href="css/mobile.css?v=12">
+    <link rel="stylesheet" href="css/reset.css?v=37">
+    <link rel="stylesheet" href="css/fonts.css?v=37">
+    <link rel="stylesheet" href="css/style.css?v=37">
+    <link rel="stylesheet" href="css/mobile.css?v=37">
 </head>
 
 <body>
@@ -57,7 +57,7 @@
 
         <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=12" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=37" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
@@ -79,7 +79,38 @@
             <div class="game-header__chapter">
                 <span class="game-header__text game-header__chapter-number">глава 1/4</span>
                 <span class="game-header__text game-header__chapter-title">“прибытие”</span>
+
+                <button class="game-header__burger" type="button" aria-label="Открыть меню глав" aria-expanded="false">
+                    <img class="game-header__burger-icon" src="img/burger.svg" alt="">
+                </button>
             </div>
+
+            <!-- меню глав: открывается бургером -->
+            <nav class="chapters-menu" aria-label="Главы">
+                <img class="chapters-menu__bg" src="img/menu-plate.svg" alt="">
+
+                <ul class="chapters-menu__list">
+                    <li class="chapters-menu__item">
+                        <button class="chapters-menu__link" type="button" data-chapter="intro">предисловие</button>
+                    </li>
+
+                    <li class="chapters-menu__item">
+                        <button class="chapters-menu__link chapters-menu__link--current" type="button" data-chapter="1">глава 1 “прибытие”</button>
+                    </li>
+
+                    <li class="chapters-menu__item">
+                        <button class="chapters-menu__link" type="button" data-chapter="2">глава 2 “ужин”</button>
+                    </li>
+
+                    <li class="chapters-menu__item">
+                        <button class="chapters-menu__link" type="button" data-chapter="3" disabled>глава 3 <span class="chapters-menu__soon">скоро</span></button>
+                    </li>
+
+                    <li class="chapters-menu__item">
+                        <button class="chapters-menu__link" type="button" data-chapter="4" disabled>глава 4 <span class="chapters-menu__soon">скоро</span></button>
+                    </li>
+                </ul>
+            </nav>
         </header>
 
         <section class="hero">
@@ -342,6 +373,169 @@
                     </div>
                 </div>
 
+                <!-- сцена 3: отель. проявляется после чёрного экрана поездки -->
+                <div class="hotel">
+                    <!-- сцена с пропорциями фона: стол и ресепшионист привязаны к картинке, а не к экрану -->
+                    <div class="hotel__stage">
+                        <img class="hotel__bg" src="img/bg3.svg" alt="">
+                        <div class="hotel__shade"></div>
+
+                        <!-- ресепшионист стоит за стойкой: низ фигуры спрятан под столешницей -->
+                        <img class="hotel__receptionist hotel__receptionist--1" src="img/receptionist.svg?v=2" alt="Ресепшионист">
+                        <img class="hotel__receptionist hotel__receptionist--2" src="img/receptionist2.svg" alt="">
+                        <img class="hotel__table" src="img/reception-table.svg?v=2" alt="">
+
+                        <div class="speech speech--taxi speech--receptionist speech--receptionist-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">добрый вечер! рады приветствовать вас в нашем отеле, с вас 50$.</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--taxi speech--receptionist speech--receptionist-2">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">на ужин рекомендую вам либо заказать доставку, либо пойти в наше кафе.</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- мальчик приходит в отель слева, как в аэропорту -->
+                    <div class="game__character game__character--boy hotel__boy">
+                        <img class="game__pose game__pose--1" src="img/main-character.svg" alt="Главный герой">
+                    </div>
+
+                    <div class="speech speech--boy speech--boy-3">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">ну наконец-то я в отеле, водители тут конечно…</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--boy speech--boy-4">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">так, а как мне заселиться? хочется скорее на ужин.</span>
+                        </p>
+                    </div>
+
+                    <!-- выбор: где поужинать. отель уходит в черноту, появляются два варианта -->
+                    <div class="hotel__dim"></div>
+
+                    <div class="choice choice--hotel">
+                        <!-- глаза следят за курсором, пока игрок выбирает -->
+                        <div class="choice__eyes">
+                            <div class="eye eye--a eye--always-open choice__eye choice__eye--1" data-type="a">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye1.svg" alt="">
+                                    <div class="eye__socket eye__socket--a">
+                                        <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--b eye--mirror eye--always-open choice__eye choice__eye--2" data-type="b">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye2.svg" alt="">
+                                    <div class="eye__socket eye__socket--b">
+                                        <img class="eye__pupil eye__pupil--b" src="img/pupil2.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye2-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--c eye--always-open choice__eye choice__eye--3" data-type="c">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye3.svg" alt="">
+                                    <div class="eye__socket eye__socket--c">
+                                        <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--a eye--mirror eye--always-open choice__eye choice__eye--4" data-type="a">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye1.svg" alt="">
+                                    <div class="eye__socket eye__socket--a">
+                                        <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="choice__title">что ты выберешь?</p>
+
+                        <div class="choice__options">
+                            <button class="choice__option" type="button" data-choice="delivery">
+                                <img class="choice__bg" src="img/start.svg" alt="">
+                                <span class="choice__text">заказать доставку за 10$, но незнакомца придётся запустить в номер</span>
+                            </button>
+
+                            <button class="choice__option" type="button" data-choice="cafe">
+                                <img class="choice__bg" src="img/start.svg" alt="">
+                                <span class="choice__text">пойти в местное кафе с непонятными ценами и толпой клиентов</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- сцена 4: номер. проявляется, если выбрали доставку -->
+                <div class="room">
+                    <div class="room__stage">
+                        <img class="room__bg" src="img/bg4.svg" alt="">
+                        <div class="room__shade"></div>
+                        <img class="room__boy" src="img/boy-sitting.svg?v=5" alt="Главный герой сидит на кровати">
+
+                        <!-- глаза в темноте: видны, только если посветить на них фонариком -->
+                        <img class="room__eyes room__eyes--1" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--2" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--3" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--4" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--5" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--6" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--7" src="img/dark-eyes.svg" alt="">
+                        <img class="room__eyes room__eyes--8" src="img/dark-eyes.svg" alt="">
+
+                        <div class="speech speech--boy speech--room-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">сегодня буду пиццу и колу, доставка приедет через 20 минут.</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- свет гаснет: чернота на весь экран, потом в ней виден только круг от фонарика -->
+                    <div class="room__blackout"></div>
+
+                    <!-- пугалка в темноте: открывается дверь, и человек в балахоне медленно идёт к нам, пока ищем выключатель -->
+                    <div class="room__stage room__stage--scare">
+                        <div class="room__doorway"></div>
+                        <div class="room__stranger">
+                            <img class="room__stranger-body" src="img/hooded.svg" alt="">
+                        </div>
+                        <img class="room__door" src="img/door-dark.svg" alt="">
+                    </div>
+
+                    <!-- мысль мальчика в темноте — без плашки, просто текст -->
+                    <div class="speech room__dark-text">
+                        <p class="speech__text">
+                            <span class="speech__inner">ой! что случилось? надо найти выключатель и нажать на него.</span>
+                        </p>
+                    </div>
+
+                    <!-- фонарик вместо курсора -->
+                    <img class="room__flashlight" src="img/flashlight.svg" alt="">
+
+                    <!-- выключатель на стене: невидимая кнопка ровно поверх него на фоне -->
+                    <div class="room__stage room__stage--top">
+                        <button class="room__switch" type="button" aria-label="Выключатель"></button>
+                    </div>
+                </div>
+
                 <div class="hero__noise"></div>
 
             </div>
@@ -350,10 +544,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=12"></script>
-    <script src="js/preloader.js?v=12"></script>
-    <script src="js/game-header.js?v=12"></script>
-    <script src="js/script.js?v=12"></script>
+    <script src="js/sound.js?v=37"></script>
+    <script src="js/preloader.js?v=37"></script>
+    <script src="js/game-header.js?v=37"></script>
+    <script src="js/script.js?v=37"></script>
 </body>
 
 </html>
