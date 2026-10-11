@@ -56,3 +56,72 @@ function setGameHeader(data) {
         gameHeader.chapterTitle.textContent = data.chapterTitle;
     }
 }
+
+
+// названия глав — для шапки
+const chapterTitles = {
+    1: "“прибытие”",
+    2: "“ужин”"
+};
+
+
+// шапка и меню показывают, в какой главе игрок сейчас
+function setCurrentChapter(chapter) {
+    setGameHeader({
+        chapter: chapter,
+        chapterTitle: chapterTitles[chapter]
+    });
+
+    document.querySelectorAll(".chapters-menu__link").forEach(function (link) {
+        link.classList.toggle("chapters-menu__link--current", link.dataset.chapter === String(chapter));
+    });
+}
+
+
+// ---------- бургер и меню глав ----------
+
+const chaptersMenu = {
+    header: null,
+    burger: null,
+    isOpen: false
+};
+
+
+function setupChaptersMenu() {
+    chaptersMenu.header = document.querySelector(".game-header");
+    chaptersMenu.burger = document.querySelector(".game-header__burger");
+
+    chaptersMenu.burger.addEventListener("click", function (event) {
+        event.stopPropagation();
+        setChaptersMenuOpen(!chaptersMenu.isOpen);
+    });
+
+    // клик по пункту — переходим к главе
+    document.querySelectorAll(".chapters-menu__link").forEach(function (link) {
+        link.addEventListener("click", function (event) {
+            event.stopPropagation();
+            setChaptersMenuOpen(false);
+            goToChapter(link.dataset.chapter);
+        });
+    });
+
+    // клик мимо меню или Esc — закрываем
+    document.addEventListener("click", function (event) {
+        if (chaptersMenu.isOpen && !event.target.closest(".chapters-menu")) {
+            setChaptersMenuOpen(false);
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            setChaptersMenuOpen(false);
+        }
+    });
+}
+
+
+function setChaptersMenuOpen(isOpen) {
+    chaptersMenu.isOpen = isOpen;
+    chaptersMenu.header.classList.toggle("game-header--menu-open", isOpen);
+    chaptersMenu.burger.setAttribute("aria-expanded", String(isOpen));
+}

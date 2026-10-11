@@ -262,7 +262,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 1800vh;
+    height: 2800vh;
     background-color: #0F0F0F;
 }
 
@@ -590,8 +590,8 @@ body.is-street .sound {
    чтобы на широких мониторах сцена не разъезжалась по краям */
 .game__character--boy {
     left: calc(50% - calc(41.6667 * var(--u)));
-    width: calc(23.1944 * var(--u));
-    height: calc(41.2500 * var(--u));
+    width: calc(25.5139 * var(--u));
+    height: calc(45.3750 * var(--u));
     transform: translateX(-100vw);
 }
 
@@ -612,7 +612,7 @@ body.is-street .sound {
 /* вторая поза шире первой, но выровнена по тому же левому краю.
    max-width: none — иначе reset.css не даёт ей вылезти за рамку и мальчик сжимается */
 .game__pose--2 {
-    width: calc(29.3750 * var(--u));
+    width: calc(32.3125 * var(--u));
     max-width: none;
     opacity: 0;
 }
@@ -628,8 +628,8 @@ body.is-street .sound {
 /* таксист — справа, ближе к краю (тот же масштаб, что у героя) */
 .game__character--taxi {
     right: calc(50% - calc(41.6667 * var(--u)));
-    width: calc(12.9167 * var(--u));
-    height: calc(42.2917 * var(--u));
+    width: calc(14.2083 * var(--u));
+    height: calc(46.5208 * var(--u));
     transform: translateX(100vw);
 }
 
@@ -645,15 +645,15 @@ body.is-street .sound {
 }
 
 .speech--boy {
-    bottom: calc(36.1111 * var(--u));
-    left: calc(50% - calc(22.5694 * var(--u)));
+    bottom: calc(41.6667 * var(--u));
+    left: calc(50% - calc(20.4861 * var(--u)));
     transform-origin: 0% 100%;
 }
 
 /* у таксиста плашка зеркальная: хвостик справа внизу */
 .speech--taxi {
-    right: calc(50% - calc(28.4722 * var(--u)));
-    bottom: calc(36.1111 * var(--u));
+    right: calc(50% - calc(26.3889 * var(--u)));
+    bottom: calc(41.6667 * var(--u));
     transform-origin: 100% 100%;
 }
 
@@ -700,6 +700,21 @@ body.is-street .sound {
 .speech--taxi .speech__text {
     right: 10.6%;
     left: 2.6%;
+}
+
+/* плашка ресепшиониста лежит внутри картинки отеля и стоит в % от неё,
+   чтобы на любом мониторе хвостик смотрел ей в голову */
+/* по горизонтали — от картинки отеля (рядом с головой ресепшиониста),
+   по высоте — ровно как плашки мальчика: низ на 41.6667 от низа экрана */
+.speech--receptionist {
+    top: calc(100vh - calc(52.9861 * var(--u)));
+    right: 25%;
+    bottom: auto;
+}
+
+/* в отеле фразы длиннее: больше отступ от краёв плашки, чтобы текст не прилипал */
+.hotel .speech__text {
+    padding: 0 calc(3.125 * var(--u));
 }
 
 .speech__char {
@@ -1196,6 +1211,543 @@ body.is-street .game-header {
 }
 
 
+/* ---------- сцена 3: отель ---------- */
+
+/* проявляется плавно (--hotel от 0 до 1 задаёт js) */
+.hotel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    opacity: var(--hotel, 0);
+    pointer-events: none;
+}
+
+/* сцена с пропорциями фона (1440 × 998) — заполняет экран, как object-fit: cover */
+.hotel__stage {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: max(100vw, 144.2886vh);
+    height: max(100vh, 69.3056vw);
+    transform: translateX(-50%);
+}
+
+.hotel__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* затемнение фона, как на первом игровом экране */
+.hotel__shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0.4;
+}
+
+/* ресепшионист за стойкой, справа от монитора.
+   картинка обрезана по наклонной линии столешницы — всё, что ниже стола, не видно */
+.hotel__receptionist {
+    position: absolute;
+    top: 21.7435%;
+    left: 65.2778%;
+    width: 18.8194%;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 87.52%, 0% 84.55%);
+}
+
+/* ресепшионист сначала не видна — мягко проявляется после реплик мальчика (класс ставит js).
+   именно проявляется, а не выезжает: её низ обрезан по столу и не должен двигаться */
+.hotel .hotel__receptionist {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.hotel--receptionist .hotel__receptionist {
+    opacity: 1;
+}
+
+/* вторая поза (говорит) — та же фигура, стоит точно поверх первой.
+   срез по стойке пересчитан под её рамку, чтобы линия совпадала */
+.hotel__receptionist--2 {
+    top: 25.0272%;
+    left: 73.5751%;
+    width: 10.4861%;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 86.24%, 0% 84.44%);
+}
+
+.hotel--receptionist .hotel__receptionist--2 {
+    opacity: 0;
+}
+
+/* как только она начинает говорить — позы меняются сразу, без растворения */
+.hotel--receptionist-talking .hotel__receptionist--1 {
+    opacity: 0;
+    transition: none;
+}
+
+.hotel--receptionist.hotel--receptionist-talking .hotel__receptionist--2 {
+    opacity: 1;
+    transition: none;
+}
+
+
+/* ---------- выбор в отеле: где поужинать ---------- */
+
+/* отель полностью уходит в черноту — как перед первым выбором */
+.hotel__dim {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.hotel--choice .hotel__dim {
+    opacity: 1;
+}
+
+/* под отелем ещё лежит улица — без этого правило «на улице выбор не ловит клики» выключило бы кнопки */
+body.is-street .choice--hotel.choice--visible {
+    pointer-events: auto;
+}
+
+/* поверх выбора уже проявился номер — кнопки под ним больше не ловят клики */
+body.is-room .choice--hotel.choice--visible {
+    pointer-events: none;
+}
+
+/* шапка растворяется в черноту, звук поднимается в угол — как на первом выборе */
+html body.is-hotel.is-hotel-choosing:not(.is-room) .game-header {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
+    top: calc(2.0833 * var(--u));
+}
+
+/* столешница — ровно там же, где она на фоне; лежит поверх ресепшиониста.
+   затемнена до той же яркости, что фон под чёрным прямоугольником 40% (ровно по своей форме) */
+.hotel__table {
+    position: absolute;
+    top: 54.5432%;
+    left: 52.3567%;
+    width: 52.9861%;
+    filter: brightness(0.6);
+}
+
+/* в отеле шапка снова видна (во время выбора и на улице её прятали; html — чтобы перебить те правила) */
+/* ---------- сцена 4: номер (после выбора доставки) ---------- */
+
+/* лежит поверх отеля и экрана выбора, проявляется плавно (класс ставит js) */
+.room {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.room--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* сцена с пропорциями фона (1536 × 998) — заполняет экран, как object-fit: cover */
+.room__stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100vw, 153.9078vh);
+    height: max(100vh, 64.9740vw);
+    transform: translate(-50%, -50%);
+}
+
+.room__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* затемнение фона, как на остальных игровых экранах */
+.room__shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0.4;
+}
+
+/* мальчик сидит прямо на краю кровати, примерно посередине экрана, ноги на полу.
+   размер — как у мальчика на остальных экранах */
+.room__boy {
+    position: absolute;
+    top: 22%;
+    left: 38%;
+    width: 26.6%;
+    max-width: none;
+}
+
+/* реплика мальчика в номере — над его головой, привязана к картинке номера */
+.room .speech--room-1 {
+    bottom: 68%;
+    left: 56%;
+}
+
+.room .speech__text {
+    padding: 0 calc(3.125 * var(--u));
+}
+
+/* ---------- в номере гаснет свет ---------- */
+
+/* чернота поверх всего номера; резко «моргает» и гаснет (класс ставит js) */
+.room__blackout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.room--dark .room__blackout {
+    opacity: 1;
+    animation: lights-out 0.7s steps(1, end);
+}
+
+@keyframes lights-out {
+    0% {
+        opacity: 1;
+    }
+
+    12% {
+        opacity: 0.15;
+    }
+
+    22% {
+        opacity: 1;
+    }
+
+    34% {
+        opacity: 0.35;
+    }
+
+    42% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* фонарик: в черноте прорезан мягкий круг вокруг курсора — под ним виден номер */
+.room--flashlight .room__blackout {
+    -webkit-mask-image: radial-gradient(
+        circle calc(7.2222 * var(--u)) at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.15) 45%,
+        rgba(0, 0, 0, 0.75) 80%,
+        rgba(0, 0, 0, 1) 100%
+    );
+    mask-image: radial-gradient(
+        circle calc(7.2222 * var(--u)) at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.15) 45%,
+        rgba(0, 0, 0, 0.75) 80%,
+        rgba(0, 0, 0, 1) 100%
+    );
+}
+
+/* ---------- глаза в темноте ---------- */
+
+/* маленькие глаза прячутся в черноте: их видно только в круге фонарика */
+.room__eyes {
+    position: absolute;
+    width: 3.6%;
+    max-width: none;
+    opacity: 0;
+    transform-origin: 50% 60%;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.room--dark .room__eyes {
+    opacity: 1;
+}
+
+/* на глаза посветили — они широко распахиваются... */
+.room--dark .room__eyes--seen {
+    transform: scale(1.25);
+}
+
+/* ...и тут же зажмуриваются и пропадают */
+.room--dark .room__eyes--gone {
+    opacity: 0;
+    transform: scale(1.25, 0.05);
+}
+
+.room__eyes--1 {
+    top: 15%;
+    left: 7.5%;
+}
+
+.room__eyes--2 {
+    top: 5%;
+    left: 29%;
+}
+
+.room__eyes--3 {
+    top: 27%;
+    left: 44%;
+}
+
+.room__eyes--4 {
+    top: 78%;
+    left: 16%;
+}
+
+.room__eyes--5 {
+    top: 60%;
+    left: 63%;
+}
+
+.room__eyes--6 {
+    top: 38%;
+    left: 78%;
+}
+
+.room__eyes--7 {
+    top: 84%;
+    left: 91%;
+}
+
+.room__eyes--8 {
+    top: 88%;
+    left: 55%;
+}
+
+/* ---------- пугалка: дверь и незнакомец ---------- */
+
+/* слой с пропорциями номера поверх черноты; перспектива — чтобы дверь открывалась в объёме */
+.room__stage--scare {
+    pointer-events: none;
+    perspective: calc(83.3333 * var(--u));
+    opacity: 0;
+}
+
+.room--door .room__stage--scare {
+    opacity: 1;
+}
+
+/* подошёл вплотную — резко пропадает (потом снова выйдет из двери) */
+.room--caught .room__stranger {
+    opacity: 0;
+    transition: none;
+}
+
+/* проём двери — чёрная пустота в тёмно-серой раме */
+.room__doorway {
+    position: absolute;
+    top: 18.6373%;
+    left: 83.2031%;
+    width: 13.8021%;
+    height: 52.5050%;
+    background-color: #050505;
+    outline: calc(0.2778 * var(--u)) solid #3A393A;
+}
+
+/* дверь тёмно-серая, петли справа: открывается к нам */
+.room__door {
+    position: absolute;
+    top: 18.6373%;
+    left: 83.2031%;
+    z-index: 2;
+    width: 13.8021%;
+    height: 52.5050%;
+    max-width: none;
+    transform-origin: 100% 50%;
+    transform: rotateY(0deg);
+    transition: transform 1.2s cubic-bezier(0.55, 0, 0.35, 1);
+}
+
+.room--door .room__door {
+    transform: rotateY(-78deg);
+}
+
+/* человек в балахоне: появляется в проёме, ростом почти с дверь, лицо — чёрная пустота */
+.room__stranger {
+    position: absolute;
+    bottom: 28.8577%;
+    left: 80.2%;
+    z-index: 1;
+    width: 19.8%;
+    opacity: 0;
+    transform-origin: 50% 24.7%;
+    transition: opacity 0.8s ease;
+}
+
+.room__stranger-body {
+    display: block;
+    width: 100%;
+    max-width: none;
+    filter: brightness(0.42);
+}
+
+/* выходит из темноты проёма */
+.room--stranger .room__stranger {
+    opacity: 1;
+}
+
+/* и очень медленно идёт прямо к нам, пока ищем выключатель: растёт, чёрное лицо приближается к центру экрана */
+.room--walk .room__stranger {
+    z-index: 3;
+    animation: stranger-walk 20s cubic-bezier(0.3, 0, 0.75, 0.85) forwards;
+}
+
+/* шаги: на ходу фигура чуть покачивается */
+.room--walk .room__stranger-body {
+    animation: stranger-step 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes stranger-walk {
+    0% {
+        transform: translate(0%, 0%) scale(1);
+    }
+
+    100% {
+        transform: translate(-202.5%, 23%) scale(4.2);
+    }
+}
+
+@keyframes stranger-step {
+    0% {
+        translate: 0 0;
+        rotate: -1.2deg;
+    }
+
+    100% {
+        translate: 0 -1.5%;
+        rotate: 1.2deg;
+    }
+}
+
+/* мысль мальчика в темноте: просто белый текст по центру, без плашки */
+.speech.room__dark-text {
+    top: 50%;
+    left: 50%;
+    width: calc(36.1111 * var(--u));
+    height: auto;
+    transform: translate(-50%, -50%);
+}
+
+.speech.room__dark-text .speech__text {
+    position: relative;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 0;
+}
+
+.speech.room__dark-text .speech__inner {
+    font-size: calc(2.2222 * var(--u));
+    line-height: calc(3.0556 * var(--u));
+    color: #FFFFFF;
+}
+
+/* когда появился фонарик или включили свет — мысль уходит */
+.room--flashlight .speech.room__dark-text,
+.room--lit .speech.room__dark-text {
+    opacity: 0;
+}
+
+/* сам фонарик рисуем у курсора: его стекло — в центре светового круга */
+.room__flashlight {
+    position: absolute;
+    top: var(--light-y, 50%);
+    left: var(--light-x, 50%);
+    width: calc(3.3333 * var(--u));
+    max-width: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-12%, -12%);
+    transition: opacity 0.4s ease;
+}
+
+.room--flashlight .room__flashlight {
+    opacity: 1;
+}
+
+/* вместо курсора — фонарик */
+body.is-flashlight,
+body.is-flashlight * {
+    cursor: none;
+}
+
+/* верхний слой с пропорциями номера — только для кнопки выключателя */
+.room__stage--top {
+    pointer-events: none;
+}
+
+/* выключатель: прозрачная кнопка поверх нарисованного выключателя (с запасом по краям) */
+.room__switch {
+    position: absolute;
+    top: 40.2%;
+    left: 23.9%;
+    width: 3.4%;
+    height: 9%;
+    padding: 0;
+    background: none;
+    border: none;
+    pointer-events: none;
+}
+
+.room--flashlight .room__switch {
+    pointer-events: auto;
+}
+
+/* свет погас — шапка тоже в черноте */
+html body.is-hotel.is-lights-out .game-header {
+    opacity: 0;
+    transition: none;
+}
+
+html body.is-hotel .game-header {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* и звук возвращается под шапку */
+body.is-hotel .sound {
+    top: calc(7.2917 * var(--u));
+}
+
+
 /* ---------- шапка игры (общая для всех игровых экранов) ---------- */
 
 .game-header {
@@ -1301,6 +1853,119 @@ body.is-choosing .game-header {
     align-items: center;
     gap: calc(1.0417 * var(--u));
     height: calc(4.8611 * var(--u));
+}
+
+
+/* ---------- бургер и меню глав ---------- */
+
+/* шапка сама по себе не ловит клики — включаем их только у кнопки и меню, и только когда шапка видна */
+.game-header__burger {
+    position: relative;
+    width: calc(3.4722 * var(--u));
+    height: calc(2.3611 * var(--u));
+    margin-left: calc(0.6944 * var(--u));
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    pointer-events: none;
+    transition: transform 0.25s ease;
+}
+
+body.is-header-active .game-header__burger {
+    pointer-events: auto;
+}
+
+.game-header__burger:hover {
+    transform: rotate(-4deg) scale(1.08);
+}
+
+.game-header__burger-icon {
+    width: 100%;
+    height: 100%;
+}
+
+/* меню открыто — бургер наклонён */
+.game-header--menu-open .game-header__burger {
+    transform: rotate(-12deg) scale(1.08);
+}
+
+/* само меню: рукописная белая плашка под шапкой справа */
+.chapters-menu {
+    position: absolute;
+    top: calc(6.2500 * var(--u));
+    right: calc(2.0833 * var(--u));
+    width: calc(22.2222 * var(--u));
+    padding: calc(2.7778 * var(--u)) calc(2.0833 * var(--u)) calc(4.5139 * var(--u));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(calc(-1.3889 * var(--u))) rotate(1deg);
+    transform-origin: 90% 0%;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+}
+
+.game-header--menu-open .chapters-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) rotate(0deg);
+}
+
+.chapters-menu__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.chapters-menu__list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: calc(0.6944 * var(--u));
+}
+
+.chapters-menu__link {
+    display: flex;
+    align-items: baseline;
+    gap: calc(0.6944 * var(--u));
+    width: 100%;
+    padding: calc(0.4167 * var(--u)) calc(0.6944 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.8056 * var(--u));
+    line-height: calc(2.2222 * var(--u));
+    font-weight: 400;
+    color: #3E3E3E;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.chapters-menu__link:hover:not(:disabled) {
+    color: #000000;
+    transform: translateX(calc(0.6944 * var(--u)));
+}
+
+/* текущая глава — подчёркнута от руки (той же шкалой, что в шапке) */
+.chapters-menu__link--current {
+    background-image: url("../img/scale-fill.svg");
+    background-repeat: no-repeat;
+    background-position: calc(0.6944 * var(--u)) 100%;
+    background-size: calc(12.5000 * var(--u)) calc(0.4167 * var(--u));
+}
+
+/* главы, которых ещё нет */
+.chapters-menu__link:disabled {
+    color: #3E3E3E;
+    opacity: 0.4;
+    cursor: default;
+}
+
+.chapters-menu__soon {
+    font-size: calc(1.1111 * var(--u));
+    line-height: calc(1.1111 * var(--u));
 }
 
 
