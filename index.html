@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра</title>
 
-    <!-- ?v=37 — номер версии: меняем его при каждом обновлении сайта,
+    <!-- ?v=45 — номер версии: меняем его при каждом обновлении сайта,
          чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=37">
-    <link rel="stylesheet" href="css/fonts.css?v=37">
-    <link rel="stylesheet" href="css/style.css?v=37">
-    <link rel="stylesheet" href="css/mobile.css?v=37">
+    <link rel="stylesheet" href="css/reset.css?v=45">
+    <link rel="stylesheet" href="css/fonts.css?v=45">
+    <link rel="stylesheet" href="css/style.css?v=45">
+    <link rel="stylesheet" href="css/mobile.css?v=45">
 </head>
 
 <body>
@@ -57,7 +57,7 @@
 
         <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=37" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=45" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
@@ -490,15 +490,79 @@
                         <div class="room__shade"></div>
                         <img class="room__boy" src="img/boy-sitting.svg?v=5" alt="Главный герой сидит на кровати">
 
-                        <!-- глаза в темноте: видны, только если посветить на них фонариком -->
-                        <img class="room__eyes room__eyes--1" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--2" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--3" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--4" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--5" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--6" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--7" src="img/dark-eyes.svg" alt="">
-                        <img class="room__eyes room__eyes--8" src="img/dark-eyes.svg" alt="">
+                        <!-- глаза в темноте (такие же, как на первом экране): видны, только если посветить фонариком -->
+                        <div class="eye eye--a eye--always-open eye--still room__eyes room__eyes--1" data-type="a">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye1.svg" alt="">
+                                <div class="eye__socket eye__socket--a">
+                                    <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--c eye--mirror eye--always-open eye--still room__eyes room__eyes--2" data-type="c">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye3.svg" alt="">
+                                <div class="eye__socket eye__socket--c">
+                                    <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--b eye--always-open eye--still room__eyes room__eyes--3" data-type="b">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye2.svg" alt="">
+                                <div class="eye__socket eye__socket--b">
+                                    <img class="eye__pupil eye__pupil--b" src="img/pupil2.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye2-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--a eye--mirror eye--always-open eye--still room__eyes room__eyes--4" data-type="a">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye1.svg" alt="">
+                                <div class="eye__socket eye__socket--a">
+                                    <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--c eye--always-open eye--still room__eyes room__eyes--5" data-type="c">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye3.svg" alt="">
+                                <div class="eye__socket eye__socket--c">
+                                    <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--b eye--mirror eye--always-open eye--still room__eyes room__eyes--6" data-type="b">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye2.svg" alt="">
+                                <div class="eye__socket eye__socket--b">
+                                    <img class="eye__pupil eye__pupil--b" src="img/pupil2.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye2-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--a eye--always-open eye--still room__eyes room__eyes--7" data-type="a">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye1.svg" alt="">
+                                <div class="eye__socket eye__socket--a">
+                                    <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                            </div>
+                        </div>
+                        <div class="eye eye--c eye--mirror eye--always-open eye--still room__eyes room__eyes--8" data-type="c">
+                            <div class="eye__open">
+                                <img class="eye__base" src="img/eye3.svg" alt="">
+                                <div class="eye__socket eye__socket--c">
+                                    <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                                </div>
+                                <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                            </div>
+                        </div>
 
                         <div class="speech speech--boy speech--room-1">
                             <img class="speech__bg" src="img/speech.svg" alt="">
@@ -511,20 +575,33 @@
                     <!-- свет гаснет: чернота на весь экран, потом в ней виден только круг от фонарика -->
                     <div class="room__blackout"></div>
 
-                    <!-- пугалка в темноте: открывается дверь, и человек в балахоне медленно идёт к нам, пока ищем выключатель -->
+                    <!-- пугалка в темноте: открывается дверь, человек в балахоне медленно идёт к мальчику, пока ищем выключатель -->
                     <div class="room__stage room__stage--scare">
                         <div class="room__doorway"></div>
                         <div class="room__stranger">
                             <img class="room__stranger-body" src="img/hooded.svg" alt="">
+                            <!-- при свете оказывается: это девочка-курьер с пиццей -->
+                            <img class="room__girl" src="img/girl-pizza.svg?v=4" alt="Девочка в капюшоне с пиццей">
                         </div>
                         <img class="room__door" src="img/door-dark.svg" alt="">
                     </div>
 
-                    <!-- мысль мальчика в темноте — без плашки, просто текст -->
-                    <div class="speech room__dark-text">
-                        <p class="speech__text">
-                            <span class="speech__inner">ой! что случилось? надо найти выключатель и нажать на него.</span>
-                        </p>
+
+                    <!-- реплики поверх черноты и пугалки: мальчик в темноте и девочка при свете -->
+                    <div class="room__stage room__stage--talk">
+                        <div class="speech speech--boy speech--room-2">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">ой! что случилось? надо найти выключатель и нажать на него.</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--taxi speech--girl-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">ваш ужин, сэр! с вас 20$</span>
+                            </p>
+                        </div>
                     </div>
 
                     <!-- фонарик вместо курсора -->
@@ -544,10 +621,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=37"></script>
-    <script src="js/preloader.js?v=37"></script>
-    <script src="js/game-header.js?v=37"></script>
-    <script src="js/script.js?v=37"></script>
+    <script src="js/sound.js?v=45"></script>
+    <script src="js/preloader.js?v=45"></script>
+    <script src="js/game-header.js?v=45"></script>
+    <script src="js/script.js?v=45"></script>
 </body>
 
 </html>
