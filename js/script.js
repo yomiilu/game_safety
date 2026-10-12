@@ -63,6 +63,8 @@ function setupEyes() {
             isMirror: eyeElement.classList.contains("eye--mirror"),
             // глаза на экране выбора всегда открыты — по скроллу не закрываются
             isAlwaysOpen: eyeElement.classList.contains("eye--always-open"),
+            // глаза в номере стоят на месте — только следят зрачками
+            isStill: eyeElement.classList.contains("eye--still"),
             currentX: 0,
             currentY: 0,
             tremorX: 0,
@@ -845,10 +847,20 @@ const dialogue = [
         speed: 1
     },
     {
-        selector: ".room__dark-text",
+        selector: ".speech--room-2",
         scene: "room",
         from: roomDarkFrom,
         speed: 1
+    },
+    {
+        selector: ".speech--girl-1",
+        scene: "room",
+        from: roomDarkFrom,
+        speed: 1,
+        // девочка заговорит, только когда включили свет
+        waitFor: function () {
+            return room.isLit;
+        }
     }
 ];
 
@@ -2096,8 +2108,9 @@ const room = {
 };
 
 // пугалка: через сколько (мс) от её начала открывается дверь,
-// когда в проёме появляется человек в балахоне и когда он начинает медленно идти к нам.
-// идёт он, пока игрок ищет выключатель: успел подойти вплотную — пропадает и выходит снова
+// когда в проёме появляется человек в балахоне и когда он начинает медленно идти к мальчику.
+// идёт он, пока игрок ищет выключатель, и останавливается рядом с мальчиком.
+// включили свет — это девочка-курьер с пиццей
 const scareTimeline = [
     { at: 0, className: "room--door" },
     { at: 1000, className: "room--stranger" },
@@ -2106,9 +2119,6 @@ const scareTimeline = [
 
 // дверь открывается через столько (мс) после того, как в руке появился фонарик
 const scareDelay = 1500;
-
-// человек в балахоне подошёл вплотную: на столько (мс) он пропадает, потом снова выходит из двери
-const strangerReturnDelay = 1400;
 
 // глаз в темноте: сколько (мс) он смотрит на фонарик, прежде чем зажмуриться и пропасть
 const eyesStareTime = 450;
@@ -2186,26 +2196,11 @@ function playScare() {
 }
 
 
-// человек в балахоне подошёл вплотную — резко пропадает, а потом снова идёт от двери
+// человек в балахоне дошёл до своего места рядом с мальчиком — останавливается
 function onStrangerArrived(event) {
-    if (event.animationName !== "stranger-walk" || !room.isDark) {
-        return;
+    if (event.animationName === "stranger-walk") {
+        room.element.classList.add("room--arrived");
     }
-
-    const runId = room.scareRunId;
-
-    room.element.classList.add("room--caught");
-
-    setTimeout(function () {
-        if (runId !== room.scareRunId || !room.isDark) {
-            return;
-        }
-
-        // снимаем и сразу возвращаем класс — так анимация шага начинается заново
-        room.element.classList.remove("room--walk", "room--caught");
-        void room.stranger.offsetWidth;
-        room.element.classList.add("room--walk");
-    }, strangerReturnDelay);
 }
 
 
@@ -2215,7 +2210,7 @@ function updateDarkEyes(now) {
         return;
     }
 
-    const beamRadius = getDesignUnit() * 7.2222 * 0.55;
+    const beamRadius = getDesignUnit() * 7.2222 * 0.7;
 
     room.eyes.forEach(function (eye) {
         if (eye.seenAt > 0) {
@@ -2253,14 +2248,14 @@ function turnLightsOn() {
     room.element.classList.add("room--lit");
     document.body.classList.remove("is-lights-out", "is-flashlight", "is-choice-locked");
 
-    // свет включили — человек в балахоне исчезает
-    stopScare();
+    // свет включили: пугалка дальше не идёт, а человек в балахоне оказывается девочкой с пиццей
+    room.scareRunId = room.scareRunId + 1;
 }
 
 
 function stopScare() {
     room.scareRunId = room.scareRunId + 1;
-    room.element.classList.remove("room--door", "room--stranger", "room--walk", "room--caught");
+    room.element.classList.remove("room--door", "room--stranger", "room--walk", "room--arrived");
 }
 
 
@@ -2297,7 +2292,7 @@ function updateRoom(progress) {
     }
 
     // мысль в темноте допечатана — через мгновение в руке фонарик
-    const darkText = findLine(".room__dark-text");
+    const darkText = findLine(".speech--room-2");
 
     if (room.isDark && darkText.isFinished && !room.isFlashlight && !room.flashlightTimer) {
         room.flashlightTimer = setTimeout(function () {
@@ -2339,7 +2334,10 @@ function animate(now) {
     const progress = getScrollProgress();
 
     eyes.forEach(function (eye, index) {
-        updateFlee(eye);
+        if (!eye.isStill) {
+            updateFlee(eye);
+        }
+
         updatePupil(eye, now);
         if (!eye.isAlwaysOpen) {
             updateEyeClose(eye, index, progress);

@@ -419,8 +419,8 @@ body.is-street .sound {
     animation: noise-shake 0.6s steps(6) infinite;
 }
 
-/* моргание лампы: класс вешает js в случайный момент */
-.hero--flicker .eye {
+/* моргание лампы: класс вешает js в случайный момент (глаза в номере не моргают — их видно только с фонариком) */
+.hero--flicker .eye:not(.room__eyes) {
     animation: lamp-flicker 0.45s linear;
 }
 
@@ -1411,10 +1411,22 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     max-width: none;
 }
 
-/* реплика мальчика в номере — над его головой, привязана к картинке номера */
-.room .speech--room-1 {
+/* реплики мальчика в номере — над его головой, привязаны к картинке номера */
+.room .speech--room-1,
+.room .speech--room-2 {
     bottom: 68%;
-    left: 56%;
+    left: 54%;
+}
+
+/* реплика девочки — над её капюшоном, хвостик справа */
+.room .speech--girl-1 {
+    right: 18%;
+    bottom: 72.5%;
+}
+
+/* слой реплик поверх черноты и пугалки */
+.room__stage--talk {
+    pointer-events: none;
 }
 
 .room .speech__text {
@@ -1486,69 +1498,108 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
 
 /* ---------- глаза в темноте ---------- */
 
-/* маленькие глаза прячутся в черноте: их видно только в круге фонарика */
-.room__eyes {
-    position: absolute;
-    width: 3.6%;
-    max-width: none;
+/* такие же глаза, как на первом экране, только маленькие; прячутся в черноте —
+   их видно только в круге фонарика, а зрачки следят за ним */
+.eye.room__eyes {
+    width: 5.2%;
+    height: auto;
     opacity: 0;
-    transform-origin: 50% 60%;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.25s ease, scale 0.25s ease;
 }
 
-.room--dark .room__eyes {
+.eye--a.room__eyes {
+    aspect-ratio: 25.9028 / 16.3889;
+}
+
+.eye--b.room__eyes {
+    aspect-ratio: 22.0833 / 18.3333;
+}
+
+.eye--c.room__eyes {
+    aspect-ratio: 18.4028 / 10.4861;
+}
+
+/* зрачки — в долях глаза, а не в единицах экрана (глаз здесь другого размера) */
+.room__eyes .eye__pupil--a {
+    top: 41.3678%;
+    left: 32.5104%;
+    width: 31.6354%;
+    height: 29.2373%;
+}
+
+.room__eyes .eye__pupil--b {
+    top: 38.4011%;
+    left: 25.6786%;
+    width: 40.5660%;
+    height: 38.2577%;
+}
+
+.room__eyes .eye__pupil--c {
+    top: 38.4852%;
+    left: 37.5594%;
+    width: 40.0000%;
+    height: 32.4504%;
+}
+
+/* глаза появляются только с фонариком (не во время моргания света),
+   а при включённом свете исчезают сразу, без растворения */
+.room--flashlight .eye.room__eyes {
     opacity: 1;
 }
 
-/* на глаза посветили — они широко распахиваются... */
-.room--dark .room__eyes--seen {
-    transform: scale(1.25);
+.room--lit .eye.room__eyes {
+    transition: none;
 }
 
-/* ...и тут же зажмуриваются и пропадают */
-.room--dark .room__eyes--gone {
+/* на глаз посветили — он широко распахивается... */
+.room--dark .eye.room__eyes--seen {
+    scale: 1.25;
+}
+
+/* ...и тут же зажмуривается и пропадает */
+.room--dark .eye.room__eyes--gone {
     opacity: 0;
-    transform: scale(1.25, 0.05);
+    scale: 1.25 0.05;
 }
 
 .room__eyes--1 {
-    top: 15%;
-    left: 7.5%;
+    top: 14%;
+    left: 7%;
 }
 
 .room__eyes--2 {
-    top: 5%;
-    left: 29%;
+    top: 4%;
+    left: 28%;
 }
 
 .room__eyes--3 {
-    top: 27%;
-    left: 44%;
+    top: 25%;
+    left: 43%;
 }
 
 .room__eyes--4 {
-    top: 78%;
-    left: 16%;
+    top: 77%;
+    left: 14%;
 }
 
 .room__eyes--5 {
-    top: 60%;
+    top: 58%;
     left: 63%;
 }
 
 .room__eyes--6 {
-    top: 38%;
-    left: 78%;
+    top: 36%;
+    left: 76%;
 }
 
 .room__eyes--7 {
-    top: 84%;
-    left: 91%;
+    top: 82%;
+    left: 89%;
 }
 
 .room__eyes--8 {
-    top: 88%;
-    left: 55%;
+    top: 87%;
+    left: 53%;
 }
 
 /* ---------- пугалка: дверь и незнакомец ---------- */
@@ -1564,11 +1615,7 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     opacity: 1;
 }
 
-/* подошёл вплотную — резко пропадает (потом снова выйдет из двери) */
-.room--caught .room__stranger {
-    opacity: 0;
-    transition: none;
-}
+
 
 /* проём двери — чёрная пустота в тёмно-серой раме */
 .room__doorway {
@@ -1599,16 +1646,16 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     transform: rotateY(-78deg);
 }
 
-/* человек в балахоне: появляется в проёме, ростом почти с дверь, лицо — чёрная пустота */
+/* человек в балахоне: плавно проступает перед дверью, ростом почти с неё, лицо — чёрная пустота */
 .room__stranger {
     position: absolute;
-    bottom: 28.8577%;
+    bottom: 26.5%;
     left: 80.2%;
-    z-index: 1;
+    z-index: 3;
     width: 19.8%;
     opacity: 0;
-    transform-origin: 50% 24.7%;
-    transition: opacity 0.8s ease;
+    transform-origin: 50% 100%;
+    transition: opacity 1.4s ease;
 }
 
 .room__stranger-body {
@@ -1618,20 +1665,24 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     filter: brightness(0.42);
 }
 
-/* выходит из темноты проёма */
+/* проступает из темноты перед дверью */
 .room--stranger .room__stranger {
     opacity: 1;
 }
 
-/* и очень медленно идёт прямо к нам, пока ищем выключатель: растёт, чёрное лицо приближается к центру экрана */
+/* и очень медленно идёт к мальчику, пока ищем выключатель: останавливается справа от него посреди комнаты */
 .room--walk .room__stranger {
     z-index: 3;
-    animation: stranger-walk 20s cubic-bezier(0.3, 0, 0.75, 0.85) forwards;
+    animation: stranger-walk 9s cubic-bezier(0.3, 0, 0.6, 1) forwards;
 }
 
-/* шаги: на ходу фигура чуть покачивается */
+/* шаги: на ходу фигура чуть покачивается, дошла — стоит */
 .room--walk .room__stranger-body {
     animation: stranger-step 0.9s ease-in-out infinite alternate;
+}
+
+.room--arrived .room__stranger-body {
+    animation: none;
 }
 
 @keyframes stranger-walk {
@@ -1640,8 +1691,45 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     }
 
     100% {
-        transform: translate(-202.5%, 23%) scale(4.2);
+        transform: translate(-30%, 39%) scale(1.32);
     }
+}
+
+/* девочка — та же фигура, только уже при свете */
+.room__girl {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    opacity: 0;
+}
+
+/* свет включили: двери в темноте больше нет, а вместо человека в балахоне — девочка с пиццей,
+   на том месте, куда он шёл (даже если не успел дойти) */
+.room--lit .room__stage--scare {
+    opacity: 1;
+}
+
+.room--lit .room__door,
+.room--lit .room__doorway {
+    opacity: 0;
+}
+
+.room--lit .room__stranger {
+    opacity: 1;
+    transform: translate(-30%, 39%) scale(1.32);
+    animation: none;
+    transition: none;
+}
+
+.room--lit .room__stranger-body {
+    opacity: 0;
+    animation: none;
+}
+
+.room--lit .room__girl {
+    opacity: 1;
 }
 
 @keyframes stranger-step {
@@ -1656,33 +1744,9 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     }
 }
 
-/* мысль мальчика в темноте: просто белый текст по центру, без плашки */
-.speech.room__dark-text {
-    top: 50%;
-    left: 50%;
-    width: calc(36.1111 * var(--u));
-    height: auto;
-    transform: translate(-50%, -50%);
-}
-
-.speech.room__dark-text .speech__text {
-    position: relative;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    padding: 0;
-}
-
-.speech.room__dark-text .speech__inner {
-    font-size: calc(2.2222 * var(--u));
-    line-height: calc(3.0556 * var(--u));
-    color: #FFFFFF;
-}
-
 /* когда появился фонарик или включили свет — мысль уходит */
-.room--flashlight .speech.room__dark-text,
-.room--lit .speech.room__dark-text {
+.room--flashlight .speech--room-2,
+.room--lit .speech--room-2 {
     opacity: 0;
 }
 
@@ -1729,6 +1793,11 @@ body.is-flashlight * {
 
 .room--flashlight .room__switch {
     pointer-events: auto;
+}
+
+/* свет погас — значок звука поднимается в угол, как на других чёрных экранах */
+body.is-hotel.is-lights-out .sound {
+    top: calc(2.0833 * var(--u));
 }
 
 /* свет погас — шапка тоже в черноте */
