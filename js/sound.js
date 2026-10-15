@@ -1,6 +1,7 @@
 // ---------- звуки ----------
 // правила: одновременно играет только один звук; звук играет, только пока его экран на месте;
-// выключается не резко, а быстрым плавным затуханием
+// выключается не резко, а быстрым плавным затуханием.
+// исключение — фоновые звуки (темнота, дверь): они звучат поверх остальных и их не глушат
 
 const sound = {
     volume: 0.6,
@@ -52,15 +53,17 @@ function saveSoundSettings() {
 }
 
 
-function createChannel(name, src, startTime) {
+// isLoop — повторять по кругу; isLayer — фоновый звук: играет поверх остальных, другие его не глушат
+function createChannel(name, src, startTime, isLoop, isLayer) {
     const audio = new Audio(src);
 
-    audio.loop = true;
+    audio.loop = isLoop !== false;
     audio.preload = "auto";
 
     sound.channels[name] = {
         audio: audio,
         startTime: startTime,
+        isLayer: isLayer === true,
         level: 1,
         fadeTimer: null
     };
@@ -85,14 +88,17 @@ function isChannelPlaying(name) {
 
 
 // включаем канал; все остальные быстро затихают — звуки не накладываются
+// (фоновые звуки не глушат других и сами не глушатся)
 function playChannel(name, fromStart) {
-    Object.keys(sound.channels).forEach(function (otherName) {
-        if (otherName !== name) {
-            fadeOutChannel(otherName);
-        }
-    });
-
     const channel = sound.channels[name];
+
+    if (!channel.isLayer) {
+        Object.keys(sound.channels).forEach(function (otherName) {
+            if (otherName !== name && !sound.channels[otherName].isLayer) {
+                fadeOutChannel(otherName);
+            }
+        });
+    }
 
     clearInterval(channel.fadeTimer);
     channel.fadeTimer = null;
@@ -175,6 +181,34 @@ function stopCarSound() {
 }
 
 
+// ---------- номер: темнота и дверь ----------
+
+// гул темноты, пока в номере выключен свет
+function startDarkSound() {
+    if (isChannelPlaying("dark")) {
+        return;
+    }
+
+    playChannel("dark", true);
+}
+
+
+function stopDarkSound() {
+    fadeOutChannel("dark");
+}
+
+
+// дверь открывается — один раз
+function playDoorSound() {
+    playChannel("door", true);
+}
+
+
+function stopDoorSound() {
+    fadeOutChannel("door");
+}
+
+
 // первый клик или клавиша разрешают звук: если машинка как раз печатает — включаем её
 function unlockSound() {
     if (sound.isTyping && sound.channels.typewriter.audio.paused) {
@@ -193,6 +227,10 @@ function setupSound() {
 
     // звук машины во время поездки, повторяется по кругу
     createChannel("car", "sounds/car-ride.m4a", 0);
+
+    // темнота в номере (по кругу) и скрип двери (один раз) — звучат поверх реплик
+    createChannel("dark", "sounds/darkness.mp3", 0, true, true);
+    createChannel("door", "sounds/door.mp3", 0, false, true);
 
     loadSoundSettings();
     applyVolume();

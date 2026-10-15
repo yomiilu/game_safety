@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра</title>
 
-    <!-- ?v=45 — номер версии: меняем его при каждом обновлении сайта,
+    <!-- ?v=79 — номер версии: меняем его при каждом обновлении сайта,
          чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=45">
-    <link rel="stylesheet" href="css/fonts.css?v=45">
-    <link rel="stylesheet" href="css/style.css?v=45">
-    <link rel="stylesheet" href="css/mobile.css?v=45">
+    <link rel="stylesheet" href="css/reset.css?v=79">
+    <link rel="stylesheet" href="css/fonts.css?v=79">
+    <link rel="stylesheet" href="css/style.css?v=79">
+    <link rel="stylesheet" href="css/mobile.css?v=79">
 </head>
 
 <body>
@@ -57,7 +57,7 @@
 
         <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=45" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=79" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
@@ -82,12 +82,13 @@
 
                 <button class="game-header__burger" type="button" aria-label="Открыть меню глав" aria-expanded="false">
                     <img class="game-header__burger-icon" src="img/burger.svg" alt="">
+                    <img class="game-header__close-icon" src="img/close.svg" alt="">
                 </button>
             </div>
 
             <!-- меню глав: открывается бургером -->
             <nav class="chapters-menu" aria-label="Главы">
-                <img class="chapters-menu__bg" src="img/menu-plate.svg" alt="">
+                <img class="chapters-menu__bg" src="img/info-plate.svg" alt="">
 
                 <ul class="chapters-menu__list">
                     <li class="chapters-menu__item">
@@ -103,7 +104,7 @@
                     </li>
 
                     <li class="chapters-menu__item">
-                        <button class="chapters-menu__link" type="button" data-chapter="3" disabled>глава 3 <span class="chapters-menu__soon">скоро</span></button>
+                        <button class="chapters-menu__link" type="button" data-chapter="3">глава 3 “прогулка”</button>
                     </li>
 
                     <li class="chapters-menu__item">
@@ -329,7 +330,7 @@
                     <div class="street__blackout"></div>
 
                     <!-- последствия выбора «официальное такси»: текст на чёрном, потом удар по деньгам и безопасности -->
-                    <div class="outcome">
+                    <div class="outcome outcome--taxi">
                         <div class="outcome__flash"></div>
 
                         <p class="outcome__text">
@@ -371,7 +372,80 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- последствия выбора «поехать с мужчиной»: водитель гнал без правил, но цену не поднял -->
+                    <div class="outcome outcome--driver">
+                        <div class="outcome__flash"></div>
+
+                        <p class="outcome__text">
+                            <span class="outcome__inner">
+                                Водитель чуть не попал в аварию,
+                                <br>
+                                так как не соблюдал правила дорожного движения,
+                                <br>
+                                но тебе повезло: он не стал поднимать цену
+                            </span>
+                        </p>
+
+                        <div class="outcome__stats">
+                            <div class="outcome__stat outcome__stat--money">
+                                <img class="outcome__icon outcome__icon--money" src="img/money-icon.svg" alt="Деньги">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">320</span>
+                                    <span class="outcome__unit">$</span>
+                                </div>
+
+                                <span class="outcome__delta">−30$</span>
+                            </div>
+
+                            <div class="outcome__stat outcome__stat--safety">
+                                <img class="outcome__icon outcome__icon--safety" src="img/safety-icon.svg" alt="Безопасность">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">97</span>
+                                    <span class="outcome__unit">%</span>
+                                </div>
+
+                                <span class="outcome__delta">−27%</span>
+
+                                <div class="outcome__scale">
+                                    <img class="outcome__scale-empty" src="img/scale.svg" alt="">
+                                    <img class="outcome__scale-fill" src="img/scale-fill.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- лонгрид: разбор после первой главы. текст проявляется по частям при прокрутке -->
+                <section class="longread" aria-label="Такси в чужом городе">
+                    <div class="longread__inner">
+                        <div class="longread__text">
+                            <p class="longread__kicker longread__step" data-step="0.10">глава 1 · что стоит знать</p>
+                            <h2 class="longread__title longread__step" data-step="0.15">такси в чужом городе</h2>
+                            <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="0.25">
+                            <p class="longread__paragraph longread__step" data-step="0.45">В поездках нас проще обмануть, и таксисты этим часто пользуются. Водитель знает город и цены, а турист нет, поэтому то счётчик вдруг сломан и цена названа с потолка, то машина едет в объезд, то появляются доплаты за багаж, то в конце поездки сумма неожиданно растёт.</p>
+                            <p class="longread__accent longread__step" data-step="0.95">
+                                <mark class="longread__mark">Но проблема не только в деньгах.</mark>
+                            </p>
+                            <p class="longread__paragraph longread__step" data-step="1.30">Случайный таксист может гнать, резко перестраиваться, быть уставшим после смены или ездить на старой неисправной машине. Так что можно и переплатить, и попасть в аварию.</p>
+                        </div>
+
+                        <div class="longread__tips longread__step" data-step="1.80">
+                            <img class="longread__plate" src="img/info-plate.svg" alt="">
+                            <p class="longread__tips-title">Лучше заранее:</p>
+                            <ul class="longread__list">
+                                <li class="longread__item longread__step" data-step="2.00">узнать примерные цены</li>
+                                <li class="longread__item longread__step" data-step="2.15">вызывать такси через приложение</li>
+                                <li class="longread__item longread__step" data-step="2.30">следить за маршрутом по карте</li>
+                                <li class="longread__item longread__step" data-step="2.45">пристёгиваться</li>
+                                <li class="longread__item longread__step" data-step="2.60">запоминать номер машины</li>
+                            </ul>
+                            <p class="longread__tips-note longread__step" data-step="2.90">А если водитель едет страшно, можно попросить ехать спокойнее или просто выйти в людном месте.</p>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- сцена 3: отель. проявляется после чёрного экрана поездки -->
                 <div class="hotel">
@@ -611,6 +685,202 @@
                     <div class="room__stage room__stage--top">
                         <button class="room__switch" type="button" aria-label="Выключатель"></button>
                     </div>
+
+                    <!-- итог доставки: чёрный экран — заплатили за ужин и впустили незнакомца в номер -->
+                    <div class="outcome outcome--room">
+                        <div class="outcome__flash"></div>
+
+                        <p class="outcome__text">
+                            <span class="outcome__inner">
+                                Ужин обошёлся в 20$,
+                                <br>
+                                а незнакомца ты сам впустил в номер —
+                                <br>
+                                и потерял 33% безопасности
+                            </span>
+                        </p>
+
+                        <div class="outcome__stats">
+                            <div class="outcome__stat outcome__stat--money">
+                                <img class="outcome__icon outcome__icon--money" src="img/money-icon.svg" alt="Деньги">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">320</span>
+                                    <span class="outcome__unit">$</span>
+                                </div>
+
+                                <span class="outcome__delta">−20$</span>
+                            </div>
+
+                            <div class="outcome__stat outcome__stat--safety">
+                                <img class="outcome__icon outcome__icon--safety" src="img/safety-icon.svg" alt="Безопасность">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">97</span>
+                                    <span class="outcome__unit">%</span>
+                                </div>
+
+                                <span class="outcome__delta">−33%</span>
+
+                                <div class="outcome__scale">
+                                    <img class="outcome__scale-empty" src="img/scale.svg" alt="">
+                                    <img class="outcome__scale-fill" src="img/scale-fill.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- сцена 4б: кафе. проявляется, если выбрали пойти в местное кафе -->
+                <div class="cafe">
+                    <div class="cafe__stage">
+                        <img class="cafe__bg" src="img/bg5.svg?v=2" alt="">
+                        <div class="cafe__shade"></div>
+                    </div>
+
+                    <!-- мальчик, девочка и их реплики стоят от центра экрана, как в аэропорту -->
+                    <div class="cafe__people">
+                    <img class="cafe__boy" src="img/main-character-3.svg" alt="Главный герой">
+
+                    <!-- девочка с пиццей: в темноте становится фигурой в балахоне и прячется у левого края.
+                         найти её фонариком и нажать — свет включается -->
+                    <button class="cafe__girl" type="button" aria-label="Девочка в капюшоне">
+                        <img class="cafe__girl-normal" src="img/girl-pizza.svg?v=4" alt="">
+                        <img class="cafe__girl-creepy" src="img/hooded.svg" alt="">
+                    </button>
+
+                    <div class="speech speech--boy speech--cafe-1">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">ой, тут в меню только пицца, ну ладно, закажу маргариту</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--taxi speech--cafe-2">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">ваша маргарита за 30$, сэр</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--boy speech--cafe-3">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">спасибо!</span>
+                        </p>
+                    </div>
+
+                    <div class="speech speech--taxi speech--cafe-6">
+                        <img class="speech__bg" src="img/speech.svg" alt="">
+                        <p class="speech__text">
+                            <span class="speech__inner">ой, сегодня что-то с электричеством, приходите завтра!</span>
+                        </p>
+                    </div>
+                    </div>
+
+                    <!-- свет гаснет: чернота, в ней виден только круг от фонарика -->
+                    <div class="cafe__blackout"></div>
+
+                    <!-- реплики мальчика в темноте — поверх черноты, на том же месте, что и днём -->
+                    <div class="cafe__talk">
+                        <div class="speech speech--boy speech--cafe-4">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">куда делся свет? А-а-а-а!! у меня воруют деньги!</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--cafe-5">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">срочно найди преступника!</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- фонарик вместо курсора -->
+                    <img class="cafe__flashlight" src="img/flashlight.svg" alt="">
+
+                    <!-- итог кафе: чёрный экран — в темноте обокрали, удар по деньгам и безопасности -->
+                    <div class="outcome outcome--cafe">
+                        <div class="outcome__flash"></div>
+
+                        <p class="outcome__text">
+                            <span class="outcome__inner">
+                                Пока в кафе не было света,
+                                <br>
+                                тебя обокрали: ты потерял 150$
+                                <br>
+                                и 25% безопасности
+                            </span>
+                        </p>
+
+                        <div class="outcome__stats">
+                            <div class="outcome__stat outcome__stat--money">
+                                <img class="outcome__icon outcome__icon--money" src="img/money-icon.svg" alt="Деньги">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">320</span>
+                                    <span class="outcome__unit">$</span>
+                                </div>
+
+                                <span class="outcome__delta">−150$</span>
+                            </div>
+
+                            <div class="outcome__stat outcome__stat--safety">
+                                <img class="outcome__icon outcome__icon--safety" src="img/safety-icon.svg" alt="Безопасность">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">97</span>
+                                    <span class="outcome__unit">%</span>
+                                </div>
+
+                                <span class="outcome__delta">−25%</span>
+
+                                <div class="outcome__scale">
+                                    <img class="outcome__scale-empty" src="img/scale.svg" alt="">
+                                    <img class="outcome__scale-fill" src="img/scale-fill.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- глава 3: прогулка. улица проявляется после итога ужина (доставка или кафе) -->
+                <div class="walk">
+                    <div class="walk__stage">
+                        <img class="walk__bg" src="img/bg6.svg?v=2" alt="">
+                        <div class="walk__shade"></div>
+                    </div>
+
+                    <!-- мальчик в куртке и с рюкзаком и его реплики — от центра экрана, как в кафе -->
+                    <div class="walk__people">
+                        <img class="walk__boy" src="img/main-character-walk.svg" alt="Главный герой в куртке и с рюкзаком">
+
+                        <div class="speech speech--boy speech--walk-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">какой ужасный день! надеюсь, что поход по магазинам успокоит меня</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--walk-2">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">карты пишут, что быстрее будет пойти по тому тёмному переулку, но мне страшно</span>
+                            </p>
+                        </div>
+
+                        <!-- дед подходит справа после реплик мальчика -->
+                        <img class="walk__grandpa" src="img/grandpa.svg?v=4" alt="Дед">
+
+                        <div class="speech speech--taxi speech--walk-3">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">эй, боишься идти туда? не переживай, я хожу по этому переулку уже 20 лет</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="hero__noise"></div>
@@ -621,10 +891,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=45"></script>
-    <script src="js/preloader.js?v=45"></script>
-    <script src="js/game-header.js?v=45"></script>
-    <script src="js/script.js?v=45"></script>
+    <script src="js/sound.js?v=79"></script>
+    <script src="js/preloader.js?v=79"></script>
+    <script src="js/game-header.js?v=79"></script>
+    <script src="js/script.js?v=79"></script>
 </body>
 
 </html>

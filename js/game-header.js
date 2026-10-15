@@ -61,7 +61,8 @@ function setGameHeader(data) {
 // названия глав — для шапки
 const chapterTitles = {
     1: "“прибытие”",
-    2: "“ужин”"
+    2: "“ужин”",
+    3: "“прогулка”"
 };
 
 
@@ -124,4 +125,5 @@ function setChaptersMenuOpen(isOpen) {
     chaptersMenu.isOpen = isOpen;
     chaptersMenu.header.classList.toggle("game-header--menu-open", isOpen);
     chaptersMenu.burger.setAttribute("aria-expanded", String(isOpen));
+    chaptersMenu.burger.setAttribute("aria-label", isOpen ? "Закрыть меню глав" : "Открыть меню глав");
 }
