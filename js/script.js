@@ -561,6 +561,11 @@ function goToChapter(chapter) {
         return;
     }
 
+    if (chapter === "3") {
+        goToWalk();
+        return;
+    }
+
     let screens = 0;
 
     if (chapter === "1") {
@@ -572,7 +577,7 @@ function goToChapter(chapter) {
 
 
 // глава 2 начинается в отеле. если игрок ещё не выбирал такси — выбор делается за него
-// («поехать с мужчиной»: на этой ветке деньги и безопасность не меняются)
+// («поехать с мужчиной»)
 function goToHotel() {
     // реплики аэропорта считаем прочитанными — иначе реплики отеля будут их ждать
     lines.forEach(function (line) {
@@ -592,16 +597,18 @@ function goToHotel() {
         selectChoice(driverOption, true);
     }
 
-    // на ветке «официальное такси» удар по цифрам считаем уже случившимся
-    if (choice.selected === "official" && !outcome.isStatsDone) {
-        outcome.isShown = true;
-        outcome.isTextFinished = true;
-        outcome.isStatsPlayed = true;
-        outcome.isStatsDone = true;
+    // удар по цифрам после поездки считаем уже случившимся
+    const ride = getRideOutcome();
+
+    if (!ride.isStatsDone) {
+        ride.isShown = true;
+        ride.isTextFinished = true;
+        ride.isStatsPlayed = true;
+        ride.isStatsDone = true;
 
         setGameHeader({
-            money: outcomeMoneyTo,
-            safety: outcomeSafetyTo
+            money: ride.to.money,
+            safety: ride.to.safety
         });
     }
 
@@ -632,8 +639,8 @@ function updateCursorLight(firstDarkness) {
     // отель уже не чёрный экран — свет гаснет вместе с его появлением
     level = level * (1 - hotel.level);
 
-    // выбор в отеле — снова чёрный экран (пока поверх не проявился номер)
-    if (hotelChoice.isShown && !room.isShown) {
+    // выбор в отеле — снова чёрный экран (пока поверх не проявился номер или кафе)
+    if (hotelChoice.isShown && !room.isShown && !cafe.isShown) {
         level = 1;
     }
 
@@ -641,6 +648,18 @@ function updateCursorLight(firstDarkness) {
     if (room.isDark) {
         level = room.isFlashlight ? 0 : 1;
     }
+
+    if (cafe.isDark) {
+        level = cafe.isFlashlight ? 0 : 1;
+    }
+
+    // чёрный экран итога кафе или доставки
+    if (cafeOutcome.isShown || roomOutcome.isShown) {
+        level = 1;
+    }
+
+    // улица уже не чёрный экран — свет гаснет вместе с её появлением
+    level = level * (1 - walk.level);
 
     light.element.style.setProperty("--light-level", level.toFixed(3));
 }
@@ -652,6 +671,7 @@ function updateCursorLight(firstDarkness) {
 // start, end — на каком отрезке прокрутки он выходит
 // side — из-за какого края экрана выходит: "left" или "right"
 // scene: "hotel" — start/end считаются от момента, когда отель полностью проявился (необязательно)
+// scene: "walk" — от момента, когда полностью проявилась улица (необязательно)
 // waitForLine — не выходит, пока эта реплика не допечатана (необязательно)
 const characterSettings = [
     {
@@ -673,6 +693,14 @@ const characterSettings = [
         start: 0.1,
         end: 1,
         side: "left"
+    },
+    {
+        selector: ".walk__grandpa",
+        scene: "walk",
+        start: 1.8,
+        end: 2.8,
+        side: "right",
+        waitForLine: ".speech--walk-2"
     }
 ];
 
@@ -713,9 +741,9 @@ function updateCharacter(character, progress) {
     let start = character.start;
     let end = character.end;
 
-    // в отеле отметки считаются от момента, когда отель полностью проявился
-    if (character.scene === "hotel") {
-        const base = getHotelBase();
+    // в отеле (на улице) отметки считаются от момента, когда отель (улица) полностью проявился
+    if (character.scene === "hotel" || character.scene === "walk") {
+        const base = character.scene === "hotel" ? getHotelBase() : getWalkBase();
 
         if (base === null) {
             start = Infinity;
@@ -792,6 +820,10 @@ function updateCharacter(character, progress) {
 // когда в номере гаснет свет (в экранах прокрутки от выбора в отеле)
 const roomDarkFrom = 1;
 
+// в кафе: когда выезжает девочка с пиццей и когда гаснет свет (в экранах прокрутки от выбора в отеле)
+const cafeGirlFrom = 1;
+const cafeDarkFrom = 2.2;
+
 const dialogue = [
     {
         selector: ".speech--boy-1",
@@ -853,6 +885,54 @@ const dialogue = [
         speed: 1
     },
     {
+        selector: ".speech--cafe-1",
+        scene: "cafe",
+        from: 0.3,
+        speed: 1
+    },
+    {
+        selector: ".speech--cafe-2",
+        scene: "cafe",
+        from: cafeGirlFrom,
+        speed: 1,
+        // девочка заговорит, когда доедет до своего места
+        waitFor: function () {
+            return cafe.isGirlReady;
+        }
+    },
+    {
+        selector: ".speech--cafe-3",
+        scene: "cafe",
+        from: cafeGirlFrom + 0.5,
+        speed: 1
+    },
+    {
+        selector: ".speech--cafe-4",
+        scene: "cafe",
+        from: cafeDarkFrom,
+        speed: 1,
+        // в темноте (и после неё — когда свет уже снова включили)
+        waitFor: function () {
+            return cafe.isDark || cafe.isLit;
+        }
+    },
+    {
+        selector: ".speech--cafe-5",
+        scene: "cafe",
+        from: cafeDarkFrom,
+        speed: 1
+    },
+    {
+        selector: ".speech--cafe-6",
+        scene: "cafe",
+        from: cafeDarkFrom,
+        speed: 1,
+        // после того как «преступника» нашли — свет снова есть
+        waitFor: function () {
+            return cafe.isLit;
+        }
+    },
+    {
         selector: ".speech--girl-1",
         scene: "room",
         from: roomDarkFrom,
@@ -861,6 +941,26 @@ const dialogue = [
         waitFor: function () {
             return room.isLit;
         }
+    },
+    // глава 3: улица (отсчёт — от момента, когда улица полностью проявилась)
+    {
+        selector: ".speech--walk-1",
+        scene: "walk",
+        from: 0.3,
+        speed: 1
+    },
+    {
+        selector: ".speech--walk-2",
+        scene: "walk",
+        from: 1,
+        speed: 1
+    },
+    {
+        selector: ".speech--walk-3",
+        scene: "walk",
+        from: 2.9,
+        speed: 1,
+        waitForCharacter: ".walk__grandpa"
     }
 ];
 
@@ -1008,13 +1108,50 @@ function getLineFrom(line) {
         return base === null ? Infinity : base + line.from;
     }
 
+    if (line.scene === "cafe") {
+        const base = getCafeBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
     if (line.scene === "room") {
         const base = getRoomBase();
 
         return base === null ? Infinity : base + line.from;
     }
 
+    if (line.scene === "walk") {
+        const base = getWalkBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
     return line.from;
+}
+
+
+// у номера и кафе — свои ветки реплик: реплика ждёт предыдущую только из общей части или своей ветки
+function getLineBranch(line) {
+    if (line.scene === "room" || line.scene === "cafe") {
+        return line.scene;
+    }
+
+    return "main";
+}
+
+
+function findPreviousLine(index) {
+    const branch = getLineBranch(lines[index]);
+
+    for (let i = index - 1; i >= 0; i--) {
+        const candidate = getLineBranch(lines[i]);
+
+        if (candidate === "main" || candidate === branch) {
+            return lines[i];
+        }
+    }
+
+    return null;
 }
 
 
@@ -1025,7 +1162,9 @@ function canShowLine(index, progress) {
         return false;
     }
 
-    if (index > 0 && !lines[index - 1].isFinished) {
+    const previous = findPreviousLine(index);
+
+    if (previous && !previous.isFinished) {
         return false;
     }
 
@@ -1054,6 +1193,11 @@ function updateDialogue(progress) {
 
     for (let i = 0; i < lines.length; i++) {
         if (!canShowLine(i, progress)) {
+            // реплики сцены, которой сейчас нет (другая ветка выбора), просто пропускаем
+            if (getLineFrom(lines[i]) === Infinity) {
+                continue;
+            }
+
             break;
         }
 
@@ -1143,20 +1287,22 @@ function skipTitle() {
 }
 
 
-// текст на чёрном экране после поездки
+// текст на чёрных экранах-итогах (после такси, после кафе)
 function skipOutcomeText() {
-    if (!outcome.isShown || outcome.isTextFinished) {
-        return;
-    }
+    [outcome, driverOutcome, cafeOutcome, roomOutcome].forEach(function (o) {
+        if (!o.isShown || o.isTextFinished) {
+            return;
+        }
 
-    outcome.runId = outcome.runId + 1;
-    outcome.isTextFinished = true;
+        o.runId = o.runId + 1;
+        o.isTextFinished = true;
 
-    outcome.chars.forEach(function (char) {
-        char.element.classList.add("outcome__char--visible");
+        o.chars.forEach(function (char) {
+            char.element.classList.add("outcome__char--visible");
+        });
+
+        stopTypewriterSound(o.soundOwner);
     });
-
-    stopTypewriterSound("outcome");
 }
 
 
@@ -1621,41 +1767,76 @@ const outcomeSafetyTo = 87;
 const outcomeCountDuration = 1300;
 const outcomePause = 500;
 
-const outcome = {
-    element: null,
-    flash: null,
-    stats: null,
-    money: null,
-    safety: null,
-    chars: [],
-    isShown: false,
-    isTextFinished: false,
-    isStatsPlayed: false,
-    // удар по цифрам доигран до конца
-    isStatsDone: false,
-    runId: 0
-};
+// один экран-итог: текст печатается, потом удар по деньгам и безопасности.
+// таких экранов несколько (после такси, после кафе), поэтому всё хранится в объекте экрана
+function createOutcome(selector, soundOwner) {
+    return {
+        selector: selector,
+        soundOwner: soundOwner,
+        element: null,
+        flash: null,
+        stats: null,
+        money: null,
+        safety: null,
+        chars: [],
+        // что было и что стало: { money, safety }
+        from: null,
+        to: null,
+        isShown: false,
+        isTextFinished: false,
+        isStatsPlayed: false,
+        // удар по цифрам доигран до конца
+        isStatsDone: false,
+        runId: 0
+    };
+}
+
+const outcome = createOutcome(".outcome--taxi", "outcome");
+outcome.from = { money: outcomeMoneyFrom, safety: outcomeSafetyFrom };
+outcome.to = { money: outcomeMoneyTo, safety: outcomeSafetyTo };
+
+// ветка «поехать с мужчиной»: чуть не попали в аварию, но цену он не поднял
+const driverMoneyLoss = 30;
+const driverSafetyLoss = 27;
+
+const driverOutcome = createOutcome(".outcome--driver", "driver-outcome");
+driverOutcome.from = { money: outcomeMoneyFrom, safety: outcomeSafetyFrom };
+driverOutcome.to = { money: outcomeMoneyFrom - driverMoneyLoss, safety: outcomeSafetyFrom - driverSafetyLoss };
 
 
-function setupOutcome() {
-    outcome.element = document.querySelector(".outcome");
-    outcome.flash = outcome.element.querySelector(".outcome__flash");
-    outcome.stats = outcome.element.querySelector(".outcome__stats");
+// итог поездки для выбранной ветки (null — ещё ничего не выбрали)
+function getRideOutcome() {
+    if (choice.selected === "official") {
+        return outcome;
+    }
 
-    outcome.money = {
-        stat: outcome.element.querySelector(".outcome__stat--money"),
-        number: outcome.element.querySelector(".outcome__stat--money .outcome__number")
+    if (choice.selected === "driver") {
+        return driverOutcome;
+    }
+
+    return null;
+}
+
+
+function setupOutcome(o) {
+    o.element = document.querySelector(o.selector);
+    o.flash = o.element.querySelector(".outcome__flash");
+    o.stats = o.element.querySelector(".outcome__stats");
+
+    o.money = {
+        stat: o.element.querySelector(".outcome__stat--money"),
+        number: o.element.querySelector(".outcome__stat--money .outcome__number")
     };
 
-    outcome.safety = {
-        stat: outcome.element.querySelector(".outcome__stat--safety"),
-        number: outcome.element.querySelector(".outcome__stat--safety .outcome__number"),
-        fill: outcome.element.querySelector(".outcome__scale-fill")
+    o.safety = {
+        stat: o.element.querySelector(".outcome__stat--safety"),
+        number: o.element.querySelector(".outcome__stat--safety .outcome__number"),
+        fill: o.element.querySelector(".outcome__scale-fill")
     };
 
     // текст раскладываем на невидимые буквы — место под него занято сразу.
     // строки в html разделены <br>, их сохраняем
-    const textElement = outcome.element.querySelector(".outcome__inner");
+    const textElement = o.element.querySelector(".outcome__inner");
     const textLines = readLines(textElement.innerHTML);
 
     textElement.innerHTML = "";
@@ -1668,7 +1849,7 @@ function setupOutcome() {
             char.textContent = line[i];
             textElement.appendChild(char);
 
-            outcome.chars.push({
+            o.chars.push({
                 element: char,
                 isSpace: line[i] === " ",
                 isLineEnd: i === line.length - 1
@@ -1680,55 +1861,57 @@ function setupOutcome() {
         }
     });
 
-    resetOutcomeStats();
+    if (o.from) {
+        resetOutcomeStats(o);
+    }
 }
 
 
-function resetOutcomeStats() {
-    outcome.isStatsPlayed = false;
-    outcome.isStatsDone = false;
-    outcome.stats.classList.remove("outcome__stats--visible");
+function resetOutcomeStats(o) {
+    o.isStatsPlayed = false;
+    o.isStatsDone = false;
+    o.stats.classList.remove("outcome__stats--visible");
 
-    [outcome.money.stat, outcome.safety.stat].forEach(function (stat) {
+    [o.money.stat, o.safety.stat].forEach(function (stat) {
         stat.classList.remove("outcome__stat--hit", "outcome__stat--dropped");
     });
 
-    outcome.money.number.textContent = outcomeMoneyFrom;
-    outcome.safety.number.textContent = outcomeSafetyFrom;
-    outcome.safety.fill.style.setProperty("--level", outcomeSafetyFrom + "%");
+    o.money.number.textContent = o.from.money;
+    o.safety.number.textContent = o.from.safety;
+    o.safety.fill.style.setProperty("--level", o.from.safety + "%");
 
     setGameHeader({
-        money: outcomeMoneyFrom,
-        safety: outcomeSafetyFrom
+        money: o.from.money,
+        safety: o.from.safety
     });
 }
 
 
-function showOutcomeText() {
-    outcome.isShown = true;
-    outcome.isTextFinished = false;
-    outcome.runId = outcome.runId + 1;
+function showOutcomeText(o) {
+    o.isShown = true;
+    o.isTextFinished = false;
+    o.runId = o.runId + 1;
 
-    const runId = outcome.runId;
+    const runId = o.runId;
 
-    outcome.element.classList.add("outcome--visible");
+    o.element.classList.add("outcome--visible");
 
-    outcome.chars.forEach(function (char) {
+    o.chars.forEach(function (char) {
         char.element.classList.remove("outcome__char--visible");
     });
 
     function typeNextChar(index) {
-        if (runId !== outcome.runId) {
+        if (runId !== o.runId) {
             return;
         }
 
-        if (index >= outcome.chars.length) {
-            outcome.isTextFinished = true;
-            stopTypewriterSound("outcome");
+        if (index >= o.chars.length) {
+            o.isTextFinished = true;
+            stopTypewriterSound(o.soundOwner);
             return;
         }
 
-        const char = outcome.chars[index];
+        const char = o.chars[index];
 
         char.element.classList.add("outcome__char--visible");
 
@@ -1748,34 +1931,34 @@ function showOutcomeText() {
     }
 
     setTimeout(function () {
-        if (runId !== outcome.runId) {
+        if (runId !== o.runId) {
             return;
         }
 
-        startTypewriterSound("outcome");
+        startTypewriterSound(o.soundOwner);
         typeNextChar(0);
     }, speechTypingDelay);
 }
 
 
-function hideOutcome() {
-    outcome.isShown = false;
-    outcome.isTextFinished = false;
-    outcome.runId = outcome.runId + 1;
+function hideOutcome(o) {
+    o.isShown = false;
+    o.isTextFinished = false;
+    o.runId = o.runId + 1;
 
-    outcome.element.classList.remove("outcome--visible");
-    stopTypewriterSound("outcome");
+    o.element.classList.remove("outcome--visible");
+    stopTypewriterSound(o.soundOwner);
 
-    resetOutcomeStats();
+    resetOutcomeStats(o);
 }
 
 
 // плавно «отщёлкиваем» число от from до to; onStep получает текущее значение
-function countDown(from, to, onStep, onDone, runId) {
+function countDown(o, from, to, onStep, onDone, runId) {
     const startTime = performance.now();
 
     function step(now) {
-        if (runId !== outcome.runId) {
+        if (runId !== o.runId) {
             return;
         }
 
@@ -1798,51 +1981,51 @@ function countDown(from, to, onStep, onDone, runId) {
 
 
 // удар по одной цифре: краснеет, трясётся, вспышка по краям, сверху падает «минус»
-function hitStat(item, from, to, onStep, onDone, runId) {
+function hitStat(o, item, from, to, onStep, onDone, runId) {
     item.stat.classList.add("outcome__stat--hit");
     item.stat.classList.add("outcome__stat--dropped");
 
-    outcome.flash.classList.remove("outcome__flash--on");
-    void outcome.flash.offsetWidth;
-    outcome.flash.classList.add("outcome__flash--on");
+    o.flash.classList.remove("outcome__flash--on");
+    void o.flash.offsetWidth;
+    o.flash.classList.add("outcome__flash--on");
 
-    countDown(from, to, onStep, function () {
+    countDown(o, from, to, onStep, function () {
         item.stat.classList.remove("outcome__stat--hit");
         onDone();
     }, runId);
 }
 
 
-function playOutcomeStats() {
-    outcome.isStatsPlayed = true;
-    outcome.stats.classList.add("outcome__stats--visible");
+function playOutcomeStats(o) {
+    o.isStatsPlayed = true;
+    o.stats.classList.add("outcome__stats--visible");
 
-    const runId = outcome.runId;
+    const runId = o.runId;
 
     setTimeout(function () {
-        if (runId !== outcome.runId) {
+        if (runId !== o.runId) {
             return;
         }
 
-        hitStat(outcome.money, outcomeMoneyFrom, outcomeMoneyTo, function (value) {
-            outcome.money.number.textContent = Math.round(value);
+        hitStat(o, o.money, o.from.money, o.to.money, function (value) {
+            o.money.number.textContent = Math.round(value);
         }, function () {
             setTimeout(function () {
-                if (runId !== outcome.runId) {
+                if (runId !== o.runId) {
                     return;
                 }
 
-                hitStat(outcome.safety, outcomeSafetyFrom, outcomeSafetyTo, function (value) {
-                    outcome.safety.number.textContent = Math.round(value);
-                    outcome.safety.fill.style.setProperty("--level", value.toFixed(1) + "%");
+                hitStat(o, o.safety, o.from.safety, o.to.safety, function (value) {
+                    o.safety.number.textContent = Math.round(value);
+                    o.safety.fill.style.setProperty("--level", value.toFixed(1) + "%");
                 }, function () {
                     // дальше игра идёт уже с новыми цифрами
                     setGameHeader({
-                        money: outcomeMoneyTo,
-                        safety: outcomeSafetyTo
+                        money: o.to.money,
+                        safety: o.to.safety
                     });
 
-                    outcome.isStatsDone = true;
+                    o.isStatsDone = true;
                 }, runId);
             }, outcomePause);
         }, runId);
@@ -1851,41 +2034,110 @@ function playOutcomeStats() {
 
 
 function updateOutcome(progress) {
-    const isOfficialRoute = drive.isActive && choice.selected === "official";
+    const current = drive.isActive ? getRideOutcome() : null;
 
-    if (!isOfficialRoute) {
-        if (outcome.isShown) {
-            hideOutcome();
+    // итог другой ветки (или вообще без поездки) — прячем
+    [outcome, driverOutcome].forEach(function (o) {
+        if (o !== current && o.isShown) {
+            hideOutcome(o);
         }
+    });
 
+    if (!current) {
         return;
     }
 
     const textFrom = drive.start + outcomeTextFrom;
     const statsFrom = drive.start + outcomeStatsFrom;
 
-    if (!outcome.isShown && progress >= textFrom) {
-        showOutcomeText();
+    if (!current.isShown && progress >= textFrom) {
+        showOutcomeText(current);
     }
 
     // прокрутили назад — всё прячется, цифры возвращаются
-    if (outcome.isShown && progress < textFrom - speechGap) {
-        hideOutcome();
+    if (current.isShown && progress < textFrom - speechGap) {
+        hideOutcome(current);
         return;
     }
 
-    if (outcome.isShown && outcome.isTextFinished && !outcome.isStatsPlayed && progress >= statsFrom) {
-        playOutcomeStats();
+    if (current.isShown && current.isTextFinished && !current.isStatsPlayed && progress >= statsFrom) {
+        playOutcomeStats(current);
     }
 }
 
 
+// ---------- лонгрид после первой главы ----------
+// после поездки и удара по цифрам на чёрном экране
+// по частям проявляется разбор: почему в такси в чужом городе легко обмануться и что делать
+
+// когда начинается (в экранах прокрутки от начала поездки) и сколько экранов длится
+const longreadFrom = 6.6;
+const longreadLength = 4;
+
+// за сколько экранов он проявляется в начале и уходит в черноту в конце
+const longreadFadeIn = 0.4;
+const longreadFadeOut = 0.6;
+
+const longread = {
+    element: null,
+    steps: []
+};
+
+
+function setupLongread() {
+    longread.element = document.querySelector(".longread");
+
+    longread.element.querySelectorAll(".longread__step").forEach(function (element) {
+        longread.steps.push({
+            element: element,
+            at: Number(element.dataset.step)
+        });
+    });
+}
+
+
+// отметка прокрутки, когда лонгрид начинается; null — ещё рано
+function getLongreadBase() {
+    if (!drive.isActive) {
+        return null;
+    }
+
+    // ждём, пока доиграет удар по цифрам
+    if (!getRideOutcome().isStatsDone) {
+        return null;
+    }
+
+    return drive.start + longreadFrom;
+}
+
+
+function updateLongread(progress) {
+    const base = getLongreadBase();
+    const local = base === null ? -1 : progress - base;
+
+    const fadeIn = smoothStep(0, longreadFadeIn, local);
+    const fadeOut = 1 - smoothStep(longreadLength - longreadFadeOut, longreadLength, local);
+
+    longread.element.style.setProperty("--longread", (fadeIn * fadeOut).toFixed(3));
+
+    // лонгрид полностью закрыл экран — итог с деньгами под ним больше не нужен,
+    // иначе он проступит, когда лонгрид будет уходить (при прокрутке назад вернётся)
+    [outcome, driverOutcome].forEach(function (o) {
+        o.element.classList.toggle("outcome--behind", local >= longreadFadeIn);
+    });
+
+    // каждый кусок текста появляется, когда до него докрутили, и прячется, если прокрутили назад
+    longread.steps.forEach(function (step) {
+        step.element.classList.toggle("longread__step--visible", local >= step.at);
+    });
+}
+
+
 // ---------- сцена 3: отель ----------
-// проявляется из черноты после поездки. на ветке «официальное такси» — только после удара по цифрам
+// проявляется из черноты после поездки — только после удара по цифрам
 
 // когда начинает проявляться (в экранах прокрутки от начала поездки) и за сколько экранов
-const hotelFromOfficial = 6.6;
-const hotelFromDriver = 5.6;
+const hotelFrom = longreadFrom + longreadLength;
 const hotelFadeLength = 0.6;
 
 // когда (от момента полного появления отеля) за стойкой проявляется ресепшионист
@@ -1905,14 +2157,12 @@ function getHotelBase() {
         return null;
     }
 
-    const isOfficial = choice.selected === "official";
-
-    // на официальной ветке отель ждёт, пока доиграет удар по цифрам
-    if (isOfficial && !outcome.isStatsDone) {
+    // отель ждёт, пока доиграет удар по цифрам
+    if (!getRideOutcome().isStatsDone) {
         return null;
     }
 
-    const from = drive.start + (isOfficial ? hotelFromOfficial : hotelFromDriver);
+    const from = drive.start + hotelFrom;
 
     return from + hotelFadeLength;
 }
@@ -1922,13 +2172,10 @@ function updateHotel(progress) {
     let target = 0;
 
     if (drive.isActive) {
-        const isOfficial = choice.selected === "official";
-        const from = drive.start + (isOfficial ? hotelFromOfficial : hotelFromDriver);
+        const from = drive.start + hotelFrom;
 
-        // на официальной ветке ждём, пока доиграет удар по деньгам и безопасности
-        const isReady = !isOfficial || outcome.isStatsDone;
-
-        if (isReady) {
+        // ждём, пока доиграет удар по деньгам и безопасности
+        if (getRideOutcome().isStatsDone) {
             target = smoothStep(from, from + hotelFadeLength, progress);
         }
     }
@@ -2018,8 +2265,16 @@ function selectHotelChoice(option) {
 
     setTimeout(function () {
         // за это время игрок мог прокрутить назад и передумать
-        if (hotelChoice.isShown && hotelChoice.selected === selected && selected === "delivery") {
+        if (!hotelChoice.isShown || hotelChoice.selected !== selected) {
+            return;
+        }
+
+        if (selected === "delivery") {
             showRoom();
+        }
+
+        if (selected === "cafe") {
+            showCafe();
         }
     }, streetDelay);
 }
@@ -2028,6 +2283,7 @@ function selectHotelChoice(option) {
 function resetHotelChoice() {
     hotelChoice.selected = null;
     hideRoom();
+    hideCafe();
     hotelChoice.element.classList.remove("choice--made");
 
     hotelChoice.options.forEach(function (option) {
@@ -2114,7 +2370,8 @@ const room = {
 const scareTimeline = [
     { at: 0, className: "room--door" },
     { at: 1000, className: "room--stranger" },
-    { at: 1900, className: "room--walk" }
+    // идти начинает, только когда полностью проступила
+    { at: 2600, className: "room--walk" }
 ];
 
 // дверь открывается через столько (мс) после того, как в руке появился фонарик
@@ -2122,6 +2379,16 @@ const scareDelay = 1500;
 
 // глаз в темноте: сколько (мс) он смотрит на фонарик, прежде чем зажмуриться и пропасть
 const eyesStareTime = 450;
+
+// итог доставки: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора в отеле)
+const roomOutcomeFrom = 2;
+const roomOutcomeStatsFrom = 2.6;
+
+// сколько отдали за ужин и сколько безопасности потеряли, впустив незнакомца
+const roomMoneyLoss = 20;
+const roomSafetyLoss = 33;
+
+const roomOutcome = createOutcome(".outcome--room", "room-outcome");
 
 
 function setupRoom() {
@@ -2165,6 +2432,8 @@ function hideRoom() {
     room.element.classList.remove("room--visible");
     document.body.classList.remove("is-room");
 
+    hideRoomOutcome();
+
     resetLights();
 }
 
@@ -2173,6 +2442,7 @@ function turnLightsOut(base) {
     room.isDark = true;
     room.element.classList.add("room--dark");
     document.body.classList.add("is-lights-out");
+    startDarkSound();
 
     // запираем прокрутку, пока выключатель не найден
     window.scrollTo(0, hero.offsetTop + (base + roomDarkFrom + 0.02) * window.innerHeight);
@@ -2190,6 +2460,11 @@ function playScare() {
         setTimeout(function () {
             if (runId === room.scareRunId && room.isDark) {
                 room.element.classList.add(step.className);
+
+                // дверь открывается — скрип
+                if (step.className === "room--door") {
+                    playDoorSound();
+                }
             }
         }, step.at);
     });
@@ -2247,6 +2522,7 @@ function turnLightsOn() {
     room.element.classList.remove("room--dark", "room--flashlight");
     room.element.classList.add("room--lit");
     document.body.classList.remove("is-lights-out", "is-flashlight", "is-choice-locked");
+    stopDarkSound();
 
     // свет включили: пугалка дальше не идёт, а человек в балахоне оказывается девочкой с пиццей
     room.scareRunId = room.scareRunId + 1;
@@ -2256,6 +2532,7 @@ function turnLightsOn() {
 function stopScare() {
     room.scareRunId = room.scareRunId + 1;
     room.element.classList.remove("room--door", "room--stranger", "room--walk", "room--arrived");
+    stopDoorSound();
 }
 
 
@@ -2267,6 +2544,7 @@ function resetLights() {
 
     room.element.classList.remove("room--dark", "room--flashlight", "room--lit");
     stopScare();
+    stopDarkSound();
     document.body.classList.remove("is-lights-out", "is-flashlight");
 
     room.eyes.forEach(function (eye) {
@@ -2322,6 +2600,452 @@ function updateRoom(progress) {
     if (room.isLit && progress < darkFrom - speechGap) {
         resetLights();
     }
+
+    updateRoomOutcome(progress, base);
+}
+
+
+// после «ваш ужин, сэр! с вас 20$» по прокрутке — чёрный экран: минус деньги за ужин и безопасность
+function updateRoomOutcome(progress, base) {
+    const lastLine = findLine(".speech--girl-1");
+    const textFrom = base + roomOutcomeFrom;
+
+    if (!roomOutcome.isShown && room.isLit && lastLine.isFinished && progress >= textFrom) {
+        // считаем от того, что было у игрока до доставки (после поездки)
+        const ride = getRideOutcome();
+        const money = ride.to.money;
+        const safety = ride.to.safety;
+
+        roomOutcome.from = { money: money, safety: safety };
+        roomOutcome.to = { money: money - roomMoneyLoss, safety: safety - roomSafetyLoss };
+
+        resetOutcomeStats(roomOutcome);
+        showOutcomeText(roomOutcome);
+        document.body.classList.add("is-dinner-outcome");
+    }
+
+    // прокрутили назад — итог прячется, цифры возвращаются
+    if (roomOutcome.isShown && progress < textFrom - speechGap) {
+        hideRoomOutcome();
+        return;
+    }
+
+    if (roomOutcome.isShown && roomOutcome.isTextFinished && !roomOutcome.isStatsPlayed && progress >= base + roomOutcomeStatsFrom) {
+        playOutcomeStats(roomOutcome);
+    }
+}
+
+
+function hideRoomOutcome() {
+    if (!roomOutcome.isShown) {
+        return;
+    }
+
+    hideOutcome(roomOutcome);
+    document.body.classList.remove("is-dinner-outcome");
+}
+
+
+// ---------- сцена 4б: кафе ----------
+// если выбрали кафе: мальчик заказывает пиццу, справа выезжает девочка с пиццей.
+// потом гаснет свет: в руке фонарик, а девочка в балахоне прячется у левого края — её надо найти и нажать
+
+// за сколько (мс) девочка доезжает до своего места
+const cafeGirlRideTime = 1200;
+
+// итог кафе: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора в отеле)
+const cafeOutcomeFrom = 3;
+const cafeOutcomeStatsFrom = 3.6;
+
+// сколько украли
+const cafeMoneyLoss = 150;
+const cafeSafetyLoss = 25;
+
+const cafeOutcome = createOutcome(".outcome--cafe", "cafe-outcome");
+
+const cafe = {
+    element: null,
+    girl: null,
+    isShown: false,
+    isGirlShown: false,
+    isGirlReady: false,
+    isDark: false,
+    isFlashlight: false,
+    isLit: false,
+    runId: 0
+};
+
+
+function setupCafe() {
+    cafe.element = document.querySelector(".cafe");
+    cafe.girl = document.querySelector(".cafe__girl");
+
+    // кнопка ловит клики только в темноте с фонариком — значит, нажать можно, только найдя её
+    cafe.girl.addEventListener("click", cafeLightsOn);
+}
+
+
+// отметка прокрутки, от которой считаются события кафе; null — кафе нет
+function getCafeBase() {
+    if (!cafe.isShown) {
+        return null;
+    }
+
+    return getHotelBase() + hotelChoiceFrom;
+}
+
+
+function showCafe() {
+    cafe.isShown = true;
+    cafe.element.classList.add("cafe--visible");
+    document.body.classList.add("is-cafe");
+}
+
+
+function hideCafe() {
+    cafe.isShown = false;
+    cafe.element.classList.remove("cafe--visible");
+    document.body.classList.remove("is-cafe");
+
+    hideCafeGirl();
+    resetCafeLights();
+    hideCafeOutcome();
+}
+
+
+function showCafeGirl() {
+    cafe.isGirlShown = true;
+    cafe.element.classList.add("cafe--girl");
+
+    const runId = cafe.runId;
+
+    setTimeout(function () {
+        if (runId === cafe.runId && cafe.isGirlShown) {
+            cafe.isGirlReady = true;
+        }
+    }, cafeGirlRideTime);
+}
+
+
+function hideCafeGirl() {
+    cafe.runId = cafe.runId + 1;
+    cafe.isGirlShown = false;
+    cafe.isGirlReady = false;
+    cafe.element.classList.remove("cafe--girl");
+}
+
+
+function cafeLightsOut(base) {
+    cafe.isDark = true;
+    cafe.element.classList.add("cafe--dark");
+    document.body.classList.add("is-lights-out");
+
+    // запираем прокрутку, пока девочку не нашли
+    window.scrollTo(0, hero.offsetTop + (base + cafeDarkFrom + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+
+    // фонарик — сразу, как только свет догорел и погас
+    const runId = cafe.runId;
+
+    setTimeout(function () {
+        if (runId === cafe.runId && cafe.isDark) {
+            cafe.isFlashlight = true;
+            cafe.element.classList.add("cafe--flashlight");
+            document.body.classList.add("is-flashlight");
+        }
+    }, flashlightDelay);
+}
+
+
+function cafeLightsOn() {
+    if (!cafe.isFlashlight) {
+        return;
+    }
+
+    cafe.isDark = false;
+    cafe.isFlashlight = false;
+    cafe.isLit = true;
+
+    cafe.element.classList.remove("cafe--dark", "cafe--flashlight");
+    cafe.element.classList.add("cafe--lit");
+    document.body.classList.remove("is-lights-out", "is-flashlight", "is-choice-locked");
+}
+
+
+function resetCafeLights() {
+    cafe.isDark = false;
+    cafe.isFlashlight = false;
+    cafe.isLit = false;
+
+    cafe.element.classList.remove("cafe--dark", "cafe--flashlight", "cafe--lit");
+    document.body.classList.remove("is-lights-out", "is-flashlight");
+}
+
+
+function updateCafe(progress) {
+    const base = getCafeBase();
+
+    if (base === null) {
+        return;
+    }
+
+    // после «закажу маргариту» по прокрутке справа выезжает девочка с пиццей
+    const orderLine = findLine(".speech--cafe-1");
+
+    if (!cafe.isGirlShown && progress >= base + cafeGirlFrom && orderLine.isFinished) {
+        showCafeGirl();
+    }
+
+    if (cafe.isGirlShown && progress < base + cafeGirlFrom - speechGap) {
+        hideCafeGirl();
+    }
+
+    // после «спасибо!» по прокрутке гаснет свет
+    const thanksLine = findLine(".speech--cafe-3");
+    const darkFrom = base + cafeDarkFrom;
+
+    if (!cafe.isDark && !cafe.isLit && progress >= darkFrom && thanksLine.isFinished) {
+        cafeLightsOut(base);
+    }
+
+    // свет уже включили и прокрутили назад, выше отметки — всё как было до темноты
+    if (cafe.isLit && progress < darkFrom - speechGap) {
+        resetCafeLights();
+    }
+
+    updateCafeOutcome(progress, base);
+}
+
+
+// после «приходите завтра» по прокрутке — чёрный экран: обокрали, минус деньги и безопасность
+function updateCafeOutcome(progress, base) {
+    const lastLine = findLine(".speech--cafe-6");
+    const textFrom = base + cafeOutcomeFrom;
+
+    if (!cafeOutcome.isShown && cafe.isLit && lastLine.isFinished && progress >= textFrom) {
+        // считаем от того, что было у игрока до кафе (после поездки)
+        const ride = getRideOutcome();
+        const money = ride.to.money;
+        const safety = ride.to.safety;
+
+        cafeOutcome.from = { money: money, safety: safety };
+        cafeOutcome.to = { money: money - cafeMoneyLoss, safety: safety - cafeSafetyLoss };
+
+        resetOutcomeStats(cafeOutcome);
+        showOutcomeText(cafeOutcome);
+        document.body.classList.add("is-dinner-outcome");
+    }
+
+    // прокрутили назад — итог прячется, цифры возвращаются
+    if (cafeOutcome.isShown && progress < textFrom - speechGap) {
+        hideCafeOutcome();
+        return;
+    }
+
+    if (cafeOutcome.isShown && cafeOutcome.isTextFinished && !cafeOutcome.isStatsPlayed && progress >= base + cafeOutcomeStatsFrom) {
+        playOutcomeStats(cafeOutcome);
+    }
+}
+
+
+function hideCafeOutcome() {
+    if (!cafeOutcome.isShown) {
+        return;
+    }
+
+    hideOutcome(cafeOutcome);
+    document.body.classList.remove("is-dinner-outcome");
+}
+
+
+// ---------- глава 3: прогулка ----------
+// после итога ужина (доставка или кафе) по прокрутке из черноты проявляется улица
+
+// через сколько экранов после удара по цифрам ужина начинает проявляться улица и за сколько экранов
+const walkAfterOutcome = 1;
+const walkFadeLength = 0.6;
+
+const walk = {
+    element: null,
+    level: 0,
+    // шапка уже показывает третью главу
+    isChapterThree: false
+};
+
+
+function setupWalk() {
+    walk.element = document.querySelector(".walk");
+}
+
+
+// итог ужина для выбранной ветки (null — ещё не ужинали)
+function getDinnerOutcome() {
+    if (room.isShown) {
+        return roomOutcome;
+    }
+
+    if (cafe.isShown) {
+        return cafeOutcome;
+    }
+
+    return null;
+}
+
+
+// отметка прокрутки, когда улица начинает проявляться; null — ещё рано
+function getWalkFrom() {
+    const dinnerOutcome = getDinnerOutcome();
+
+    // ждём, пока доиграет удар по цифрам ужина
+    if (dinnerOutcome === null || !dinnerOutcome.isStatsDone) {
+        return null;
+    }
+
+    const statsFrom = dinnerOutcome === roomOutcome ? roomOutcomeStatsFrom : cafeOutcomeStatsFrom;
+
+    return getHotelBase() + hotelChoiceFrom + statsFrom + walkAfterOutcome;
+}
+
+
+// отметка прокрутки, когда улица полностью проявилась; null — улицы ещё нет
+function getWalkBase() {
+    const from = getWalkFrom();
+
+    if (from === null) {
+        return null;
+    }
+
+    return from + walkFadeLength;
+}
+
+
+function updateWalk(progress) {
+    const from = getWalkFrom();
+    let target = 0;
+
+    if (from !== null) {
+        target = smoothStep(from, from + walkFadeLength, progress);
+    }
+
+    // плавно догоняем, чтобы появление не дёргалось, если ждали удар по цифрам
+    walk.level = walk.level + (target - walk.level) * 0.08;
+
+    if (Math.abs(target - walk.level) < 0.001) {
+        walk.level = target;
+    }
+
+    walk.element.style.setProperty("--walk", walk.level.toFixed(3));
+
+    const isWalk = walk.level > 0.5;
+
+    document.body.classList.toggle("is-walk", isWalk);
+
+    // в шапке — третья глава, пока на экране улица
+    if (isWalk !== walk.isChapterThree) {
+        walk.isChapterThree = isWalk;
+        setCurrentChapter(isWalk ? 3 : 2);
+    }
+}
+
+
+// глава 3 начинается на улице. всё, что было до неё, считаем пройденным:
+// если игрок ещё не выбирал ужин — выбор делается за него («заказать доставку»)
+function goToWalk() {
+    goToHotel();
+
+    // реплики отеля считаем прочитанными — иначе выбор ужина будет их ждать
+    lines.forEach(function (line) {
+        if (line.scene === "hotel") {
+            line.isFinished = true;
+            setLineCharsVisible(line, true);
+        }
+    });
+
+    const mark = getHotelBase() + hotelChoiceFrom;
+
+    if (!hotelChoice.isShown) {
+        showHotelChoice(mark);
+    }
+
+    if (!room.isShown && !cafe.isShown) {
+        const deliveryOption = hotelChoice.element.querySelector('[data-choice="delivery"]');
+
+        selectHotelChoice(deliveryOption);
+        showRoom();
+    }
+
+    // ужин уже позади: реплики прочитаны, свет снова включён
+    const dinnerScene = room.isShown ? "room" : "cafe";
+
+    lines.forEach(function (line) {
+        if (line.scene === dinnerScene) {
+            line.isFinished = true;
+            setLineCharsVisible(line, true);
+        }
+    });
+
+    if (room.isShown && !room.isLit) {
+        turnLightsOn();
+    }
+
+    if (cafe.isShown) {
+        if (!cafe.isGirlShown) {
+            showCafeGirl();
+        }
+
+        if (!cafe.isLit) {
+            cafe.isFlashlight = true;
+            cafeLightsOn();
+        }
+    }
+
+    // и удар по цифрам после ужина тоже уже случился
+    const dinnerOutcome = getDinnerOutcome();
+
+    if (!dinnerOutcome.isStatsDone) {
+        const ride = getRideOutcome();
+        const isRoom = dinnerOutcome === roomOutcome;
+        const moneyLoss = isRoom ? roomMoneyLoss : cafeMoneyLoss;
+        const safetyLoss = isRoom ? roomSafetyLoss : cafeSafetyLoss;
+
+        dinnerOutcome.from = { money: ride.to.money, safety: ride.to.safety };
+        dinnerOutcome.to = { money: ride.to.money - moneyLoss, safety: ride.to.safety - safetyLoss };
+
+        finishOutcome(dinnerOutcome);
+        document.body.classList.add("is-dinner-outcome");
+    }
+
+    window.scrollTo(0, hero.offsetTop + getWalkBase() * window.innerHeight);
+}
+
+
+// экран-итог сразу в конечном виде: текст напечатан, цифры уже упали
+function finishOutcome(o) {
+    o.runId = o.runId + 1;
+    o.isShown = true;
+    o.isTextFinished = true;
+    o.isStatsPlayed = true;
+    o.isStatsDone = true;
+
+    o.element.classList.add("outcome--visible");
+    o.stats.classList.add("outcome__stats--visible");
+
+    o.chars.forEach(function (char) {
+        char.element.classList.add("outcome__char--visible");
+    });
+
+    [o.money.stat, o.safety.stat].forEach(function (stat) {
+        stat.classList.add("outcome__stat--dropped");
+    });
+
+    o.money.number.textContent = o.to.money;
+    o.safety.number.textContent = o.to.safety;
+    o.safety.fill.style.setProperty("--level", o.to.safety + "%");
+
+    setGameHeader({
+        money: o.to.money,
+        safety: o.to.safety
+    });
 }
 
 
@@ -2355,9 +3079,12 @@ function animate(now) {
     updateDialogue(progress);
     updateDrive(progress, now);
     updateOutcome(progress);
+    updateLongread(progress);
     updateHotel(progress);
     updateHotelChoice(progress);
     updateRoom(progress);
+    updateCafe(progress);
+    updateWalk(progress);
     updateDarkEyes(now);
 }
 
@@ -2396,8 +3123,14 @@ document.addEventListener("DOMContentLoaded", function () {
     hotel.element = document.querySelector(".hotel");
     setupHotelChoice();
     setupRoom();
+    setupCafe();
+    setupWalk();
     setupDrive();
-    setupOutcome();
+    setupOutcome(outcome);
+    setupOutcome(driverOutcome);
+    setupOutcome(cafeOutcome);
+    setupOutcome(roomOutcome);
+    setupLongread();
     setupClickSkip();
     // первый текст начинает печататься после клика по «начать» в прелоадере
     setupPreloader(startIntroText);

@@ -262,7 +262,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 2800vh;
+    height: 4000vh;
     background-color: #0F0F0F;
 }
 
@@ -712,6 +712,12 @@ body.is-street .sound {
     bottom: auto;
 }
 
+/* в отеле реплики мальчика чуть ниже и правее, чем в аэропорту */
+.hotel .speech--boy {
+    bottom: calc(38.8889 * var(--u));
+    left: calc(50% - calc(18.4028 * var(--u)));
+}
+
 /* в отеле фразы длиннее: больше отступ от краёв плашки, чтобы текст не прилипал */
 .hotel .speech__text {
     padding: 0 calc(3.125 * var(--u));
@@ -998,6 +1004,13 @@ body.is-street .sound {
     visibility: visible;
 }
 
+/* после лонгрида итог с деньгами уже не показываем */
+.outcome.outcome--behind {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+}
+
 /* красная тревожная вспышка по краям экрана в момент удара */
 .outcome__flash {
     position: absolute;
@@ -1211,6 +1224,187 @@ body.is-street .game-header {
 }
 
 
+/* ---------- лонгрид после первой главы ---------- */
+
+/* чёрный экран с текстом; проявляется и уходит по прокрутке (--longread от 0 до 1 задаёт js).
+   лежит над улицей, но под отелем — отель проявляется поверх */
+.longread {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: var(--longread, 0);
+    pointer-events: none;
+}
+
+.longread__inner {
+    display: flex;
+    align-items: center;
+    gap: calc(5.5556 * var(--u));
+    width: calc(90.2778 * var(--u));
+}
+
+.longread__text {
+    flex: 1 1 0;
+}
+
+/* каждый кусок текста выплывает снизу, когда до него докрутили (класс ставит js) */
+.longread__step {
+    opacity: 0;
+    transform: translateY(calc(1.3889 * var(--u)));
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.longread__step--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.longread__kicker {
+    margin-bottom: calc(0.6944 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.3611 * var(--u));
+    font-weight: 400;
+    color: #8A8A8A;
+}
+
+/* в лонгриде всего два размера шрифта: заголовок и всё остальное.
+   разницу дают цвет, отступы, рукописная черта и пометка маркером */
+.longread__title {
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(2.6389 * var(--u));
+    line-height: calc(3.0556 * var(--u));
+    font-weight: 400;
+    color: #FFFFFF;
+}
+
+/* рукописная черта под заголовком — та же, что шкала в шапке */
+.longread__divider {
+    display: block;
+    width: calc(12.5000 * var(--u));
+    height: calc(0.4167 * var(--u));
+    margin: calc(1.3889 * var(--u)) 0 calc(2.7778 * var(--u));
+}
+
+.longread__paragraph {
+    margin-bottom: calc(2.0833 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.3611 * var(--u));
+    font-weight: 400;
+    color: #CFCFCF;
+}
+
+.longread__accent {
+    margin-bottom: calc(2.0833 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.3611 * var(--u));
+    font-weight: 400;
+}
+
+/* главная мысль выделена, как маркером от руки */
+.longread__mark {
+    padding: 0 calc(0.4167 * var(--u));
+    background-color: transparent;
+    background-image: linear-gradient(
+        178deg,
+        rgba(200, 50, 60, 0) 0%,
+        rgba(200, 50, 60, 0) 42%,
+        rgba(200, 50, 60, 0.85) 46%,
+        rgba(200, 50, 60, 0.85) 92%,
+        rgba(200, 50, 60, 0) 96%
+    );
+    color: #FFFFFF;
+}
+
+/* советы — на белой рукописной плашке */
+.longread__tips {
+    position: relative;
+    flex: 0 0 calc(33.3333 * var(--u));
+    padding: calc(3.8194 * var(--u)) calc(3.4722 * var(--u)) calc(4.1667 * var(--u));
+}
+
+.longread__plate {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.longread__tips-title,
+.longread__list,
+.longread__tips-note {
+    position: relative;
+}
+
+/* заголовок плашки подчёркнут той же рукописной чертой */
+.longread__tips-title {
+    display: inline-block;
+    margin-bottom: calc(1.7361 * var(--u));
+    padding-bottom: calc(0.6944 * var(--u));
+    background-image: url("../img/scale-fill.svg");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% calc(0.4167 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.3611 * var(--u));
+    font-weight: 400;
+    color: #2B2A2B;
+}
+
+.longread__list {
+    margin-bottom: calc(1.3889 * var(--u));
+    padding: 0;
+    list-style: none;
+}
+
+/* пункт с рукописной галочкой */
+.longread__item {
+    position: relative;
+    margin-bottom: calc(0.4861 * var(--u));
+    padding-left: calc(2.2222 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.3611 * var(--u));
+    font-weight: 400;
+    color: #3E3E3E;
+}
+
+.longread__item::before {
+    content: "";
+    position: absolute;
+    top: calc(0.4167 * var(--u));
+    left: 0;
+    width: calc(1.3194 * var(--u));
+    height: calc(1.3542 * var(--u));
+    background-image: url("../img/tick.svg");
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 100% 100%;
+}
+
+/* последняя строка отделена пунктиром и серее */
+.longread__tips-note {
+    padding-top: calc(1.3889 * var(--u));
+    border-top: calc(0.1389 * var(--u)) dashed #ACAAAB;
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.6667 * var(--u));
+    line-height: calc(2.3611 * var(--u));
+    font-weight: 400;
+    color: #6F6F6F;
+}
+
+
 /* ---------- сцена 3: отель ---------- */
 
 /* проявляется плавно (--hotel от 0 до 1 задаёт js) */
@@ -1325,17 +1519,18 @@ body.is-street .choice--hotel.choice--visible {
 }
 
 /* поверх выбора уже проявился номер — кнопки под ним больше не ловят клики */
-body.is-room .choice--hotel.choice--visible {
+body.is-room .choice--hotel.choice--visible,
+body.is-cafe .choice--hotel.choice--visible {
     pointer-events: none;
 }
 
 /* шапка растворяется в черноту, звук поднимается в угол — как на первом выборе */
-html body.is-hotel.is-hotel-choosing:not(.is-room) .game-header {
+html body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .game-header {
     opacity: 0;
     transition: opacity 0.8s ease;
 }
 
-body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
+body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     top: calc(2.0833 * var(--u));
 }
 
@@ -1350,10 +1545,10 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
 }
 
 /* в отеле шапка снова видна (во время выбора и на улице её прятали; html — чтобы перебить те правила) */
-/* ---------- сцена 4: номер (после выбора доставки) ---------- */
+/* ---------- сцена 4б: кафе (после выбора кафе) ---------- */
 
 /* лежит поверх отеля и экрана выбора, проявляется плавно (класс ставит js) */
-.room {
+.cafe {
     position: absolute;
     top: 0;
     left: 0;
@@ -1367,15 +1562,201 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     transition: opacity 0.8s ease, visibility 0.8s ease;
 }
 
+.cafe--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* сцена с пропорциями фона (1536 × 905, низ картинки обрезан) — заполняет экран, как object-fit: cover */
+.cafe__stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100vw, 169.7238vh);
+    height: max(100vh, 58.9193vw);
+    transform: translate(-50%, -50%);
+}
+
+.cafe__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* затемнение фона, как на остальных игровых экранах */
+.cafe__shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0.4;
+}
+
+
+/* слои кафе по размеру экрана: в них мальчик, девочка и реплики — от центра экрана, как в аэропорту */
+.cafe__people,
+.cafe__talk {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* мальчик в своей обычной позе, левее; тот же размер и та же линия пола, что в аэропорту */
+.cafe__boy {
+    position: absolute;
+    bottom: calc(2.0833 * var(--u));
+    left: calc(50% - calc(46.5278 * var(--u)));
+    width: calc(16.9271 * var(--u));
+    max-width: none;
+}
+
+/* девочка с пиццей: сильно правее, на той же линии пола и в том же масштабе.
+   сначала её нет — выезжает справа (класс ставит js) */
+.cafe__girl {
+    position: absolute;
+    bottom: calc(-1.3889 * var(--u));
+    left: calc(50% + calc(17.3611 * var(--u)));
+    width: calc(28.1250 * var(--u));
+    padding: 0;
+    background: none;
+    border: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(60%);
+    transition: opacity 1s ease, transform 1.2s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.cafe--girl .cafe__girl {
+    opacity: 1;
+    transform: translateX(0%);
+}
+
+.cafe__girl-normal,
+.cafe__girl-creepy {
+    display: block;
+    width: 100%;
+    max-width: none;
+}
+
+.cafe__girl-creepy {
+    position: absolute;
+    top: 0;
+    left: 0;
+    filter: brightness(0.42);
+    opacity: 0;
+}
+
+/* в темноте она в балахоне и прижалась к левому краю экрана — видно только фонариком */
+.cafe--dark .cafe__girl {
+    left: calc(-6.9444 * var(--u));
+    opacity: 1;
+    transform: translateX(0%);
+    transition: none;
+}
+
+.cafe--dark .cafe__girl-normal {
+    opacity: 0;
+}
+
+.cafe--dark .cafe__girl-creepy {
+    opacity: 1;
+}
+
+/* с фонариком на неё можно нажать */
+.cafe--flashlight .cafe__girl {
+    pointer-events: auto;
+}
+
+/* реплики мальчика — на той же высоте и на том же расстоянии от него, что в аэропорту */
+.cafe .speech--cafe-1,
+.cafe .speech--cafe-3,
+.cafe .speech--cafe-4,
+.cafe .speech--cafe-5 {
+    bottom: calc(41.6667 * var(--u));
+    left: calc(50% - calc(29.8611 * var(--u)));
+}
+
+/* итог кафе: свой чёрный фон (под итогом после такси чёрной была сама улица) */
+.outcome--cafe,
+.outcome--room {
+    z-index: 3;
+    background-color: #000000;
+}
+
+/* на этом чёрном экране шапки нет — цифры показывает сам итог, звук поднимается в угол */
+html body.is-hotel.is-dinner-outcome .game-header {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+body.is-hotel.is-dinner-outcome .sound {
+    top: calc(2.0833 * var(--u));
+}
+
+/* реплики девочки — на той же высоте, что у мальчика, хвостик справа — к ней */
+.cafe .speech--cafe-2,
+.cafe .speech--cafe-6 {
+    right: calc(50% - calc(30.2083 * var(--u)));
+    bottom: calc(41.6667 * var(--u));
+}
+
+.cafe .speech--cafe-2 {
+    width: calc(24.3056 * var(--u));
+    height: calc(8.6111 * var(--u));
+}
+
+.cafe .speech__text {
+    padding: 0 calc(3.125 * var(--u));
+}
+
+.cafe .speech--cafe-2 .speech__text {
+    padding: 0 calc(1.0417 * var(--u));
+}
+
+/* свет включили — реплики из темноты уходят */
+.cafe--lit .speech--cafe-4,
+.cafe--lit .speech--cafe-5 {
+    opacity: 0;
+}
+
+
+
+
+/* ---------- сцена 4: номер (после выбора доставки) ---------- */
+
+/* лежит поверх отеля и экрана выбора, проявляется плавно (класс ставит js) */
+.room {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
 .room--visible {
     opacity: 1;
     visibility: visible;
 }
 
 /* сцена с пропорциями фона (1536 × 998) — заполняет экран, как object-fit: cover */
+/* номер (фон, мальчик, реплики и все слои поверх) опущен чуть ниже центра */
 .room__stage {
     position: absolute;
-    top: 50%;
+    top: calc(50% + calc(2.7778 * var(--u)));
     left: 50%;
     width: max(100vw, 153.9078vh);
     height: max(100vh, 64.9740vw);
@@ -1411,17 +1792,24 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     max-width: none;
 }
 
-/* реплики мальчика в номере — над его головой, привязаны к картинке номера */
+/* реплики мальчика в номере — справа от головы, на том же расстоянии от него, что и на других экранах */
 .room .speech--room-1,
 .room .speech--room-2 {
-    bottom: 68%;
-    left: 54%;
+    bottom: 62.55%;
+    left: 58.1%;
 }
 
-/* реплика девочки — над её капюшоном, хвостик справа */
+/* реплика девочки — слева от её головы, на одном уровне с репликами мальчика, хвостик справа */
 .room .speech--girl-1 {
-    right: 18%;
-    bottom: 72.5%;
+    right: 17%;
+    bottom: 62.55%;
+    width: calc(24.3056 * var(--u));
+    height: calc(8.6111 * var(--u));
+}
+
+/* плашка девочки меньше — и отступы у текста меньше, чтобы фраза влезла */
+.room .speech--girl-1 .speech__text {
+    padding: 0 calc(1.0417 * var(--u));
 }
 
 /* слой реплик поверх черноты и пугалки */
@@ -1433,10 +1821,105 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     padding: 0 calc(3.125 * var(--u));
 }
 
+/* ---------- глава 3: прогулка ---------- */
+
+/* улица поверх номера и кафе; проявляется по прокрутке (--walk ставит js) */
+.walk {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 7;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    opacity: var(--walk, 0);
+    pointer-events: none;
+}
+
+/* сцена с пропорциями фона (1536 × 952, белая полоса внизу картинки обрезана) — заполняет экран, как object-fit: cover */
+.walk__stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100vw, 161.3445vh);
+    height: max(100vh, 61.9792vw);
+    transform: translate(-50%, -50%);
+}
+
+.walk__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* затемнение фона, как на остальных игровых экранах */
+.walk__shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0.4;
+}
+
+/* слой по размеру экрана: мальчик и реплики — от центра экрана, как в кафе */
+.walk__people {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* мальчик в куртке и с рюкзаком: тот же размер и та же линия пола, что в кафе */
+.walk__boy {
+    position: absolute;
+    bottom: calc(2.0833 * var(--u));
+    left: calc(50% - calc(46.5278 * var(--u)));
+    width: calc(16.9271 * var(--u));
+    max-width: none;
+}
+
+/* реплики мальчика — на обычной высоте и на том же расстоянии от него, что в кафе */
+.walk .speech--walk-1,
+.walk .speech--walk-2 {
+    bottom: calc(41.6667 * var(--u));
+    left: calc(50% - calc(29.8611 * var(--u)));
+}
+
+/* дед: справа, на той же линии пола, что и мальчик, сутулый — чуть ниже его;
+   сначала за краем экрана — выходит по прокрутке (js) */
+.walk__grandpa {
+    position: absolute;
+    right: calc(50% - calc(41.6667 * var(--u)));
+    bottom: calc(2.0833 * var(--u));
+    width: calc(13.5456 * var(--u));
+    height: calc(42 * var(--u));
+    max-width: none;
+    transform: translateX(100vw);
+    transform-origin: 50% 100%;
+    will-change: transform;
+}
+
+/* на улице шапка снова видна (итог ужина под улицей её прятал), звук — на обычном месте */
+html body.is-hotel.is-dinner-outcome.is-walk .game-header {
+    opacity: var(--game, 0);
+}
+
+body.is-hotel.is-dinner-outcome.is-walk .sound {
+    top: calc(7.2917 * var(--u));
+}
+
+
 /* ---------- в номере гаснет свет ---------- */
 
 /* чернота поверх всего номера; резко «моргает» и гаснет (класс ставит js) */
-.room__blackout {
+.room__blackout,
+.cafe__blackout {
     position: absolute;
     top: 0;
     left: 0;
@@ -1447,7 +1930,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     pointer-events: none;
 }
 
-.room--dark .room__blackout {
+.room--dark .room__blackout,
+.cafe--dark .cafe__blackout {
     opacity: 1;
     animation: lights-out 0.7s steps(1, end);
 }
@@ -1479,7 +1963,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
 }
 
 /* фонарик: в черноте прорезан мягкий круг вокруг курсора — под ним виден номер */
-.room--flashlight .room__blackout {
+.room--flashlight .room__blackout,
+.cafe--flashlight .cafe__blackout {
     -webkit-mask-image: radial-gradient(
         circle calc(7.2222 * var(--u)) at var(--light-x, 50%) var(--light-y, 50%),
         rgba(0, 0, 0, 0) 0%,
@@ -1691,7 +2176,7 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     }
 
     100% {
-        transform: translate(-30%, 39%) scale(1.32);
+        transform: translate(-30%, 34.2%) scale(1.32);
     }
 }
 
@@ -1718,7 +2203,7 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
 
 .room--lit .room__stranger {
     opacity: 1;
-    transform: translate(-30%, 39%) scale(1.32);
+    transform: translate(-30%, 34.2%) scale(1.32);
     animation: none;
     transition: none;
 }
@@ -1751,7 +2236,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
 }
 
 /* сам фонарик рисуем у курсора: его стекло — в центре светового круга */
-.room__flashlight {
+.room__flashlight,
+.cafe__flashlight {
     position: absolute;
     top: var(--light-y, 50%);
     left: var(--light-x, 50%);
@@ -1763,7 +2249,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room) .sound {
     transition: opacity 0.4s ease;
 }
 
-.room--flashlight .room__flashlight {
+.room--flashlight .room__flashlight,
+.cafe--flashlight .cafe__flashlight {
     opacity: 1;
 }
 
@@ -1949,14 +2436,39 @@ body.is-header-active .game-header__burger {
     transform: rotate(-4deg) scale(1.08);
 }
 
+/* три полоски и крестик лежат друг на друге: при открытии меню полоски
+   поворачиваются, сжимаются и тают, а на их месте раскручивается крестик (и обратно) */
 .game-header__burger-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+    transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.5, 0, 0.3, 1.4);
 }
 
-/* меню открыто — бургер наклонён */
-.game-header--menu-open .game-header__burger {
-    transform: rotate(-12deg) scale(1.08);
+.game-header__close-icon {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: auto;
+    height: 100%;
+    max-width: none;
+    opacity: 0;
+    transform: translateX(-50%) rotate(-90deg) scale(0.3);
+    transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.5, 0, 0.3, 1.4);
+}
+
+.game-header--menu-open .game-header__burger-icon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.3);
+}
+
+.game-header--menu-open .game-header__close-icon {
+    opacity: 1;
+    transform: translateX(-50%) rotate(0deg) scale(1);
 }
 
 /* само меню: рукописная белая плашка под шапкой справа */
