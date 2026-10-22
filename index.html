@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра</title>
 
-    <!-- ?v=79 — номер версии: меняем его при каждом обновлении сайта,
+    <!-- ?v=91 — номер версии: меняем его при каждом обновлении сайта,
          чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=79">
-    <link rel="stylesheet" href="css/fonts.css?v=79">
-    <link rel="stylesheet" href="css/style.css?v=79">
-    <link rel="stylesheet" href="css/mobile.css?v=79">
+    <link rel="stylesheet" href="css/reset.css?v=91">
+    <link rel="stylesheet" href="css/fonts.css?v=91">
+    <link rel="stylesheet" href="css/style.css?v=91">
+    <link rel="stylesheet" href="css/mobile.css?v=91">
 </head>
 
 <body>
@@ -57,7 +57,7 @@
 
         <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=79" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=91" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
@@ -113,6 +113,9 @@
                 </ul>
             </nav>
         </header>
+
+        <!-- затемнение под открытым меню глав: темнеет всё, кроме шапки -->
+        <div class="chapters-backdrop"></div>
 
         <section class="hero">
 
@@ -214,21 +217,21 @@
                     <div class="speech speech--boy speech--boy-1">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">наконец-то я в путешествии! Пора вызывать такси, но кажется, ждать придётся целый час…</span>
+                            <span class="speech__inner">наконец-то я в путешествии! Пора вызывать такси, но кажется, <b class="speech__key">ждать придётся целый час</b>…</span>
                         </p>
                     </div>
 
                     <div class="speech speech--taxi speech--taxi-1">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">хэй, я могу подвезти тебя прямо сейчас до отеля, еще и дешево.</span>
+                            <span class="speech__inner">хэй, я могу <b class="speech__key">подвезти тебя прямо сейчас</b> до отеля, еще и <b class="speech__key">дешево</b>.</span>
                         </p>
                     </div>
 
                     <div class="speech speech--taxi speech--taxi-2">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">что думаешь? через час будешь в отеле лежать и вкусно есть.</span>
+                            <span class="speech__inner">что думаешь? <b class="speech__key">через час будешь в отеле</b> лежать и вкусно есть.</span>
                         </p>
                     </div>
 
@@ -418,32 +421,43 @@
                     </div>
                 </div>
 
-                <!-- лонгрид: разбор после первой главы. текст проявляется по частям при прокрутке -->
-                <section class="longread" aria-label="Такси в чужом городе">
-                    <div class="longread__inner">
-                        <div class="longread__text">
-                            <p class="longread__kicker longread__step" data-step="0.10">глава 1 · что стоит знать</p>
-                            <h2 class="longread__title longread__step" data-step="0.15">такси в чужом городе</h2>
-                            <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="0.25">
-                            <p class="longread__paragraph longread__step" data-step="0.45">В поездках нас проще обмануть, и таксисты этим часто пользуются. Водитель знает город и цены, а турист нет, поэтому то счётчик вдруг сломан и цена названа с потолка, то машина едет в объезд, то появляются доплаты за багаж, то в конце поездки сумма неожиданно растёт.</p>
-                            <p class="longread__accent longread__step" data-step="0.95">
-                                <mark class="longread__mark">Но проблема не только в деньгах.</mark>
-                            </p>
-                            <p class="longread__paragraph longread__step" data-step="1.30">Случайный таксист может гнать, резко перестраиваться, быть уставшим после смены или ездить на старой неисправной машине. Так что можно и переплатить, и попасть в аварию.</p>
+                <!-- обучение после первой главы: разворот тетради, текст проявляется по частям при прокрутке -->
+                <section class="longread longread--1" aria-label="Такси в чужом городе">
+                    <div class="notebook">
+                        <img class="notebook__cover" src="img/notebook-cover.svg" alt="">
+
+                        <div class="notebook__page notebook__page--left">
+                            <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                            <div class="notebook__content notebook__content--left">
+                                <p class="longread__kicker longread__step" data-step="0.10">глава 1 · что стоит знать</p>
+                                <h2 class="longread__title longread__step" data-step="0.15">такси в чужом городе</h2>
+                                <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="0.25">
+                                <p class="longread__paragraph longread__step" data-step="0.45">В поездках нас проще обмануть, и таксисты этим часто пользуются. Водитель знает город и цены, а турист нет, поэтому то счётчик вдруг сломан и цена названа с потолка, то машина едет в объезд, то появляются доплаты за багаж, то в конце поездки сумма неожиданно растёт.</p>
+                                <p class="longread__accent longread__step" data-step="0.95">
+                                    <mark class="longread__mark">Но проблема не только в деньгах.</mark>
+                                </p>
+                                <p class="longread__paragraph longread__step" data-step="1.30">Случайный таксист может гнать, резко перестраиваться, быть уставшим после смены или ездить на старой неисправной машине. Так что можно и переплатить, и попасть в аварию.</p>
+                            </div>
                         </div>
 
-                        <div class="longread__tips longread__step" data-step="1.80">
-                            <img class="longread__plate" src="img/info-plate.svg" alt="">
-                            <p class="longread__tips-title">Лучше заранее:</p>
-                            <ul class="longread__list">
-                                <li class="longread__item longread__step" data-step="2.00">узнать примерные цены</li>
-                                <li class="longread__item longread__step" data-step="2.15">вызывать такси через приложение</li>
-                                <li class="longread__item longread__step" data-step="2.30">следить за маршрутом по карте</li>
-                                <li class="longread__item longread__step" data-step="2.45">пристёгиваться</li>
-                                <li class="longread__item longread__step" data-step="2.60">запоминать номер машины</li>
-                            </ul>
-                            <p class="longread__tips-note longread__step" data-step="2.90">А если водитель едет страшно, можно попросить ехать спокойнее или просто выйти в людном месте.</p>
+                        <div class="notebook__page notebook__page--right">
+                            <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                            <div class="notebook__content notebook__content--right">
+                                <div class="longread__tips longread__step" data-step="1.80">
+                                    <p class="longread__tips-title">Лучше заранее:</p>
+                                    <ul class="longread__list">
+                                        <li class="longread__item longread__step" data-step="2.00">узнать примерные цены</li>
+                                        <li class="longread__item longread__step" data-step="2.15">вызывать такси через приложение</li>
+                                        <li class="longread__item longread__step" data-step="2.30">следить за маршрутом по карте</li>
+                                        <li class="longread__item longread__step" data-step="2.45">пристёгиваться</li>
+                                        <li class="longread__item longread__step" data-step="2.60">запоминать номер машины</li>
+                                    </ul>
+                                    <p class="longread__tips-note longread__step" data-step="2.90">А если водитель едет страшно, можно попросить ехать спокойнее или просто выйти в людном месте.</p>
+                                </div>
+                            </div>
                         </div>
+
+                        <img class="notebook__rings" src="img/notebook-rings.svg" alt="">
                     </div>
                 </section>
 
@@ -462,14 +476,14 @@
                         <div class="speech speech--taxi speech--receptionist speech--receptionist-1">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">добрый вечер! рады приветствовать вас в нашем отеле, с вас 50$.</span>
+                                <span class="speech__inner">добрый вечер! рады приветствовать вас в нашем отеле, <b class="speech__key">с вас 50$</b>.</span>
                             </p>
                         </div>
 
                         <div class="speech speech--taxi speech--receptionist speech--receptionist-2">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">на ужин рекомендую вам либо заказать доставку, либо пойти в наше кафе.</span>
+                                <span class="speech__inner">на ужин рекомендую вам либо <b class="speech__key">заказать доставку</b>, либо <b class="speech__key">пойти в наше кафе</b>.</span>
                             </p>
                         </div>
                     </div>
@@ -482,14 +496,14 @@
                     <div class="speech speech--boy speech--boy-3">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">ну наконец-то я в отеле, водители тут конечно…</span>
+                            <span class="speech__inner">ну наконец-то я в отеле, <b class="speech__key">водители тут конечно…</b></span>
                         </p>
                     </div>
 
                     <div class="speech speech--boy speech--boy-4">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">так, а как мне заселиться? хочется скорее на ужин.</span>
+                            <span class="speech__inner">так, а <b class="speech__key">как мне заселиться?</b> хочется скорее на ужин.</span>
                         </p>
                     </div>
 
@@ -641,7 +655,7 @@
                         <div class="speech speech--boy speech--room-1">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">сегодня буду пиццу и колу, доставка приедет через 20 минут.</span>
+                                <span class="speech__inner">сегодня буду <b class="speech__key">пиццу и колу</b>, доставка приедет <b class="speech__key">через 20 минут</b>.</span>
                             </p>
                         </div>
                     </div>
@@ -666,14 +680,14 @@
                         <div class="speech speech--boy speech--room-2">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">ой! что случилось? надо найти выключатель и нажать на него.</span>
+                                <span class="speech__inner">ой! что случилось? надо <b class="speech__key">найти выключатель</b> и нажать на него.</span>
                             </p>
                         </div>
 
                         <div class="speech speech--taxi speech--girl-1">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">ваш ужин, сэр! с вас 20$</span>
+                                <span class="speech__inner">ваш ужин, сэр! <b class="speech__key">с вас 20$</b></span>
                             </p>
                         </div>
                     </div>
@@ -752,14 +766,14 @@
                     <div class="speech speech--boy speech--cafe-1">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">ой, тут в меню только пицца, ну ладно, закажу маргариту</span>
+                            <span class="speech__inner">ой, тут в меню <b class="speech__key">только пицца</b>, ну ладно, закажу <b class="speech__key">маргариту</b></span>
                         </p>
                     </div>
 
                     <div class="speech speech--taxi speech--cafe-2">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">ваша маргарита за 30$, сэр</span>
+                            <span class="speech__inner">ваша маргарита <b class="speech__key">за 30$</b>, сэр</span>
                         </p>
                     </div>
 
@@ -773,7 +787,7 @@
                     <div class="speech speech--taxi speech--cafe-6">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
-                            <span class="speech__inner">ой, сегодня что-то с электричеством, приходите завтра!</span>
+                            <span class="speech__inner">ой, сегодня <b class="speech__key">что-то с электричеством</b>, приходите завтра!</span>
                         </p>
                     </div>
                     </div>
@@ -786,14 +800,14 @@
                         <div class="speech speech--boy speech--cafe-4">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">куда делся свет? А-а-а-а!! у меня воруют деньги!</span>
+                                <span class="speech__inner">куда делся свет? А-а-а-а!! <b class="speech__key">у меня воруют деньги!</b></span>
                             </p>
                         </div>
 
                         <div class="speech speech--boy speech--cafe-5">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">срочно найди преступника!</span>
+                                <span class="speech__inner">срочно <b class="speech__key">найди преступника!</b></span>
                             </p>
                         </div>
                     </div>
@@ -846,6 +860,62 @@
                     </div>
                 </div>
 
+                <!-- обучение после второй главы: та же тетрадь. сначала открыта на главе 1,
+                     потом правая страница переворачивается — и там уже глава 2 -->
+                <section class="longread longread--2" aria-label="Ужин в чужом городе">
+                    <div class="notebook">
+                        <img class="notebook__cover" src="img/notebook-cover.svg" alt="">
+
+                        <!-- левая страница главы 1 (текст копирует js из первого обучения) -->
+                        <div class="notebook__page notebook__page--left">
+                            <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                            <div class="notebook__content notebook__content--left" data-copy-from=".longread--1 .notebook__content--left"></div>
+                        </div>
+
+                        <!-- правая страница главы 2: открывается, когда лист перевернули -->
+                        <div class="notebook__page notebook__page--right">
+                            <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                            <div class="notebook__content notebook__content--right">
+                                <div class="longread__tips longread__step" data-step="3.60">
+                                    <p class="longread__tips-title">Лучше заранее:</p>
+                                    <ul class="longread__list">
+                                        <li class="longread__item longread__step" data-step="3.80">встречать курьера у двери или на ресепшене</li>
+                                        <li class="longread__item longread__step" data-step="3.95">не впускать незнакомцев в номер</li>
+                                        <li class="longread__item longread__step" data-step="4.10">держать сумку и телефон при себе</li>
+                                        <li class="longread__item longread__step" data-step="4.25">узнавать цены до заказа</li>
+                                        <li class="longread__item longread__step" data-step="4.40">выбирать места с отзывами</li>
+                                    </ul>
+                                    <p class="longread__tips-note longread__step" data-step="4.70">А если что-то кажется странным — уходи и зови персонал.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- лист, который переворачивается: спереди правая страница главы 1, сзади левая страница главы 2 -->
+                        <div class="notebook__leaf">
+                            <div class="notebook__face notebook__face--front">
+                                <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                                <div class="notebook__content notebook__content--right" data-copy-from=".longread--1 .notebook__content--right"></div>
+                            </div>
+
+                            <div class="notebook__face notebook__face--back">
+                                <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                                <div class="notebook__content notebook__content--left">
+                                    <p class="longread__kicker longread__step" data-step="1.90">глава 2 · что стоит знать</p>
+                                    <h2 class="longread__title longread__step" data-step="1.95">ужин в чужом городе</h2>
+                                    <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="2.05">
+                                    <p class="longread__paragraph longread__step" data-step="2.25">Курьер у двери номера — незнакомец. Впустив его внутрь, ты показываешь, где живёшь, что у тебя есть и что ты один. А в шумном кафе легко отвлечься: пока ты смотришь в меню, кто-то смотрит в твою сумку.</p>
+                                    <p class="longread__accent longread__step" data-step="2.75">
+                                        <mark class="longread__mark">Внезапный «сбой со светом» — частая уловка.</mark>
+                                    </p>
+                                    <p class="longread__paragraph longread__step" data-step="3.10">В темноте и суете проще всего украсть деньги или телефон. Цены «для туристов» и счёт без меню — ещё один способ остаться без денег.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <img class="notebook__rings" src="img/notebook-rings.svg" alt="">
+                    </div>
+                </section>
+
                 <!-- глава 3: прогулка. улица проявляется после итога ужина (доставка или кафе) -->
                 <div class="walk">
                     <div class="walk__stage">
@@ -860,14 +930,14 @@
                         <div class="speech speech--boy speech--walk-1">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">какой ужасный день! надеюсь, что поход по магазинам успокоит меня</span>
+                                <span class="speech__inner">какой ужасный день! надеюсь, что <b class="speech__key">поход по магазинам</b> успокоит меня</span>
                             </p>
                         </div>
 
                         <div class="speech speech--boy speech--walk-2">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">карты пишут, что быстрее будет пойти по тому тёмному переулку, но мне страшно</span>
+                                <span class="speech__inner">карты пишут, что быстрее будет пойти по тому <b class="speech__key">тёмному переулку</b>, но <b class="speech__key">мне страшно</b></span>
                             </p>
                         </div>
 
@@ -877,11 +947,281 @@
                         <div class="speech speech--taxi speech--walk-3">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">эй, боишься идти туда? не переживай, я хожу по этому переулку уже 20 лет</span>
+                                <span class="speech__inner">эй, боишься идти туда? не переживай, я хожу по этому переулку <b class="speech__key">уже 20 лет</b></span>
                             </p>
                         </div>
                     </div>
+
+                    <!-- выбор пути: улица уходит в черноту, как перед прошлыми выборами -->
+                    <div class="walk__dim"></div>
+
+                    <div class="choice choice--alley">
+                        <!-- глаза следят за курсором, пока игрок выбирает -->
+                        <div class="choice__eyes">
+                            <div class="eye eye--a eye--always-open choice__eye choice__eye--1" data-type="a">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye1.svg" alt="">
+                                    <div class="eye__socket eye__socket--a">
+                                        <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--b eye--mirror eye--always-open choice__eye choice__eye--2" data-type="b">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye2.svg" alt="">
+                                    <div class="eye__socket eye__socket--b">
+                                        <img class="eye__pupil eye__pupil--b" src="img/pupil2.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye2-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--c eye--always-open choice__eye choice__eye--3" data-type="c">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye3.svg" alt="">
+                                    <div class="eye__socket eye__socket--c">
+                                        <img class="eye__pupil eye__pupil--c" src="img/pupil3.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye3-lines.svg" alt="">
+                                </div>
+                            </div>
+
+                            <div class="eye eye--a eye--mirror eye--always-open choice__eye choice__eye--4" data-type="a">
+                                <div class="eye__open">
+                                    <img class="eye__base" src="img/eye1.svg" alt="">
+                                    <div class="eye__socket eye__socket--a">
+                                        <img class="eye__pupil eye__pupil--a" src="img/pupil1.svg" alt="">
+                                    </div>
+                                    <img class="eye__lines" src="img/eye1-lines.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="choice__title">что ты выберешь?</p>
+
+                        <div class="choice__options">
+                            <button class="choice__option" type="button" data-choice="alley">
+                                <img class="choice__bg" src="img/start.svg" alt="">
+                                <span class="choice__text">срезать по тёмному переулку — так быстрее</span>
+                            </button>
+
+                            <button class="choice__option" type="button" data-choice="street">
+                                <img class="choice__bg" src="img/start.svg" alt="">
+                                <span class="choice__text">пойти по людной улице — дольше, зато спокойнее</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- глава 3: тёмный переулок. проявляется, если выбрали срезать путь -->
+                <div class="alley">
+                    <div class="alley__stage">
+                        <img class="alley__bg" src="img/bg7.svg" alt="">
+                        <div class="alley__shade"></div>
+                    </div>
+
+                    <!-- мальчик проговаривает повороты (какие именно — js выбирает случайно при загрузке) -->
+                    <div class="alley__people">
+                        <img class="alley__boy" src="img/main-character-walk.svg" alt="Главный герой в куртке и с рюкзаком">
+
+                        <div class="speech speech--boy speech--alley-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">так, по карте сначала налево</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--alley-2">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">теперь направо</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--alley-3">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">дальше налево</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--alley-4">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">и последний поворот направо. что-то тут совсем темно…</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--alley-tip">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">если придётся бежать назад — поворачиваю <b class="speech__key">с конца</b>: <b class="speech__key">последний поворот первым</b>, и <b class="speech__key">налево станет направо</b></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- резкая темнота и красная пульсация по краям — в такт сердцу -->
+                    <div class="alley__dark"></div>
+
+                    <!-- в темноте на мгновения проступает силуэт того, кто идёт следом, — с каждым поворотом ближе -->
+                    <img class="alley__stalker" src="img/criminal.svg" alt="">
+
+                    <div class="alley__pulse"></div>
+
+                    <!-- «тук-тук» по краям экрана в такт сердцу -->
+                    <div class="alley__thumps">
+                        <span class="alley__thump alley__thump--1">тук</span>
+                        <span class="alley__thump alley__thump--2">тук</span>
+                    </div>
+
+                    <div class="alley__talk">
+                        <div class="speech speech--boy speech--alley-5">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">сердце колотится… сзади шаги — <b class="speech__key">на меня нападают!</b> надо <b class="speech__key">бежать назад!</b></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- итог переулка: убежал, но в панике выронил кошелёк -->
+                    <div class="outcome outcome--alley">
+                        <div class="outcome__flash"></div>
+
+                        <p class="outcome__text">
+                            <span class="outcome__inner">
+                                Ты убежал, но в панике выронил кошелёк.
+                                <br>
+                                Пара сэкономленных минут
+                                <br>
+                                не стоила такого риска
+                            </span>
+                        </p>
+
+                        <div class="outcome__stats">
+                            <div class="outcome__stat outcome__stat--money">
+                                <img class="outcome__icon outcome__icon--money" src="img/money-icon.svg" alt="Деньги">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">320</span>
+                                    <span class="outcome__unit">$</span>
+                                </div>
+
+                                <span class="outcome__delta">−40$</span>
+                            </div>
+
+                            <div class="outcome__stat outcome__stat--safety">
+                                <img class="outcome__icon outcome__icon--safety" src="img/safety-icon.svg" alt="Безопасность">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">97</span>
+                                    <span class="outcome__unit">%</span>
+                                </div>
+
+                                <span class="outcome__delta">−30%</span>
+
+                                <div class="outcome__scale">
+                                    <img class="outcome__scale-empty" src="img/scale.svg" alt="">
+                                    <img class="outcome__scale-fill" src="img/scale-fill.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- мини-игра: бежать назад тем же путём, повороты — в обратном порядке и в другую сторону -->
+                    <div class="escape">
+                        <p class="escape__title">беги назад тем же путём!</p>
+                        <p class="escape__hint">жми повороты с конца: последний — первым, и наоборот (налево ↔ направо). «назад» не жми — схватят!</p>
+
+                        <div class="escape__steps"></div>
+
+                        <div class="escape__timer">
+                            <div class="escape__timer-fill"></div>
+                        </div>
+
+                        <div class="escape__buttons">
+                            <button class="escape__button" type="button" data-move="left">
+                                <img class="escape__button-bg" src="img/btn.svg" alt="">
+                                <span class="escape__button-text">налево</span>
+                            </button>
+
+                            <button class="escape__button" type="button" data-move="right">
+                                <img class="escape__button-bg" src="img/btn.svg" alt="">
+                                <span class="escape__button-text">направо</span>
+                            </button>
+
+                            <button class="escape__button escape__button--back" type="button" data-move="back">
+                                <img class="escape__button-bg" src="img/btn.svg" alt="">
+                                <span class="escape__button-text">назад</span>
+                            </button>
+                        </div>
+
+                        <div class="escape__result">
+                            <p class="escape__result-text"></p>
+
+                            <button class="escape__button escape__button--retry" type="button">
+                                <img class="escape__button-bg" src="img/btn.svg" alt="">
+                                <span class="escape__button-text">ещё раз</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- обучение после третьей главы: тетрадь открыта на главе 2, потом лист переворачивается — глава 3 -->
+                <section class="longread longread--3" aria-label="Короткий путь в чужом городе">
+                    <div class="notebook">
+                        <img class="notebook__cover" src="img/notebook-cover.svg" alt="">
+
+                        <!-- левая страница главы 2 (текст копирует js из второго обучения) -->
+                        <div class="notebook__page notebook__page--left">
+                            <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                            <div class="notebook__content notebook__content--left" data-copy-from=".longread--2 .notebook__face--back .notebook__content"></div>
+                        </div>
+
+                        <!-- правая страница главы 3: открывается, когда лист перевернули -->
+                        <div class="notebook__page notebook__page--right">
+                            <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                            <div class="notebook__content notebook__content--right">
+                                <div class="longread__tips longread__step" data-step="3.60">
+                                    <p class="longread__tips-title">Лучше заранее:</p>
+                                    <ul class="longread__list">
+                                        <li class="longread__item longread__step" data-step="3.80">выбирать освещённые людные улицы</li>
+                                        <li class="longread__item longread__step" data-step="3.95">строить маршрут, пока светло</li>
+                                        <li class="longread__item longread__step" data-step="4.10">держать телефон заряженным</li>
+                                        <li class="longread__item longread__step" data-step="4.25">идти уверенно, не уткнувшись в телефон</li>
+                                        <li class="longread__item longread__step" data-step="4.40">делиться маршрутом с близкими</li>
+                                    </ul>
+                                    <p class="longread__tips-note longread__step" data-step="4.70">А если кажется, что за тобой идут, — зайди в магазин или кафе и попроси помощи.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- лист, который переворачивается: спереди правая страница главы 2, сзади левая страница главы 3 -->
+                        <div class="notebook__leaf">
+                            <div class="notebook__face notebook__face--front">
+                                <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                                <div class="notebook__content notebook__content--right" data-copy-from=".longread--2 .notebook__page--right .notebook__content"></div>
+                            </div>
+
+                            <div class="notebook__face notebook__face--back">
+                                <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                                <div class="notebook__content notebook__content--left">
+                                    <p class="longread__kicker longread__step" data-step="1.90">глава 3 · что стоит знать</p>
+                                    <h2 class="longread__title longread__step" data-step="1.95">короткий путь в чужом городе</h2>
+                                    <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="2.05">
+                                    <p class="longread__paragraph longread__step" data-step="2.25">Карты прокладывают самый быстрый путь, но не самый безопасный. В тёмном переулке или пустом дворе тебе никто не поможет, а пойти следом за тобой можно незаметно.</p>
+                                    <p class="longread__accent longread__step" data-step="2.75">
+                                        <mark class="longread__mark">Пара сэкономленных минут не стоит риска.</mark>
+                                    </p>
+                                    <p class="longread__paragraph longread__step" data-step="3.10">«Я хожу тут двадцать лет» от незнакомца ничего не гарантирует: у местных свои привычки, а турист заметен издалека.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <img class="notebook__rings" src="img/notebook-rings.svg" alt="">
+                    </div>
+                </section>
 
                 <div class="hero__noise"></div>
 
@@ -891,10 +1231,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=79"></script>
-    <script src="js/preloader.js?v=79"></script>
-    <script src="js/game-header.js?v=79"></script>
-    <script src="js/script.js?v=79"></script>
+    <script src="js/sound.js?v=91"></script>
+    <script src="js/preloader.js?v=91"></script>
+    <script src="js/game-header.js?v=91"></script>
+    <script src="js/script.js?v=91"></script>
 </body>
 
 </html>

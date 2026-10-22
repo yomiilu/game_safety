@@ -661,6 +661,16 @@ function updateCursorLight(firstDarkness) {
     // улица уже не чёрный экран — свет гаснет вместе с её появлением
     level = level * (1 - walk.level);
 
+    // выбор пути — снова чёрный экран (пока поверх не проявился переулок)
+    if (walkChoice.isShown && !alley.isShown) {
+        level = 1;
+    }
+
+    // в переулке резко стемнело, потом — чёрный экран итога
+    if (alley.isDark || alleyOutcome.isShown) {
+        level = 1;
+    }
+
     light.element.style.setProperty("--light-level", level.toFixed(3));
 }
 
@@ -824,6 +834,9 @@ const roomDarkFrom = 1;
 const cafeGirlFrom = 1;
 const cafeDarkFrom = 2.2;
 
+// в переулке: когда резко темнеет (в экранах прокрутки от выбора пути)
+const alleyDarkFrom = 2.9;
+
 const dialogue = [
     {
         selector: ".speech--boy-1",
@@ -961,6 +974,48 @@ const dialogue = [
         from: 2.9,
         speed: 1,
         waitForCharacter: ".walk__grandpa"
+    },
+    // переулок: мальчик проговаривает повороты (отсчёт — от выбора пути)
+    {
+        selector: ".speech--alley-1",
+        scene: "alley",
+        from: 0.3,
+        speed: 1
+    },
+    {
+        selector: ".speech--alley-2",
+        scene: "alley",
+        from: 0.8,
+        speed: 1
+    },
+    {
+        selector: ".speech--alley-3",
+        scene: "alley",
+        from: 1.3,
+        speed: 1
+    },
+    {
+        selector: ".speech--alley-4",
+        scene: "alley",
+        from: 1.8,
+        speed: 1
+    },
+    // мальчик сам себе объясняет, как бежать обратно
+    {
+        selector: ".speech--alley-tip",
+        scene: "alley",
+        from: 2.3,
+        speed: 1
+    },
+    {
+        selector: ".speech--alley-5",
+        scene: "alley",
+        from: alleyDarkFrom,
+        speed: 1.5,
+        // в темноте, когда заколотилось сердце
+        waitFor: function () {
+            return alley.isDark;
+        }
     }
 ];
 
@@ -983,7 +1038,7 @@ function setupDialogue() {
     dialogue.forEach(function (settings) {
         const element = document.querySelector(settings.selector);
         const textElement = element.querySelector(".speech__inner");
-        const text = textElement.textContent.trim();
+        const text = readSpeechText(textElement);
 
         const line = {
             selector: settings.selector,
@@ -1005,12 +1060,18 @@ function setupDialogue() {
             const char = document.createElement("span");
 
             char.className = "speech__char";
-            char.textContent = text[i];
+            char.textContent = text[i].char;
+
+            // самое важное в реплике — чёрным
+            if (text[i].isKey) {
+                char.classList.add("speech__char--key");
+            }
+
             textElement.appendChild(char);
 
             line.chars.push({
                 element: char,
-                isSpace: text[i] === " "
+                isSpace: text[i].char === " "
             });
         }
 
@@ -1018,6 +1079,35 @@ function setupDialogue() {
     });
 
     boyPoses = document.querySelector(".game__character--boy");
+}
+
+
+// текст реплики по буквам: у каждой буквы помечено, важная ли она (в html — внутри <b class="speech__key">)
+function readSpeechText(textElement) {
+    const letters = [];
+
+    textElement.childNodes.forEach(function (node) {
+        const isKey = node.nodeType === 1 && node.classList.contains("speech__key");
+        const part = node.textContent.replace(/\s+/g, " ");
+
+        for (let i = 0; i < part.length; i++) {
+            letters.push({
+                char: part[i],
+                isKey: isKey
+            });
+        }
+    });
+
+    // пробелы по краям (от переносов строк в html) не нужны
+    while (letters.length && letters[0].char === " ") {
+        letters.shift();
+    }
+
+    while (letters.length && letters[letters.length - 1].char === " ") {
+        letters.pop();
+    }
+
+    return letters;
 }
 
 
@@ -1122,6 +1212,12 @@ function getLineFrom(line) {
 
     if (line.scene === "walk") {
         const base = getWalkBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
+    if (line.scene === "alley") {
+        const base = getAlleyBase();
 
         return base === null ? Infinity : base + line.from;
     }
@@ -1289,7 +1385,7 @@ function skipTitle() {
 
 // текст на чёрных экранах-итогах (после такси, после кафе)
 function skipOutcomeText() {
-    [outcome, driverOutcome, cafeOutcome, roomOutcome].forEach(function (o) {
+    [outcome, driverOutcome, cafeOutcome, roomOutcome, alleyOutcome].forEach(function (o) {
         if (!o.isShown || o.isTextFinished) {
             return;
         }
@@ -1329,7 +1425,7 @@ function setupClickSkip() {
 const choiceFrom = 8.4;
 
 // через сколько (мс) варианты успевают выехать
-const choiceReadyDelay = 1000;
+const choiceReadyDelay = 1400;
 
 // через сколько (мс) после выбора появляется следующая сцена
 const streetDelay = 900;
@@ -2066,37 +2162,78 @@ function updateOutcome(progress) {
 }
 
 
-// ---------- лонгрид после первой главы ----------
-// после поездки и удара по цифрам на чёрном экране
-// по частям проявляется разбор: почему в такси в чужом городе легко обмануться и что делать
+// ---------- обучения: тетрадь ----------
+// после итога каждой главы на чёрном экране открывается тетрадь, и по частям проявляется разбор.
+// во втором обучении тетрадь сначала открыта на главе 1, потом лист переворачивается — и там глава 2
 
-// когда начинается (в экранах прокрутки от начала поездки) и сколько экранов длится
+// первое обучение: когда начинается (в экранах прокрутки от начала поездки) и сколько экранов длится
 const longreadFrom = 6.6;
 const longreadLength = 4;
 
-// за сколько экранов он проявляется в начале и уходит в черноту в конце
+// второе обучение (после ужина): сколько экранов длится и когда переворачивается лист (от его начала)
+const dinnerLongreadLength = 5.6;
+const dinnerLongreadFlipAt = 0.9;
+
+// за сколько экранов тетрадь проявляется в начале и уходит в черноту в конце
 const longreadFadeIn = 0.4;
 const longreadFadeOut = 0.6;
 
-const longread = {
-    element: null,
-    steps: []
-};
+// selector — какая тетрадь, length — сколько экранов, flipAt — когда перевернуть лист (null — не переворачивать),
+// getBase — отметка прокрутки, когда она начинается (null — ещё рано), getOutcomes — итоги, которые она закрывает
+function createLongread(selector, length, flipAt, getBase, getOutcomes) {
+    return {
+        selector: selector,
+        length: length,
+        flipAt: flipAt,
+        getBase: getBase,
+        getOutcomes: getOutcomes,
+        element: null,
+        steps: [],
+        isFlipped: false,
+        flipTimer: null
+    };
+}
+
+
+const longreads = [
+    createLongread(".longread--1", longreadLength, null, getLongreadBase, function () {
+        return [outcome, driverOutcome];
+    }),
+    createLongread(".longread--2", dinnerLongreadLength, dinnerLongreadFlipAt, getDinnerLongreadBase, function () {
+        return [roomOutcome, cafeOutcome];
+    }),
+    createLongread(".longread--3", dinnerLongreadLength, dinnerLongreadFlipAt, getAlleyLongreadBase, function () {
+        return [alleyOutcome];
+    })
+];
 
 
 function setupLongread() {
-    longread.element = document.querySelector(".longread");
+    // страницы прошлых глав в следующих тетрадях — копии из первой: уже исписаны целиком
+    document.querySelectorAll("[data-copy-from]").forEach(function (target) {
+        const source = document.querySelector(target.dataset.copyFrom);
 
-    longread.element.querySelectorAll(".longread__step").forEach(function (element) {
-        longread.steps.push({
-            element: element,
-            at: Number(element.dataset.step)
+        target.innerHTML = source.innerHTML;
+
+        target.querySelectorAll(".longread__step").forEach(function (element) {
+            element.classList.remove("longread__step");
+        });
+    });
+
+    longreads.forEach(function (item) {
+        item.element = document.querySelector(item.selector);
+
+        item.element.querySelectorAll(".longread__step").forEach(function (element) {
+            item.steps.push({
+                element: element,
+                at: Number(element.dataset.step)
+            });
         });
     });
 }
 
 
-// отметка прокрутки, когда лонгрид начинается; null — ещё рано
+// отметка прокрутки, когда первое обучение начинается; null — ещё рано
 function getLongreadBase() {
     if (!drive.isActive) {
         return null;
@@ -2111,24 +2248,48 @@ function getLongreadBase() {
 }
 
 
+// лист переворачивается (или обратно, если прокрутили назад); пока он в воздухе — на нём тень
+function setLongreadFlipped(item, isFlipped) {
+    if (item.isFlipped === isFlipped) {
+        return;
+    }
+
+    item.isFlipped = isFlipped;
+    item.element.classList.toggle("longread--flipped", isFlipped);
+    item.element.classList.add("longread--flipping");
+
+    clearTimeout(item.flipTimer);
+
+    item.flipTimer = setTimeout(function () {
+        item.element.classList.remove("longread--flipping");
+    }, 1400);
+}
+
+
 function updateLongread(progress) {
-    const base = getLongreadBase();
-    const local = base === null ? -1 : progress - base;
+    longreads.forEach(function (item) {
+        const base = item.getBase();
+        const local = base === null ? -1 : progress - base;
 
-    const fadeIn = smoothStep(0, longreadFadeIn, local);
-    const fadeOut = 1 - smoothStep(longreadLength - longreadFadeOut, longreadLength, local);
+        const fadeIn = smoothStep(0, longreadFadeIn, local);
+        const fadeOut = 1 - smoothStep(item.length - longreadFadeOut, item.length, local);
 
-    longread.element.style.setProperty("--longread", (fadeIn * fadeOut).toFixed(3));
+        item.element.style.setProperty("--longread", (fadeIn * fadeOut).toFixed(3));
 
-    // лонгрид полностью закрыл экран — итог с деньгами под ним больше не нужен,
-    // иначе он проступит, когда лонгрид будет уходить (при прокрутке назад вернётся)
-    [outcome, driverOutcome].forEach(function (o) {
-        o.element.classList.toggle("outcome--behind", local >= longreadFadeIn);
-    });
+        // тетрадь полностью закрыла экран — итог с деньгами под ней больше не нужен,
+        // иначе он проступит, когда тетрадь будет уходить (при прокрутке назад вернётся)
+        item.getOutcomes().forEach(function (o) {
+            o.element.classList.toggle("outcome--behind", local >= longreadFadeIn);
+        });
 
-    // каждый кусок текста появляется, когда до него докрутили, и прячется, если прокрутили назад
-    longread.steps.forEach(function (step) {
-        step.element.classList.toggle("longread__step--visible", local >= step.at);
+        if (item.flipAt !== null) {
+            setLongreadFlipped(item, local >= item.flipAt);
+        }
+
+        // каждый кусок текста появляется, когда до него докрутили, и прячется, если прокрутили назад
+        item.steps.forEach(function (step) {
+            step.element.classList.toggle("longread__step--visible", local >= step.at);
+        });
     });
 }
 
@@ -2861,7 +3022,7 @@ function hideCafeOutcome() {
 // ---------- глава 3: прогулка ----------
 // после итога ужина (доставка или кафе) по прокрутке из черноты проявляется улица
 
-// через сколько экранов после удара по цифрам ужина начинает проявляться улица и за сколько экранов
+// через сколько экранов после удара по цифрам ужина открывается тетрадь (а за ней — улица) и за сколько экранов
 const walkAfterOutcome = 1;
 const walkFadeLength = 0.6;
 
@@ -2892,8 +3053,8 @@ function getDinnerOutcome() {
 }
 
 
-// отметка прокрутки, когда улица начинает проявляться; null — ещё рано
-function getWalkFrom() {
+// отметка прокрутки, когда начинается второе обучение (тетрадь после ужина); null — ещё рано
+function getDinnerLongreadBase() {
     const dinnerOutcome = getDinnerOutcome();
 
     // ждём, пока доиграет удар по цифрам ужина
@@ -2904,6 +3065,18 @@ function getWalkFrom() {
     const statsFrom = dinnerOutcome === roomOutcome ? roomOutcomeStatsFrom : cafeOutcomeStatsFrom;
 
     return getHotelBase() + hotelChoiceFrom + statsFrom + walkAfterOutcome;
+}
+
+
+// отметка прокрутки, когда улица начинает проявляться — сразу после второго обучения; null — ещё рано
+function getWalkFrom() {
+    const base = getDinnerLongreadBase();
+
+    if (base === null) {
+        return null;
+    }
+
+    return base + dinnerLongreadLength;
 }
 
 
@@ -3049,6 +3222,672 @@ function finishOutcome(o) {
 }
 
 
+// ---------- глава 3: выбор пути ----------
+// после слов деда улица уходит в черноту: срезать по тёмному переулку или идти по людной улице
+
+// когда появляется выбор (в экранах прокрутки от момента, когда улица полностью проявилась)
+const walkChoiceFrom = 3.6;
+
+const walkChoice = {
+    element: null,
+    options: null,
+    isShown: false,
+    // что выбрал игрок: "alley" — переулок, "street" — людная улица, null — ещё не выбрал
+    selected: null
+};
+
+
+function setupWalkChoice() {
+    walkChoice.element = document.querySelector(".choice--alley");
+    walkChoice.options = walkChoice.element.querySelectorAll(".choice__option");
+
+    walkChoice.options.forEach(function (option) {
+        option.addEventListener("click", function () {
+            selectWalkChoice(option);
+        });
+    });
+}
+
+
+function selectWalkChoice(option) {
+    walkChoice.selected = option.dataset.choice;
+
+    walkChoice.options.forEach(function (otherOption) {
+        otherOption.classList.toggle("choice__option--selected", otherOption === option);
+    });
+
+    walkChoice.element.classList.add("choice--ready");
+    walkChoice.element.classList.add("choice--made");
+
+    // выбор сделан — дальше можно листать
+    document.body.classList.remove("is-choice-locked");
+
+    const selected = walkChoice.selected;
+
+    setTimeout(function () {
+        // за это время игрок мог прокрутить назад и передумать
+        if (!walkChoice.isShown || walkChoice.selected !== selected) {
+            return;
+        }
+
+        if (selected === "alley") {
+            showAlley();
+        }
+    }, streetDelay);
+}
+
+
+function resetWalkChoice() {
+    walkChoice.selected = null;
+    hideAlley();
+    walkChoice.element.classList.remove("choice--made");
+
+    walkChoice.options.forEach(function (option) {
+        option.classList.remove("choice__option--selected");
+    });
+}
+
+
+function showWalkChoice(mark) {
+    walkChoice.isShown = true;
+    walkChoice.element.classList.add("choice--visible");
+    walk.element.classList.add("walk--choice");
+    document.body.classList.add("is-walk-choosing");
+
+    // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал
+    window.scrollTo(0, hero.offsetTop + (mark + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+
+    // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
+    setTimeout(function () {
+        if (walkChoice.isShown) {
+            walkChoice.element.classList.add("choice--ready");
+        }
+    }, choiceReadyDelay);
+}
+
+
+function hideWalkChoice() {
+    walkChoice.isShown = false;
+    walkChoice.element.classList.remove("choice--visible");
+    walkChoice.element.classList.remove("choice--ready");
+    walk.element.classList.remove("walk--choice");
+    document.body.classList.remove("is-walk-choosing");
+    document.body.classList.remove("is-choice-locked");
+
+    resetWalkChoice();
+}
+
+
+// отметка прокрутки, где появляется выбор пути; null — улицы ещё нет
+function getWalkChoiceMark() {
+    const base = getWalkBase();
+
+    return base === null ? null : base + walkChoiceFrom;
+}
+
+
+function updateWalkChoice(progress) {
+    const mark = getWalkChoiceMark();
+    const lineBeforeChoice = findLine(".speech--walk-3");
+
+    if (!walkChoice.isShown && mark !== null && progress >= mark && lineBeforeChoice.isFinished) {
+        showWalkChoice(mark);
+    }
+
+    // прокрутили назад — выбор прячется, снова видна улица
+    if (walkChoice.isShown && (mark === null || progress < mark - speechGap)) {
+        hideWalkChoice();
+    }
+}
+
+
+// ---------- глава 3: тёмный переулок ----------
+// мальчик идёт по переулку и проговаривает повороты. потом резко темнеет, колотится сердце —
+// на него нападают, и надо бежать назад тем же путём (мини-игра «побег»)
+
+// сколько поворотов и какие — выбираем случайно при загрузке страницы
+const alleyTurns = 4;
+const alleyRoute = [];
+
+const turnWords = {
+    left: "налево",
+    right: "направо"
+};
+
+// что мальчик говорит на каждом повороте
+const turnPhrases = [
+    "так, по карте сначала {turn}",
+    "теперь {turn}",
+    "дальше {turn}",
+    "и последний поворот — {turn}. что-то тут совсем темно…"
+];
+
+// сердце: с какой скоростью бьётся в темноте и во время побега (мс на один «тук-тук»)
+const heartbeatCalm = 900;
+const heartbeatRun = 640;
+const heartbeatFastest = 380;
+
+// итог переулка: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора пути)
+const alleyOutcomeFrom = alleyDarkFrom + 0.6;
+const alleyOutcomeStatsFrom = alleyDarkFrom + 1.2;
+
+// что потерял: кошелёк выпал, пока убегал, и сильно испугался
+const alleyMoneyLoss = 40;
+const alleySafetyLoss = 30;
+
+// через сколько экранов после удара по цифрам открывается тетрадь главы 3
+const alleyLongreadAfterOutcome = 1;
+
+const alleyOutcome = createOutcome(".outcome--alley", "alley-outcome");
+
+const alley = {
+    element: null,
+    isShown: false,
+    isDark: false,
+    // сколько поворотов мальчик уже проговорил
+    turnsSaid: 0
+};
+
+
+// случайные повороты; хотя бы один в каждую сторону — иначе слишком просто
+function setupAlleyRoute() {
+    do {
+        alleyRoute.length = 0;
+
+        for (let i = 0; i < alleyTurns; i++) {
+            alleyRoute.push(Math.random() < 0.5 ? "left" : "right");
+        }
+    } while (alleyRoute.every(function (turn) {
+        return turn === alleyRoute[0];
+    }));
+
+    // вписываем повороты в реплики — до того, как реплики разложатся на буквы
+    turnPhrases.forEach(function (phrase, index) {
+        const inner = document.querySelector(".speech--alley-" + (index + 1) + " .speech__inner");
+
+        inner.innerHTML = phrase.replace("{turn}", '<b class="speech__key">' + turnWords[alleyRoute[index]] + "</b>");
+    });
+}
+
+
+function setupAlley() {
+    alley.element = document.querySelector(".alley");
+}
+
+
+// отметка прокрутки, от которой считаются события переулка; null — переулка нет
+function getAlleyBase() {
+    if (!alley.isShown) {
+        return null;
+    }
+
+    return getWalkChoiceMark();
+}
+
+
+function showAlley() {
+    alley.isShown = true;
+    alley.element.classList.add("alley--visible");
+    document.body.classList.add("is-alley");
+}
+
+
+function hideAlley() {
+    alley.isShown = false;
+    alley.element.classList.remove("alley--visible");
+    document.body.classList.remove("is-alley");
+
+    resetAlleyDark();
+    setAlleyTurns(0);
+    hideAlleyOutcome();
+}
+
+
+// с каждым проговорённым поворотом переулок приближается, темнеет и уходит в сторону поворота
+function setAlleyTurns(count) {
+    if (count === alley.turnsSaid) {
+        return;
+    }
+
+    alley.turnsSaid = count;
+
+    let shift = 0;
+
+    if (count > 0) {
+        // повернули налево — картинка уезжает вправо, и наоборот
+        shift = alleyRoute[count - 1] === "left" ? 4 : -4;
+    }
+
+    alley.element.style.setProperty("--alley-zoom", (1 + count * 0.06).toFixed(2));
+    alley.element.style.setProperty("--alley-shift", shift + "%");
+    alley.element.style.setProperty("--alley-shade", (0.4 + count * 0.08).toFixed(2));
+}
+
+
+// резко темнеет: колотится сердце, прокрутка заперта до конца побега
+function alleyLightsOut(base) {
+    alley.isDark = true;
+    alley.element.classList.add("alley--dark");
+    alley.element.style.setProperty("--beat", heartbeatCalm + "ms");
+    startHeartbeat(heartbeatCalm);
+
+    window.scrollTo(0, hero.offsetTop + (base + alleyDarkFrom + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+}
+
+
+function resetAlleyDark() {
+    alley.isDark = false;
+    alley.element.classList.remove("alley--dark", "alley--safe");
+    stopHeartbeat();
+    resetEscape();
+}
+
+
+function updateAlley(progress) {
+    const base = getAlleyBase();
+
+    if (base === null) {
+        return;
+    }
+
+    // сколько поворотов уже проговорено
+    let count = 0;
+
+    for (let i = 1; i <= alleyTurns; i++) {
+        if (findLine(".speech--alley-" + i).isFinished) {
+            count = i;
+        }
+    }
+
+    setAlleyTurns(count);
+
+    // после последнего поворота и подсказки, как бежать обратно, по прокрутке резко темнеет
+    const tipLine = findLine(".speech--alley-tip");
+    const darkFrom = base + alleyDarkFrom;
+
+    if (!alley.isDark && progress >= darkFrom && tipLine.isFinished) {
+        alleyLightsOut(base);
+    }
+
+    // «надо бежать назад!» допечатано — начинается побег
+    const runLine = findLine(".speech--alley-5");
+
+    if (alley.isDark && runLine.isFinished && !escapeGame.isStarted) {
+        escapeGame.isStarted = true;
+
+        const runId = escapeGame.runId;
+
+        setTimeout(function () {
+            if (runId === escapeGame.runId && alley.isDark) {
+                startEscape();
+            }
+        }, escapeStartDelay);
+    }
+
+    // убежали и прокрутили назад, выше темноты — всё как было
+    if (alley.isDark && escapeGame.isWon && progress < darkFrom - speechGap) {
+        resetAlleyDark();
+    }
+
+    updateAlleyOutcome(progress, base);
+}
+
+
+// убежали — по прокрутке чёрный экран: выронил кошелёк, минус деньги и безопасность
+function updateAlleyOutcome(progress, base) {
+    const textFrom = base + alleyOutcomeFrom;
+
+    if (!alleyOutcome.isShown && escapeGame.isWon && progress >= textFrom) {
+        // считаем от того, что было у игрока после ужина
+        const dinner = getDinnerOutcome().to;
+
+        alleyOutcome.from = { money: dinner.money, safety: dinner.safety };
+        alleyOutcome.to = { money: dinner.money - alleyMoneyLoss, safety: Math.max(dinner.safety - alleySafetyLoss, 0) };
+
+        resetOutcomeStats(alleyOutcome);
+        showOutcomeText(alleyOutcome);
+        document.body.classList.add("is-alley-outcome");
+    }
+
+    // прокрутили назад — итог прячется, цифры возвращаются
+    if (alleyOutcome.isShown && progress < textFrom - speechGap) {
+        hideAlleyOutcome();
+        return;
+    }
+
+    if (alleyOutcome.isShown && alleyOutcome.isTextFinished && !alleyOutcome.isStatsPlayed && progress >= base + alleyOutcomeStatsFrom) {
+        playOutcomeStats(alleyOutcome);
+    }
+}
+
+
+function hideAlleyOutcome() {
+    if (!alleyOutcome.isShown) {
+        return;
+    }
+
+    hideOutcome(alleyOutcome);
+    document.body.classList.remove("is-alley-outcome");
+}
+
+
+// отметка прокрутки, когда начинается тетрадь главы 3; null — ещё рано
+function getAlleyLongreadBase() {
+    const base = getAlleyBase();
+
+    if (base === null || !alleyOutcome.isStatsDone) {
+        return null;
+    }
+
+    return base + alleyOutcomeStatsFrom + alleyLongreadAfterOutcome;
+}
+
+
+// ---------- мини-игра «побег» ----------
+// бежим назад тем же путём: повороты в обратном порядке и в другую сторону.
+// на каждый поворот — всё меньше времени, кнопки каждый раз перемешиваются. «назад» — сразу схватили
+
+// через сколько (мс) после «надо бежать назад!» начинается побег
+const escapeStartDelay = 600;
+
+// время на первый поворот и на сколько меньше на каждый следующий (мс), но не меньше минимума
+const escapeFirstStepTime = 3000;
+const escapeStepFaster = 300;
+const escapeMinStepTime = 1800;
+
+// кнопки на каждом повороте появляются в полный размер и сжимаются, пока тает время: до какой доли размера
+const escapeButtonEndScale = 0.35;
+
+// где можно раскидывать кнопки: ниже заголовка и полоски времени (доля высоты экрана) и с отступом от краёв (в --u)
+const escapeFieldTop = 0.4;
+const escapeFieldMargin = 3.4722;
+
+// с какой доли времени полоска краснеет
+const escapeHurryAt = 0.65;
+
+const mirrorTurn = {
+    left: "right",
+    right: "left"
+};
+
+const escapeGame = {
+    element: null,
+    buttonsBox: null,
+    buttons: [],
+    stepsBox: null,
+    steps: [],
+    timer: null,
+    timerFill: null,
+    resultText: null,
+    // правильные нажатия по порядку
+    answer: [],
+    index: 0,
+    isStarted: false,
+    isPlaying: false,
+    isWon: false,
+    timeoutId: null,
+    hurryId: null,
+    runId: 0
+};
+
+
+function setupEscape() {
+    escapeGame.element = document.querySelector(".escape");
+    escapeGame.buttonsBox = escapeGame.element.querySelector(".escape__buttons");
+    escapeGame.buttons = escapeGame.element.querySelectorAll(".escape__buttons .escape__button");
+    escapeGame.stepsBox = escapeGame.element.querySelector(".escape__steps");
+    escapeGame.timer = escapeGame.element.querySelector(".escape__timer");
+    escapeGame.timerFill = escapeGame.element.querySelector(".escape__timer-fill");
+    escapeGame.resultText = escapeGame.element.querySelector(".escape__result-text");
+
+    escapeGame.buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            onEscapeMove(button);
+        });
+
+        // анимацию «верно / неверно» снимаем, когда доиграла — чтобы сработала и в следующий раз
+        button.addEventListener("animationend", function () {
+            button.classList.remove("escape__button--right", "escape__button--wrong");
+        });
+    });
+
+    // «ещё раз» — снова в начало переулка: мальчик заново проговаривает повороты
+    escapeGame.element.querySelector(".escape__button--retry").addEventListener("click", retryAlley);
+}
+
+
+function startEscape() {
+    clearEscapeTimers();
+    escapeGame.runId = escapeGame.runId + 1;
+    escapeGame.isStarted = true;
+    escapeGame.isPlaying = true;
+    escapeGame.isWon = false;
+    escapeGame.index = 0;
+
+    // обратный путь: последний поворот — первым, и в другую сторону
+    escapeGame.answer = alleyRoute.slice().reverse().map(function (turn) {
+        return mirrorTurn[turn];
+    });
+
+    // кружок на каждый поворот
+    escapeGame.stepsBox.innerHTML = "";
+    escapeGame.steps = [];
+
+    escapeGame.answer.forEach(function () {
+        const step = document.createElement("span");
+
+        step.className = "escape__step";
+        escapeGame.stepsBox.appendChild(step);
+        escapeGame.steps.push(step);
+    });
+
+    escapeGame.element.classList.remove("escape--done", "escape--won", "escape--caught");
+    escapeGame.element.classList.add("escape--visible");
+    alley.element.classList.remove("alley--safe", "alley--caught", "alley--hurry");
+    alley.element.classList.add("alley--escape");
+    alley.element.style.setProperty("--chase", "0");
+
+    setEscapeBeat(heartbeatRun);
+    nextEscapeStep();
+}
+
+
+function getEscapeStepTime(index) {
+    return Math.max(escapeFirstStepTime - index * escapeStepFaster, escapeMinStepTime);
+}
+
+
+// сердце бьётся в такт: и звук, и пульсация по краям
+function setEscapeBeat(interval) {
+    alley.element.style.setProperty("--beat", interval + "ms");
+    setHeartbeatRate(interval);
+}
+
+
+function nextEscapeStep() {
+    clearEscapeTimers();
+
+    // кнопки каждый раз в новых местах и всё мельче — надо искать глазами и успевать
+    placeEscapeButtons();
+
+    // полоска времени: сразу полная, потом равномерно тает
+    const time = getEscapeStepTime(escapeGame.index);
+
+    escapeGame.timer.classList.remove("escape__timer--hurry");
+    alley.element.classList.remove("alley--hurry");
+    escapeGame.timerFill.style.transition = "none";
+    escapeGame.timerFill.style.transform = "scaleX(1)";
+    void escapeGame.timerFill.offsetWidth;
+    escapeGame.timerFill.style.transition = "transform " + time + "ms linear";
+    escapeGame.timerFill.style.transform = "scaleX(0)";
+
+    // кнопки сжимаются вместе с тающим временем: чем дольше думаешь, тем труднее попасть
+    escapeGame.buttons.forEach(function (button) {
+        button.style.transition = "none";
+        button.style.scale = "1";
+    });
+
+    void escapeGame.buttonsBox.offsetWidth;
+
+    escapeGame.buttons.forEach(function (button) {
+        button.style.transition = "transform 0.08s ease, scale " + time + "ms linear";
+        button.style.scale = String(escapeButtonEndScale);
+    });
+
+    escapeGame.hurryId = setTimeout(function () {
+        escapeGame.timer.classList.add("escape__timer--hurry");
+        // время кончается — переулок трясёт
+        alley.element.classList.add("alley--hurry");
+    }, time * escapeHurryAt);
+
+    escapeGame.timeoutId = setTimeout(function () {
+        caughtEscape("ты замешкался — и тебя догнали");
+    }, time);
+}
+
+
+// раскидываем кнопки по экрану случайно, чтобы они не налезали друг на друга
+function placeEscapeButtons() {
+    const unit = getDesignUnit();
+    const width = escapeGame.element.offsetWidth;
+    const height = escapeGame.element.offsetHeight;
+    const size = 13.8889 * unit;
+    const margin = escapeFieldMargin * unit;
+
+    const minX = margin;
+    const maxX = width - size - margin;
+    const minY = height * escapeFieldTop;
+    const maxY = height - size - margin;
+
+    const placed = [];
+
+    escapeGame.buttons.forEach(function (button) {
+        let x = 0;
+        let y = 0;
+
+        // пробуем случайные места, пока не найдём свободное (на всякий случай — не бесконечно)
+        for (let attempt = 0; attempt < 60; attempt++) {
+            x = minX + Math.random() * Math.max(maxX - minX, 0);
+            y = minY + Math.random() * Math.max(maxY - minY, 0);
+
+            const isFree = placed.every(function (other) {
+                return Math.hypot(other.x - x, other.y - y) > size * 1.25;
+            });
+
+            if (isFree) {
+                break;
+            }
+        }
+
+        placed.push({ x: x, y: y });
+        button.style.left = x + "px";
+        button.style.top = y + "px";
+    });
+}
+
+
+// «ещё раз»: всё как до темноты, прокрутка — в начало переулка, повороты проговариваются заново
+function retryAlley() {
+    resetAlleyDark();
+    setAlleyTurns(0);
+    document.body.classList.remove("is-choice-locked");
+
+    const base = getAlleyBase();
+
+    if (base !== null) {
+        window.scrollTo(0, hero.offsetTop + (base + 0.05) * window.innerHeight);
+    }
+}
+
+
+function onEscapeMove(button) {
+    if (!escapeGame.isPlaying) {
+        return;
+    }
+
+    const move = button.dataset.move;
+
+    if (move === "back") {
+        button.classList.add("escape__button--wrong");
+        caughtEscape("ты побежал назад — прямо к нему в руки");
+        return;
+    }
+
+    if (move !== escapeGame.answer[escapeGame.index]) {
+        button.classList.add("escape__button--wrong");
+        caughtEscape("не тот поворот — там тупик, и тебя догнали");
+        return;
+    }
+
+    button.classList.add("escape__button--right");
+    escapeGame.steps[escapeGame.index].classList.add("escape__step--done");
+    escapeGame.index = escapeGame.index + 1;
+
+    if (escapeGame.index >= escapeGame.answer.length) {
+        winEscape();
+        return;
+    }
+
+    // чем ближе к выходу, тем чаще бьётся сердце и тем ближе силуэт сзади
+    const progress = escapeGame.index / escapeGame.answer.length;
+
+    alley.element.style.setProperty("--chase", progress.toFixed(2));
+
+    setEscapeBeat(Math.round(heartbeatRun - (heartbeatRun - heartbeatFastest) * progress));
+    nextEscapeStep();
+}
+
+
+function caughtEscape(reason) {
+    escapeGame.isPlaying = false;
+    clearEscapeTimers();
+
+    escapeGame.resultText.textContent = "тебя схватили! " + reason + ". попробуй ещё раз — запоминай повороты";
+
+    // силуэт — прямо перед глазами
+    alley.element.classList.remove("alley--hurry");
+    alley.element.classList.add("alley--caught");
+    alley.element.style.setProperty("--chase", "1");
+    escapeGame.element.classList.add("escape--done", "escape--caught");
+}
+
+
+function winEscape() {
+    escapeGame.isPlaying = false;
+    escapeGame.isWon = true;
+    clearEscapeTimers();
+
+    escapeGame.resultText.textContent = "фух! ты выбежал обратно на людную улицу. больше не срезай по тёмным переулкам";
+    escapeGame.element.classList.add("escape--done", "escape--won");
+
+    // сердце успокаивается, прокрутка снова свободна
+    alley.element.classList.remove("alley--hurry");
+    alley.element.classList.add("alley--safe");
+    stopHeartbeat();
+    document.body.classList.remove("is-choice-locked");
+}
+
+
+function clearEscapeTimers() {
+    clearTimeout(escapeGame.timeoutId);
+    clearTimeout(escapeGame.hurryId);
+}
+
+
+function resetEscape() {
+    clearEscapeTimers();
+    escapeGame.runId = escapeGame.runId + 1;
+    escapeGame.isStarted = false;
+    escapeGame.isPlaying = false;
+    escapeGame.isWon = false;
+    escapeGame.element.classList.remove("escape--visible", "escape--done", "escape--won", "escape--caught");
+    alley.element.classList.remove("alley--escape", "alley--caught", "alley--hurry");
+    alley.element.style.setProperty("--chase", "0");
+}
+
+
 // ---------- главный цикл ----------
 
 function animate(now) {
@@ -3085,6 +3924,8 @@ function animate(now) {
     updateRoom(progress);
     updateCafe(progress);
     updateWalk(progress);
+    updateWalkChoice(progress);
+    updateAlley(progress);
     updateDarkEyes(now);
 }
 
@@ -3118,6 +3959,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEyes();
     setupTypewriter();
     setupCharacters();
+    setupAlleyRoute();
     setupDialogue();
     setupChoice();
     hotel.element = document.querySelector(".hotel");
@@ -3125,11 +3967,15 @@ document.addEventListener("DOMContentLoaded", function () {
     setupRoom();
     setupCafe();
     setupWalk();
+    setupWalkChoice();
+    setupAlley();
+    setupEscape();
     setupDrive();
     setupOutcome(outcome);
     setupOutcome(driverOutcome);
     setupOutcome(cafeOutcome);
     setupOutcome(roomOutcome);
+    setupOutcome(alleyOutcome);
     setupLongread();
     setupClickSkip();
     // первый текст начинает печататься после клика по «начать» в прелоадере

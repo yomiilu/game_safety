@@ -209,6 +209,42 @@ function stopDoorSound() {
 }
 
 
+// ---------- сердцебиение (переулок) ----------
+// звук по кругу; когда сердце должно биться чаще — проигрываем его быстрее
+
+// во сколько раз быстрее можно ускорить звук (дальше звучит неестественно)
+const heartbeatMaxRate = 1.6;
+
+const heartbeat = {
+    // с какой частотой ударов звук звучит как есть (мс на удар) — от неё считаем ускорение
+    baseInterval: 900,
+    isOn: false
+};
+
+
+function startHeartbeat(interval) {
+    heartbeat.baseInterval = interval;
+    heartbeat.isOn = true;
+
+    setHeartbeatRate(interval);
+    playChannel("heart", true);
+}
+
+
+// сердце бьётся чаще (или реже): чем короче удар, тем быстрее играет звук
+function setHeartbeatRate(interval) {
+    const rate = Math.min(Math.max(heartbeat.baseInterval / interval, 0.5), heartbeatMaxRate);
+
+    sound.channels.heart.audio.playbackRate = rate;
+}
+
+
+function stopHeartbeat() {
+    heartbeat.isOn = false;
+    fadeOutChannel("heart");
+}
+
+
 // первый клик или клавиша разрешают звук: если машинка как раз печатает — включаем её
 function unlockSound() {
     if (sound.isTyping && sound.channels.typewriter.audio.paused) {
@@ -231,6 +267,9 @@ function setupSound() {
     // темнота в номере (по кругу) и скрип двери (один раз) — звучат поверх реплик
     createChannel("dark", "sounds/darkness.mp3", 0, true, true);
     createChannel("door", "sounds/door.mp3", 0, false, true);
+
+    // сердцебиение в тёмном переулке (по кругу) — тоже поверх реплик
+    createChannel("heart", "sounds/heartbeat.mp3", 0, true, true);
 
     loadSoundSettings();
     applyVolume();

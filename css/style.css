@@ -262,7 +262,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 4000vh;
+    height: 5600vh;
     background-color: #0F0F0F;
 }
 
@@ -640,8 +640,8 @@ body.is-street .sound {
     width: calc(31.9444 * var(--u));
     height: calc(11.3194 * var(--u));
     opacity: 0;
-    transform: scale(0.85);
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    transform: scale(0.6) rotate(-4deg);
+    transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .speech--boy {
@@ -659,7 +659,7 @@ body.is-street .sound {
 
 .speech--visible {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
 }
 
 .speech__bg {
@@ -690,6 +690,16 @@ body.is-street .sound {
     font-weight: 400;
     color: #686868;
     text-align: center;
+}
+
+/* самое важное в реплике — чёрным и подчёркнуто (линия появляется вместе с буквами, пока текст печатается) */
+.speech__char--key {
+    color: #000000;
+    text-decoration-line: underline;
+    text-decoration-color: #000000;
+    text-decoration-thickness: calc(0.1389 * var(--u));
+    text-underline-offset: calc(0.3472 * var(--u));
+    text-decoration-skip-ink: none;
 }
 
 /* в зеркальной плашке отражаем только картинку, а область текста сдвигаем от хвостика */
@@ -834,13 +844,21 @@ body.is-street .sound {
     border: none;
     cursor: pointer;
     opacity: 1;
-    transform: translateY(calc(1.3889 * var(--u)));
+    transform: translateY(-70vh) rotate(-8deg);
     transition: transform 0.35s ease, opacity 0.06s ease;
 }
 
-/* варианты выезжают снизу по очереди (задержка только у движения, не у яркости) */
-.choice--visible .choice__option {
-    transform: translateY(0);
+/* второй вариант ждёт за нижним краем экрана */
+.choice__option + .choice__option {
+    transform: translateY(70vh) rotate(8deg);
+}
+
+/* варианты прилетают: первый сверху, второй снизу — и с пружинкой встают на место
+   (задержка только у движения, не у яркости) */
+.choice--visible .choice__option,
+.choice--visible .choice__option + .choice__option {
+    transform: translateY(0) rotate(0deg);
+    transition: transform 0.75s cubic-bezier(0.34, 1.45, 0.64, 1), opacity 0.06s ease;
     transition-delay: 0.4s, 0s;
 }
 
@@ -848,9 +866,10 @@ body.is-street .sound {
     transition-delay: 0.55s, 0s;
 }
 
-/* выехали — дальше всё реагирует сразу, без задержек (класс ставит js) */
+/* прилетели — дальше всё реагирует сразу и быстро, без задержек (класс ставит js) */
 .choice--ready .choice__option,
 .choice--ready .choice__option + .choice__option {
+    transition: transform 0.35s ease, opacity 0.06s ease;
     transition-delay: 0s;
 }
 
@@ -1226,8 +1245,8 @@ body.is-street .game-header {
 
 /* ---------- лонгрид после первой главы ---------- */
 
-/* чёрный экран с текстом; проявляется и уходит по прокрутке (--longread от 0 до 1 задаёт js).
-   лежит над улицей, но под отелем — отель проявляется поверх */
+/* чёрный экран с тетрадью; проявляется и уходит по прокрутке (--longread от 0 до 1 задаёт js).
+   первое обучение лежит над улицей, но под отелем — отель проявляется поверх */
 .longread {
     position: absolute;
     top: 0;
@@ -1243,70 +1262,185 @@ body.is-street .game-header {
     pointer-events: none;
 }
 
-.longread__inner {
-    display: flex;
-    align-items: center;
-    gap: calc(5.5556 * var(--u));
-    width: calc(90.2778 * var(--u));
+/* разворот тетради (1600 × 1000): при появлении чуть подлетает и выпрямляется */
+.notebook {
+    position: relative;
+    width: calc(96.0000 * var(--u));
+    height: calc(60.0000 * var(--u));
+    perspective: calc(250.0000 * var(--u));
+    transform: translateY(calc((1 - var(--longread, 0)) * 4.1667 * var(--u))) rotate(calc(-1deg - (1 - var(--longread, 0)) * 3deg)) scale(calc(0.92 + var(--longread, 0) * 0.08));
 }
 
-.longread__text {
-    flex: 1 1 0;
+.notebook__cover,
+.notebook__rings {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
-/* каждый кусок текста выплывает снизу, когда до него докрутили (класс ставит js) */
+/* пружина — поверх страниц и переворачиваемого листа */
+.notebook__rings {
+    z-index: 3;
+}
+
+.notebook__page {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+}
+
+.notebook__page--left {
+    left: 0;
+}
+
+.notebook__page--right {
+    left: 50%;
+}
+
+.notebook__paper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* текст на странице: слева — после красного поля, справа — после пружины и до поля */
+.notebook__content {
+    position: absolute;
+    top: 9%;
+    bottom: 8%;
+}
+
+.notebook__content--left {
+    right: 6%;
+    left: 21%;
+}
+
+.notebook__content--right {
+    right: 22%;
+    left: 10%;
+}
+
+/* лист, который переворачивается: крепится к корешку и уходит налево (класс ставит js) */
+.notebook__leaf {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 2;
+    width: 50%;
+    height: 100%;
+    transform-origin: 0% 50%;
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+    transition: transform 1.4s cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.longread--flipped .notebook__leaf {
+    transform: rotateY(-180deg);
+}
+
+.notebook__face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+}
+
+/* обратная сторона листа — это уже левая страница следующего разворота */
+.notebook__face--back {
+    transform: rotateY(180deg);
+}
+
+/* пока лист в воздухе, на нём лежит тень — к середине переворота гуще */
+.notebook__face::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.longread--flipping .notebook__face::after {
+    animation: leaf-shade 1.4s ease-in-out;
+}
+
+@keyframes leaf-shade {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.25;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* каждый кусок текста появляется, будто его пишут ручкой слева направо (класс ставит js) */
 .longread__step {
     opacity: 0;
-    transform: translateY(calc(1.3889 * var(--u)));
-    transition: opacity 0.7s ease, transform 0.7s ease;
+    clip-path: inset(0 100% 0 0);
+    transition: opacity 0.4s ease, clip-path 1s ease;
 }
 
 .longread__step--visible {
     opacity: 1;
-    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
 }
 
 .longread__kicker {
-    margin-bottom: calc(0.6944 * var(--u));
+    margin-bottom: calc(0.4167 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.6667 * var(--u));
-    line-height: calc(2.3611 * var(--u));
+    font-size: calc(1.3889 * var(--u));
+    line-height: calc(2.0833 * var(--u));
     font-weight: 400;
     color: #8A8A8A;
 }
 
-/* в лонгриде всего два размера шрифта: заголовок и всё остальное.
+/* в тетради всего два размера шрифта: заголовок и всё остальное.
    разницу дают цвет, отступы, рукописная черта и пометка маркером */
 .longread__title {
     font-family: "Kom Post", sans-serif;
-    font-size: calc(2.6389 * var(--u));
-    line-height: calc(3.0556 * var(--u));
+    font-size: calc(2.2222 * var(--u));
+    line-height: calc(2.6389 * var(--u));
     font-weight: 400;
-    color: #FFFFFF;
+    color: #2B2A2B;
 }
 
 /* рукописная черта под заголовком — та же, что шкала в шапке */
 .longread__divider {
     display: block;
-    width: calc(12.5000 * var(--u));
+    width: calc(11.1111 * var(--u));
     height: calc(0.4167 * var(--u));
-    margin: calc(1.3889 * var(--u)) 0 calc(2.7778 * var(--u));
+    margin: calc(1.0417 * var(--u)) 0 calc(1.7361 * var(--u));
 }
 
 .longread__paragraph {
-    margin-bottom: calc(2.0833 * var(--u));
+    margin-bottom: calc(1.3889 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.6667 * var(--u));
-    line-height: calc(2.3611 * var(--u));
+    font-size: calc(1.5278 * var(--u));
+    line-height: calc(2.2222 * var(--u));
     font-weight: 400;
-    color: #CFCFCF;
+    color: #3E3E3E;
 }
 
 .longread__accent {
-    margin-bottom: calc(2.0833 * var(--u));
+    margin-bottom: calc(1.3889 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.6667 * var(--u));
-    line-height: calc(2.3611 * var(--u));
+    font-size: calc(1.5278 * var(--u));
+    line-height: calc(2.2222 * var(--u));
     font-weight: 400;
 }
 
@@ -1318,38 +1452,22 @@ body.is-street .game-header {
         178deg,
         rgba(200, 50, 60, 0) 0%,
         rgba(200, 50, 60, 0) 42%,
-        rgba(200, 50, 60, 0.85) 46%,
-        rgba(200, 50, 60, 0.85) 92%,
+        rgba(200, 50, 60, 0.4) 46%,
+        rgba(200, 50, 60, 0.4) 92%,
         rgba(200, 50, 60, 0) 96%
     );
-    color: #FFFFFF;
+    color: #000000;
 }
 
-/* советы — на белой рукописной плашке */
+/* советы — на правой странице */
 .longread__tips {
     position: relative;
-    flex: 0 0 calc(33.3333 * var(--u));
-    padding: calc(3.8194 * var(--u)) calc(3.4722 * var(--u)) calc(4.1667 * var(--u));
 }
 
-.longread__plate {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.longread__tips-title,
-.longread__list,
-.longread__tips-note {
-    position: relative;
-}
-
-/* заголовок плашки подчёркнут той же рукописной чертой */
+/* заголовок советов подчёркнут той же рукописной чертой */
 .longread__tips-title {
     display: inline-block;
-    margin-bottom: calc(1.7361 * var(--u));
+    margin-bottom: calc(1.3889 * var(--u));
     padding-bottom: calc(0.6944 * var(--u));
     background-image: url("../img/scale-fill.svg");
     background-repeat: no-repeat;
@@ -1371,11 +1489,11 @@ body.is-street .game-header {
 /* пункт с рукописной галочкой */
 .longread__item {
     position: relative;
-    margin-bottom: calc(0.4861 * var(--u));
+    margin-bottom: calc(0.6944 * var(--u));
     padding-left: calc(2.2222 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.6667 * var(--u));
-    line-height: calc(2.3611 * var(--u));
+    font-size: calc(1.5278 * var(--u));
+    line-height: calc(2.2222 * var(--u));
     font-weight: 400;
     color: #3E3E3E;
 }
@@ -1383,7 +1501,7 @@ body.is-street .game-header {
 .longread__item::before {
     content: "";
     position: absolute;
-    top: calc(0.4167 * var(--u));
+    top: calc(0.3472 * var(--u));
     left: 0;
     width: calc(1.3194 * var(--u));
     height: calc(1.3542 * var(--u));
@@ -1398,8 +1516,8 @@ body.is-street .game-header {
     padding-top: calc(1.3889 * var(--u));
     border-top: calc(0.1389 * var(--u)) dashed #ACAAAB;
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.6667 * var(--u));
-    line-height: calc(2.3611 * var(--u));
+    font-size: calc(1.5278 * var(--u));
+    line-height: calc(2.2222 * var(--u));
     font-weight: 400;
     color: #6F6F6F;
 }
@@ -1685,7 +1803,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
 
 /* итог кафе: свой чёрный фон (под итогом после такси чёрной была сама улица) */
 .outcome--cafe,
-.outcome--room {
+.outcome--room,
+.outcome--alley {
     z-index: 3;
     background-color: #000000;
 }
@@ -1912,6 +2031,646 @@ html body.is-hotel.is-dinner-outcome.is-walk .game-header {
 
 body.is-hotel.is-dinner-outcome.is-walk .sound {
     top: calc(7.2917 * var(--u));
+}
+
+
+/* ---------- глава 3: выбор пути ---------- */
+
+/* улица полностью уходит в черноту — как перед прошлыми выборами */
+.walk__dim {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.walk--choice .walk__dim {
+    opacity: 1;
+}
+
+/* под улицей ещё лежит улица первой главы — без этого правило «на улице выбор не ловит клики» выключило бы кнопки */
+body.is-street .choice--alley.choice--visible {
+    pointer-events: auto;
+}
+
+/* поверх выбора уже проявился переулок — кнопки под ним больше не ловят клики */
+body.is-alley .choice--alley.choice--visible {
+    pointer-events: none;
+}
+
+/* шапка растворяется в черноту, звук поднимается в угол — как на прошлых выборах */
+html body.is-walk.is-walk-choosing:not(.is-alley) .game-header {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+body.is-walk.is-walk-choosing:not(.is-alley) .sound {
+    top: calc(2.0833 * var(--u));
+}
+
+
+/* ---------- глава 3: тёмный переулок ---------- */
+
+.alley {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 7;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    background-color: #000000;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.alley--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* сцена с пропорциями фона (1129 × 802) — заполняет экран, как object-fit: cover.
+   с каждым поворотом чуть приближается и уходит в сторону поворота (--alley-zoom и --alley-shift ставит js) */
+.alley__stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100vw, 140.7731vh);
+    height: max(100vh, 71.0363vw);
+    transform: translate(calc(-50% + var(--alley-shift, 0%)), -50%) scale(var(--alley-zoom, 1));
+    transition: transform 1.2s ease;
+}
+
+.alley__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* затемнение фона: чем глубже в переулок, тем темнее (--alley-shade ставит js) */
+.alley__shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: var(--alley-shade, 0.4);
+    transition: opacity 1.2s ease;
+}
+
+/* мальчик и реплики — от центра экрана, как на улице */
+.alley__people,
+.alley__talk {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.alley__boy {
+    position: absolute;
+    bottom: calc(2.0833 * var(--u));
+    left: calc(50% - calc(46.5278 * var(--u)));
+    width: calc(16.9271 * var(--u));
+    max-width: none;
+}
+
+.alley .speech--boy {
+    bottom: calc(41.6667 * var(--u));
+    left: calc(50% - calc(29.8611 * var(--u)));
+}
+
+/* резкая темнота: экран почти чёрный, мальчика едва видно */
+.alley__dark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.alley--dark .alley__dark {
+    opacity: 0.86;
+}
+
+/* красная пульсация по краям экрана — в такт сердцу (--beat — длина удара, ставит js) */
+.alley__pulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(120, 0, 0, 0.55) 80%, rgba(60, 0, 0, 0.9) 100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.alley--dark .alley__pulse {
+    animation: heart-pulse var(--beat, 900ms) ease-out infinite;
+}
+
+/* весь экран чуть вздрагивает на каждом ударе */
+.alley--dark .alley__people {
+    animation: heart-shake var(--beat, 900ms) ease-out infinite;
+}
+
+/* «тук-тук»: два удара подряд, потом пауза */
+@keyframes heart-pulse {
+    0% {
+        opacity: 0.25;
+    }
+
+    8% {
+        opacity: 1;
+    }
+
+    20% {
+        opacity: 0.4;
+    }
+
+    28% {
+        opacity: 0.85;
+    }
+
+    60% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 0.25;
+    }
+}
+
+@keyframes heart-shake {
+    0% {
+        transform: scale(1);
+    }
+
+    8% {
+        transform: scale(1.012);
+    }
+
+    20% {
+        transform: scale(1);
+    }
+
+    28% {
+        transform: scale(1.008);
+    }
+
+    60% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* убежали — сердце успокаивается */
+.alley--safe .alley__pulse,
+.alley--safe .alley__people {
+    animation: none;
+}
+
+/* силуэт преследователя: в темноте его почти не видно — только на мгновения проступает.
+   чем ближе погоня (--chase от 0 до 1 ставит js), тем он крупнее и ближе к мальчику */
+.alley__stalker {
+    position: absolute;
+    right: calc(50% - calc(46.5278 * var(--u)));
+    bottom: calc(2.0833 * var(--u));
+    height: calc(40.2778 * var(--u));
+    max-width: none;
+    opacity: 0;
+    filter: brightness(0.45) contrast(1.2);
+    transform: translateX(calc(var(--chase, 0) * -12 * var(--u))) scale(calc(0.75 + var(--chase, 0) * 0.45));
+    transform-origin: 50% 100%;
+    transition: transform 0.6s ease;
+    pointer-events: none;
+}
+
+.alley--dark .alley__stalker {
+    animation: stalker-glimpse 3.1s linear infinite;
+}
+
+/* во время побега мелькает чаще */
+.alley--escape .alley__stalker {
+    animation-duration: 1.7s;
+}
+
+/* схватили — силуэт прямо перед глазами */
+.alley--caught .alley__stalker {
+    opacity: 0.85;
+    animation: none;
+}
+
+.alley--safe .alley__stalker {
+    opacity: 0;
+    animation: none;
+}
+
+@keyframes stalker-glimpse {
+    0% {
+        opacity: 0;
+    }
+
+    68% {
+        opacity: 0;
+    }
+
+    70% {
+        opacity: 0.7;
+    }
+
+    72% {
+        opacity: 0.1;
+    }
+
+    75% {
+        opacity: 0.55;
+    }
+
+    82% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* «тук» и сразу второй «тук» — по краям экрана, в такт сердцу */
+.alley__thumps {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.alley__thump {
+    position: absolute;
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(3.3333 * var(--u));
+    line-height: calc(3.3333 * var(--u));
+    font-weight: 400;
+    color: #C8383C;
+    opacity: 0;
+}
+
+.alley__thump--1 {
+    top: 20%;
+    left: 8%;
+    transform: rotate(-12deg);
+}
+
+.alley__thump--2 {
+    right: 9%;
+    bottom: 24%;
+    transform: rotate(9deg);
+}
+
+.alley--dark .alley__thump {
+    animation: thump var(--beat, 900ms) ease-out infinite;
+}
+
+.alley--dark .alley__thump--2 {
+    animation-delay: calc(var(--beat, 900ms) * 0.2);
+}
+
+.alley--safe .alley__thump {
+    animation: none;
+}
+
+@keyframes thump {
+    0% {
+        opacity: 0;
+        scale: 0.6;
+    }
+
+    8% {
+        opacity: 0.9;
+        scale: 1.15;
+    }
+
+    35% {
+        opacity: 0;
+        scale: 1.45;
+    }
+
+    100% {
+        opacity: 0;
+        scale: 1.45;
+    }
+}
+
+/* время на поворот кончается — переулок трясёт */
+.alley--hurry .alley__stage {
+    animation: hurry-shake 0.14s linear infinite;
+}
+
+@keyframes hurry-shake {
+    0% {
+        translate: 0 0;
+    }
+
+    25% {
+        translate: calc(-0.4167 * var(--u)) calc(0.2778 * var(--u));
+    }
+
+    50% {
+        translate: calc(0.4167 * var(--u)) 0;
+    }
+
+    75% {
+        translate: calc(-0.2778 * var(--u)) calc(-0.2778 * var(--u));
+    }
+
+    100% {
+        translate: 0 0;
+    }
+}
+
+/* итог переулка — поверх мини-игры */
+.outcome--alley {
+    z-index: 4;
+}
+
+/* на итоге переулка и в тетради после него шапки нет — цифры показывает сам итог, звук поднимается в угол */
+html body.is-hotel.is-walk.is-alley.is-alley-outcome .game-header {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+body.is-hotel.is-walk.is-alley.is-alley-outcome .sound {
+    top: calc(2.0833 * var(--u));
+}
+
+/* третья тетрадь — поверх переулка */
+.longread--3 {
+    z-index: 7;
+}
+
+/* реплика в темноте — поверх черноты */
+.alley__talk {
+    z-index: 2;
+}
+
+/* начался побег — реплики больше нет, на экране только игра */
+.alley--escape .alley__talk,
+.alley--escape .alley__people .speech {
+    opacity: 0;
+}
+
+
+/* ---------- мини-игра: побег ---------- */
+
+.escape {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: calc(2.0833 * var(--u));
+    width: 100%;
+    height: 100%;
+    padding-top: calc(9.7222 * var(--u));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.escape--visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.escape__title {
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(3.3333 * var(--u));
+    line-height: calc(3.3333 * var(--u));
+    font-weight: 400;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.escape__hint {
+    max-width: calc(62.5000 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.9444 * var(--u));
+    line-height: calc(2.6389 * var(--u));
+    font-weight: 400;
+    color: #DEDDDE;
+    text-align: center;
+}
+
+/* сколько поворотов уже пробежали: кружок на каждый */
+.escape__steps {
+    display: flex;
+    gap: calc(1.0417 * var(--u));
+}
+
+.escape__step {
+    width: calc(1.3889 * var(--u));
+    height: calc(1.3889 * var(--u));
+    border: calc(0.1389 * var(--u)) solid #FFFFFF;
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+.escape__step--done {
+    background-color: #FFFFFF;
+    opacity: 1;
+}
+
+/* сколько осталось времени на этот поворот */
+.escape__timer {
+    width: calc(34.7222 * var(--u));
+    height: calc(0.6944 * var(--u));
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: calc(0.3472 * var(--u));
+    overflow: hidden;
+}
+
+.escape__timer-fill {
+    width: 100%;
+    height: 100%;
+    background-color: #FFFFFF;
+    transform-origin: 0% 50%;
+}
+
+/* последние мгновения — полоска краснеет */
+.escape__timer--hurry .escape__timer-fill {
+    background-color: #E04A4A;
+}
+
+/* кнопки разбросаны по экрану случайно (left и top ставит js) и сжимаются, пока тает время (scale ставит js) */
+.escape__buttons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.escape__buttons .escape__button {
+    position: absolute;
+    width: calc(13.8889 * var(--u));
+    height: calc(13.4606 * var(--u));
+    pointer-events: auto;
+}
+
+.escape__buttons .escape__button-text {
+    font-size: calc(1.9444 * var(--u));
+    line-height: calc(1.9444 * var(--u));
+}
+
+/* кнопка — рукописный белый кружок с текстом внутри */
+.escape__button {
+    position: relative;
+    width: calc(13.8889 * var(--u));
+    height: calc(13.4606 * var(--u));
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.08s ease;
+}
+
+.escape__button:hover {
+    transform: scale(1.06);
+}
+
+.escape__button:active {
+    transform: scale(0.92);
+}
+
+.escape__button-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.escape__button-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(1.9444 * var(--u));
+    line-height: calc(1.9444 * var(--u));
+    font-weight: 400;
+    color: #545353;
+}
+
+/* верно — кнопка вспыхивает, неверно — трясётся красным */
+.escape__button--right {
+    animation: escape-right 0.25s ease;
+}
+
+.escape__button--wrong .escape__button-text {
+    color: #E04A4A;
+}
+
+.escape__button--wrong {
+    animation: escape-wrong 0.3s ease;
+}
+
+@keyframes escape-right {
+    0% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes escape-wrong {
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(calc(-0.8333 * var(--u)));
+    }
+
+    50% {
+        transform: translateX(calc(0.8333 * var(--u)));
+    }
+
+    75% {
+        transform: translateX(calc(-0.4167 * var(--u)));
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+/* итог побега: вместо кнопок — текст (и «ещё раз», если схватили) */
+.escape__result {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(2.0833 * var(--u));
+}
+
+.escape--done .escape__result {
+    display: flex;
+}
+
+.escape--done .escape__buttons,
+.escape--done .escape__timer,
+.escape--done .escape__hint {
+    display: none;
+}
+
+.escape__result-text {
+    max-width: calc(55.5556 * var(--u));
+    font-family: "Kom Post", sans-serif;
+    font-size: calc(2.2222 * var(--u));
+    line-height: calc(2.9167 * var(--u));
+    font-weight: 400;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.escape--won .escape__button--retry {
+    display: none;
+}
+
+/* схватили — вспышка красным */
+.escape--caught {
+    background-color: rgba(120, 0, 0, 0.35);
 }
 
 
@@ -2471,26 +3230,75 @@ body.is-header-active .game-header__burger {
     transform: translateX(-50%) rotate(0deg) scale(1);
 }
 
-/* само меню: рукописная белая плашка под шапкой справа */
+/* само меню: рукописная белая плашка посреди экрана; выпрыгивает с пружинкой */
 .chapters-menu {
-    position: absolute;
-    top: calc(6.2500 * var(--u));
-    right: calc(2.0833 * var(--u));
-    width: calc(22.2222 * var(--u));
-    padding: calc(2.7778 * var(--u)) calc(2.0833 * var(--u)) calc(4.5139 * var(--u));
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: calc(31.2500 * var(--u));
+    padding: calc(3.4722 * var(--u)) calc(3.1250 * var(--u)) calc(5.5556 * var(--u));
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(calc(-1.3889 * var(--u))) rotate(1deg);
-    transform-origin: 90% 0%;
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+    transform: translate(-50%, -50%) scale(0.7) rotate(-4deg);
+    transform-origin: 50% 50%;
+    transition: opacity 0.25s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.25s ease;
 }
 
 .game-header--menu-open .chapters-menu {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transform: translateY(0) rotate(0deg);
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+}
+
+/* пункты меню выезжают по очереди */
+.chapters-menu__item {
+    opacity: 0;
+    transform: translateY(calc(1.3889 * var(--u)));
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.game-header--menu-open .chapters-menu__item {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.game-header--menu-open .chapters-menu__item:nth-child(2) {
+    transition-delay: 0.05s;
+}
+
+.game-header--menu-open .chapters-menu__item:nth-child(3) {
+    transition-delay: 0.1s;
+}
+
+.game-header--menu-open .chapters-menu__item:nth-child(4) {
+    transition-delay: 0.15s;
+}
+
+.game-header--menu-open .chapters-menu__item:nth-child(5) {
+    transition-delay: 0.2s;
+}
+
+/* пока меню открыто, всё под шапкой темнеет (шапка остаётся яркой) */
+.chapters-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 8;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+body.is-menu-open .chapters-backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .chapters-menu__bg {
@@ -2515,8 +3323,8 @@ body.is-header-active .game-header__burger {
     width: 100%;
     padding: calc(0.4167 * var(--u)) calc(0.6944 * var(--u));
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.8056 * var(--u));
-    line-height: calc(2.2222 * var(--u));
+    font-size: calc(2.3611 * var(--u));
+    line-height: calc(2.9167 * var(--u));
     font-weight: 400;
     color: #3E3E3E;
     text-align: left;
@@ -2547,6 +3355,177 @@ body.is-header-active .game-header__burger {
 .chapters-menu__soon {
     font-size: calc(1.1111 * var(--u));
     line-height: calc(1.1111 * var(--u));
+}
+
+
+/* ---------- динамика: персонажи «дышат» ---------- */
+
+/* едва заметное дыхание: фигура чуть вытягивается и опускается.
+   через свойство scale — оно не мешает transform, которым js двигает персонажей */
+.game__character,
+.walk__boy,
+.walk__grandpa,
+.cafe__boy,
+.alley__boy,
+.room__boy,
+.hotel__receptionist {
+    transform-origin: 50% 100%;
+    animation: idle-breathe 3.6s ease-in-out infinite;
+}
+
+/* у соседей дыхание не в такт — живее */
+.game__character--taxi,
+.walk__grandpa,
+.hotel__receptionist {
+    animation-delay: -1.8s;
+    animation-duration: 4.2s;
+}
+
+@keyframes idle-breathe {
+    0% {
+        scale: 1 1;
+    }
+
+    50% {
+        scale: 1.006 1.014;
+    }
+
+    100% {
+        scale: 1 1;
+    }
+}
+
+/* фоны сцен очень медленно наплывают и отступают — экран не застывает.
+   через свойство scale — оно не мешает transform, которым сцены выставлены по центру */
+.game__bg,
+.street__stage,
+.hotel__stage,
+.room__stage,
+.cafe__stage,
+.walk__stage,
+.alley__bg {
+    animation: scene-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes scene-drift {
+    0% {
+        scale: 1;
+    }
+
+    100% {
+        scale: 1.03;
+    }
+}
+
+/* плашка с репликой, пока висит, чуть покачивается */
+.speech--visible {
+    animation: bubble-float 2.8s ease-in-out 0.5s infinite alternate;
+}
+
+@keyframes bubble-float {
+    0% {
+        translate: 0 0;
+    }
+
+    100% {
+        translate: 0 calc(-0.4167 * var(--u));
+    }
+}
+
+/* иконки денег и безопасности на итогах слегка подпрыгивают */
+.outcome__icon {
+    animation: icon-bob 2.2s ease-in-out infinite alternate;
+}
+
+.outcome__stat--safety .outcome__icon {
+    animation-delay: -1.1s;
+}
+
+@keyframes icon-bob {
+    0% {
+        translate: 0 0;
+        rotate: -3deg;
+    }
+
+    100% {
+        translate: 0 calc(-0.6944 * var(--u));
+        rotate: 3deg;
+    }
+}
+
+/* варианты выбора, когда прилетели, едва заметно покачиваются — каждый в свою сторону */
+.choice--ready:not(.choice--made) .choice__option {
+    animation: option-float 2.6s ease-in-out infinite alternate;
+}
+
+.choice--ready:not(.choice--made) .choice__option + .choice__option {
+    animation-delay: -1.3s;
+}
+
+@keyframes option-float {
+    0% {
+        translate: 0 calc(-0.3472 * var(--u));
+    }
+
+    100% {
+        translate: 0 calc(0.3472 * var(--u));
+    }
+}
+
+/* тетрадь чуть «дышит» */
+.longread .notebook {
+    animation: notebook-float 4s ease-in-out infinite alternate;
+}
+
+@keyframes notebook-float {
+    0% {
+        translate: 0 0;
+    }
+
+    100% {
+        translate: 0 calc(-0.5556 * var(--u));
+    }
+}
+
+/* кто не любит движение на экране — фоновые покачивания выключены */
+@media (prefers-reduced-motion: reduce) {
+    .game__bg,
+    .street__stage,
+    .hotel__stage,
+    .room__stage,
+    .cafe__stage,
+    .walk__stage,
+    .alley__bg,
+    .speech--visible,
+    .outcome__icon,
+    .choice__option,
+    .longread .notebook,
+    .game__character,
+    .walk__boy,
+    .walk__grandpa,
+    .cafe__boy,
+    .alley__boy,
+    .room__boy,
+    .hotel__receptionist {
+        animation: none;
+    }
+}
+
+/* заголовок выбора качнётся, когда появляется */
+.choice--visible .choice__title {
+    animation: title-drop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+@keyframes title-drop {
+    0% {
+        opacity: 0;
+        transform: translateY(calc(-2.7778 * var(--u))) rotate(-3deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+    }
 }
 
 
