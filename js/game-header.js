@@ -124,6 +124,7 @@ function setupChaptersMenu() {
 function setChaptersMenuOpen(isOpen) {
     chaptersMenu.isOpen = isOpen;
     chaptersMenu.header.classList.toggle("game-header--menu-open", isOpen);
+    document.body.classList.toggle("is-menu-open", isOpen);
     chaptersMenu.burger.setAttribute("aria-expanded", String(isOpen));
     chaptersMenu.burger.setAttribute("aria-label", isOpen ? "Закрыть меню глав" : "Открыть меню глав");
 }
