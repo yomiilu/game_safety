@@ -133,10 +133,13 @@ const mobileQuery = window.matchMedia("(max-width: 767px)");
 
 function placeSoundControl() {
     const soundControl = document.querySelector(".sound");
-    const menuSlot = document.querySelector(".chapters-menu__sound");
+    const burger = document.querySelector(".game-header__burger");
 
+    // на телефоне — прямо в шапке, перед бургером
     if (mobileQuery.matches) {
-        menuSlot.appendChild(soundControl);
+        if (soundControl.nextElementSibling !== burger) {
+            burger.parentNode.insertBefore(soundControl, burger);
+        }
     } else {
         const header = document.querySelector(".game-header");
 

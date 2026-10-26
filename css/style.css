@@ -4,7 +4,7 @@
    то есть calc(10 * var(--u)) — это те же 10vw из макета */
 
 :root {
-    --u: min(1vw, 1.6dvh);
+    --u: min(1vw, 1.6svh);
 }
 
 
@@ -262,7 +262,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 5600dvh;
+    height: 5600lvh;
     background-color: #0F0F0F;
 }
 
@@ -888,13 +888,13 @@ body.is-intro-heart .hero__pulse {
     border: none;
     cursor: pointer;
     opacity: 1;
-    transform: translateY(-70dvh) rotate(-8deg);
+    transform: translateY(-70svh) rotate(-8deg);
     transition: transform 0.35s ease, opacity 0.06s ease;
 }
 
 /* второй вариант ждёт за нижним краем экрана */
 .choice__option + .choice__option {
-    transform: translateY(70dvh) rotate(8deg);
+    transform: translateY(70svh) rotate(8deg);
 }
 
 /* варианты прилетают: первый сверху, второй снизу — и с пружинкой встают на место
@@ -993,8 +993,8 @@ body.is-intro-heart .hero__pulse {
     position: absolute;
     top: 0;
     left: 50%;
-    width: max(100vw, 173.2739dvh);
-    height: max(100dvh, 57.7121vw);
+    width: max(100vw, 173.2739lvh);
+    height: max(100lvh, 57.7121vw);
     transform: translateX(-50%);
 }
 
@@ -1585,8 +1585,8 @@ body.is-street .game-header {
     position: absolute;
     top: 0;
     left: 50%;
-    width: max(100vw, 144.2886dvh);
-    height: max(100dvh, 69.3056vw);
+    width: max(100vw, 144.2886lvh);
+    height: max(100lvh, 69.3056vw);
     transform: translateX(-50%);
 }
 
@@ -1732,8 +1732,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100vw, 169.7238dvh);
-    height: max(100dvh, 58.9193vw);
+    width: max(100vw, 169.7238lvh);
+    height: max(100lvh, 58.9193vw);
     transform: translate(-50%, -50%);
 }
 
@@ -1920,8 +1920,8 @@ body.is-hotel.is-dinner-outcome .sound {
     position: absolute;
     top: calc(50% + calc(2.7778 * var(--u)));
     left: 50%;
-    width: max(100vw, 153.9078dvh);
-    height: max(100dvh, 64.9740vw);
+    width: max(100vw, 153.9078lvh);
+    height: max(100lvh, 64.9740vw);
     transform: translate(-50%, -50%);
 }
 
@@ -2003,8 +2003,8 @@ body.is-hotel.is-dinner-outcome .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100vw, 161.3445dvh);
-    height: max(100dvh, 61.9792vw);
+    width: max(100vw, 161.3445lvh);
+    height: max(100lvh, 61.9792vw);
     transform: translate(-50%, -50%);
 }
 
@@ -2145,8 +2145,8 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100vw, 140.7731dvh);
-    height: max(100dvh, 71.0363vw);
+    width: max(100vw, 140.7731lvh);
+    height: max(100lvh, 71.0363vw);
     transform: translate(calc(-50% + var(--alley-shift, 0%)), -50%) scale(var(--alley-zoom, 1));
     transition: transform 1.2s ease;
 }
@@ -2656,8 +2656,8 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(110vw, 169.2308dvh);
-    height: max(110dvh, 71.5000vw);
+    width: max(110vw, 169.2308lvh);
+    height: max(110lvh, 71.5000vw);
     transform: translate(-50%, -54%);
 }
 
@@ -2922,8 +2922,8 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(110vw, 169.2308dvh);
-    height: max(110dvh, 71.5000vw);
+    width: max(110vw, 169.2308lvh);
+    height: max(110lvh, 71.5000vw);
     transform: translate(-50%, -54%);
 }
 
@@ -2992,10 +2992,10 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
 /* руки с телефоном: очень крупно, низ рук за краем экрана, поднимаются снизу */
 .finale__phone {
     position: absolute;
-    top: 8dvh;
+    top: 8svh;
     left: 50%;
-    width: calc(165dvh * 1413 / 1751);
-    height: 165dvh;
+    width: calc(165svh * 1413 / 1751);
+    height: 165svh;
     transform: translate(-42.9%, 105%);
     transition: transform 1.3s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
@@ -3007,7 +3007,7 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
 
 /* на экране с кнопкой телефон чуть поднимается — кнопка под пальцем оказывается выше */
 .finale--end .finale__phone {
-    transform: translate(-42.9%, -10dvh);
+    transform: translate(-42.9%, -10svh);
 }
 
 .finale__screen {

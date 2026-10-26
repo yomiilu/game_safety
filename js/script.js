@@ -233,6 +233,22 @@ function getScrollProgress() {
 }
 
 
+// css-переменная, которую обновляем каждый кадр: пишем, только если значение изменилось.
+// иначе браузер каждый кадр пересчитывает стили всего, что внутри элемента (на телефоне это и тормозит)
+function setStyleVar(element, name, value) {
+    if (!element.styleVars) {
+        element.styleVars = {};
+    }
+
+    if (element.styleVars[name] === value) {
+        return;
+    }
+
+    element.styleVars[name] = value;
+    element.style.setProperty(name, value);
+}
+
+
 // плавный переход от 0 к 1 между from и to
 function smoothStep(from, to, value) {
     const t = Math.min(Math.max((value - from) / (to - from), 0), 1);
@@ -248,7 +264,7 @@ function updateEyeClose(eye, index, progress) {
 
     eye.scrollClose = eye.scrollClose + (target - eye.scrollClose) * closeSmoothness;
 
-    eye.element.style.setProperty("--close", eye.scrollClose.toFixed(3));
+    setStyleVar(eye.element, "--close", eye.scrollClose.toFixed(3));
 }
 
 
@@ -274,8 +290,8 @@ function updateLight() {
     light.currentX = light.currentX + (mouseX - light.currentX) * lightSmoothness;
     light.currentY = light.currentY + (mouseY - light.currentY) * lightSmoothness;
 
-    light.element.style.setProperty("--light-x", (light.currentX - rect.left) + "px");
-    light.element.style.setProperty("--light-y", (light.currentY - rect.top) + "px");
+    setStyleVar(light.element, "--light-x", Math.round(light.currentX - rect.left) + "px");
+    setStyleVar(light.element, "--light-y", Math.round(light.currentY - rect.top) + "px");
 }
 
 
@@ -614,10 +630,10 @@ function updateDarkness(progress) {
     const dark = smoothStep(darkStart, darkEnd, progress);
     const game = smoothStep(gameStart, gameEnd, progress);
 
-    light.element.style.setProperty("--dark", dark.toFixed(3));
+    setStyleVar(light.element, "--dark", dark.toFixed(3));
 
     // шапка стоит вне первого экрана, поэтому --game ставим на всю страницу
-    document.body.style.setProperty("--game", game.toFixed(3));
+    setStyleVar(document.body, "--game", game.toFixed(3));
 
     updateCursorLight(dark * (1 - game));
 
@@ -772,7 +788,7 @@ function updateCursorLight(firstDarkness) {
         level = 0;
     }
 
-    light.element.style.setProperty("--light-level", level.toFixed(3));
+    setStyleVar(light.element, "--light-level", level.toFixed(3));
 }
 
 
@@ -1144,13 +1160,6 @@ const dialogue = [
             return crowd.phase === "won" || crowd.phase === "lost";
         }
     },
-    // финал: мальчику пишут (отсчёт — от конца тетради главы 3)
-    {
-        selector: ".speech--finale-1",
-        scene: "finale",
-        from: 0.7,
-        speed: 1
-    },
     {
         selector: ".speech--alley-5",
         scene: "alley",
@@ -1160,6 +1169,20 @@ const dialogue = [
         waitFor: function () {
             return alley.isDark;
         }
+    },
+    // финал: мальчик выдыхает, потом ему пишут (отсчёт — от конца тетради главы 3).
+    // реплики финала — последние в списке: иначе реплика переулка, которая после побега остаётся «разрешённой», перебивала бы их
+    {
+        selector: ".speech--finale-0",
+        scene: "finale",
+        from: 0.7,
+        speed: 1
+    },
+    {
+        selector: ".speech--finale-1",
+        scene: "finale",
+        from: 1.3,
+        speed: 1
     }
 ];
 
@@ -1722,7 +1745,7 @@ function hideStreet() {
     drive.isActive = false;
     drive.current = 0;
     drive.blackout = 0;
-    streetBlackout.style.opacity = 0;
+    setStyleVar(streetBlackout, "opacity", "0");
 
     stopCarSound();
     drive.isSoundOn = false;
@@ -1816,6 +1839,8 @@ const drive = {
     isSoundOn: false,
     start: 0,
     current: 0,
+    // куда смотрит камера на телефоне (последнее записанное --drive)
+    camera: "",
     trees: [],
     cars: []
 };
@@ -1981,17 +2006,28 @@ function updateDrive(progress, now) {
 
     drive.current = drive.current + (target - drive.current) * driveSmoothness;
 
-    updateTrees(drive.current);
-    updateCars(drive.current, now);
+    // улица уже ушла в черноту и машина доехала — деревья и машину больше не двигаем (их не видно)
+    const isHidden = drive.blackout >= 0.999 && Math.abs(target - drive.current) < 0.001;
 
-    // на телефоне камера по ходу поездки переезжает с машины на деревья у дороги (на компьютере не используется)
-    street.style.setProperty("--drive", smoothStep(0.15, 0.65, drive.current).toFixed(3));
+    if (!isHidden) {
+        updateTrees(drive.current);
+        updateCars(drive.current, now);
+    }
+
+    // на телефоне камера по ходу поездки переезжает с машины на деревья у дороги (на компьютере не используется).
+    // пишем, только когда значение изменилось, — иначе стиль улицы пересчитывается каждый кадр
+    const camera = smoothStep(0.15, 0.65, drive.current).toFixed(3);
+
+    if (camera !== drive.camera) {
+        drive.camera = camera;
+        street.style.setProperty("--drive", camera);
+    }
 
     // доехали — экран уходит в черноту
     const blackoutStart = drive.start + driveLength + blackoutDelay;
     const blackout = smoothStep(blackoutStart, blackoutStart + blackoutLength, progress);
 
-    streetBlackout.style.opacity = blackout.toFixed(3);
+    setStyleVar(streetBlackout, "opacity", blackout.toFixed(3));
     drive.blackout = blackout;
 
     updateCarSound();
@@ -2182,11 +2218,19 @@ function resetOutcomeStats(o) {
     o.money.number.textContent = o.from.money;
     o.safety.number.textContent = o.from.safety;
     o.safety.fill.style.setProperty("--level", o.from.safety + "%");
+    setOutcomeDeltas(o);
 
     setGameHeader({
         money: o.from.money,
         safety: o.from.safety
     });
+}
+
+
+// «−60$» и «−10%» под цифрами — всегда ровно разница между «было» и «стало» (по любой ветке)
+function setOutcomeDeltas(o) {
+    o.money.stat.querySelector(".outcome__delta").textContent = "−" + (o.from.money - o.to.money) + "$";
+    o.safety.stat.querySelector(".outcome__delta").textContent = "−" + (o.from.safety - o.to.safety) + "%";
 }
 
 
@@ -2494,10 +2538,10 @@ function updateLongread(progress) {
         const fadeOut = 1 - smoothStep(item.length - longreadFadeOut, item.length, local);
 
         if (item.keepBlack) {
-            item.element.style.setProperty("--longread", fadeIn.toFixed(3));
-            item.element.style.setProperty("--longread-page", fadeOut.toFixed(3));
+            setStyleVar(item.element, "--longread", fadeIn.toFixed(3));
+            setStyleVar(item.element, "--longread-page", fadeOut.toFixed(3));
         } else {
-            item.element.style.setProperty("--longread", (fadeIn * fadeOut).toFixed(3));
+            setStyleVar(item.element, "--longread", (fadeIn * fadeOut).toFixed(3));
         }
 
         // тетрадь полностью закрыла экран — итог с деньгами под ней больше не нужен,
@@ -2505,7 +2549,11 @@ function updateLongread(progress) {
         // а пока тетрадь проявляется, итог растворяется вместе с ней — чтобы не просвечивал сквозь страницы
         item.getOutcomes().forEach(function (o) {
             o.element.classList.toggle("outcome--behind", local >= longreadFadeIn);
-            o.element.style.opacity = local > 0 && local < longreadFadeIn ? (1 - fadeIn).toFixed(3) : "";
+            const opacity = local > 0 && local < longreadFadeIn ? (1 - fadeIn).toFixed(3) : "";
+
+            if (o.element.style.opacity !== opacity) {
+                o.element.style.opacity = opacity;
+            }
         });
 
         if (item.flipAt !== null) {
@@ -2631,7 +2679,7 @@ function updateHotel(progress) {
         hotel.level = target;
     }
 
-    light.element.style.setProperty("--hotel", hotel.level.toFixed(3));
+    setStyleVar(light.element, "--hotel", hotel.level.toFixed(3));
 
     const isHotel = hotel.level > 0.5;
 
@@ -3395,7 +3443,7 @@ function updateWalk(progress) {
         walk.level = target;
     }
 
-    walk.element.style.setProperty("--walk", walk.level.toFixed(3));
+    setStyleVar(walk.element, "--walk", walk.level.toFixed(3));
 
     const isWalk = walk.level > 0.5;
 
@@ -3507,6 +3555,7 @@ function finishOutcome(o) {
     o.money.number.textContent = o.to.money;
     o.safety.number.textContent = o.to.safety;
     o.safety.fill.style.setProperty("--level", o.to.safety + "%");
+    setOutcomeDeltas(o);
 
     setGameHeader({
         money: o.to.money,
@@ -3670,8 +3719,8 @@ const heartbeatFastest = 380;
 const alleyOutcomeFrom = alleyDarkFrom + 0.6;
 const alleyOutcomeStatsFrom = alleyDarkFrom + 1.2;
 
-// что потерял: кошелёк выпал, пока убегал, и сильно испугался
-const alleyMoneyLoss = 40;
+// что потерял: кошелёк выпал, пока убегал (на счету остаётся 20$, как после кражи), и сильно испугался
+const alleyMoneyLeft = 20;
 const alleySafetyLoss = 30;
 
 // через сколько экранов после удара по цифрам открывается тетрадь главы 3
@@ -3684,8 +3733,13 @@ const alley = {
     isShown: false,
     isDark: false,
     // сколько поворотов мальчик уже проговорил
-    turnsSaid: 0
+    turnsSaid: 0,
+    // когда допечаталась подсказка «бежать назад вот так» (0 — ещё нет)
+    tipReadAt: 0
 };
+
+// сколько подсказка с последовательностью точно висит на экране, прежде чем погаснет свет (мс) — чтобы успеть прочитать
+const alleyTipHold = 4500;
 
 
 // случайные повороты; хотя бы один в каждую сторону — иначе слишком просто
@@ -3828,7 +3882,16 @@ function updateAlley(progress) {
     const tipLine = findLine(".speech--alley-tip");
     const darkFrom = base + alleyDarkFrom;
 
-    if (!alley.isDark && progress >= darkFrom && tipLine.isFinished) {
+    // подсказка допечатана — запоминаем когда; свет гаснет не раньше, чем она провисит alleyTipHold
+    if (!tipLine.isFinished) {
+        alley.tipReadAt = 0;
+    } else if (alley.tipReadAt === 0) {
+        alley.tipReadAt = performance.now();
+    }
+
+    const isTipRead = alley.tipReadAt > 0 && performance.now() - alley.tipReadAt >= alleyTipHold;
+
+    if (!alley.isDark && progress >= darkFrom && isTipRead) {
         alleyLightsOut(base);
     }
 
@@ -3865,7 +3928,7 @@ function updateAlleyOutcome(progress, base) {
         const dinner = getDinnerOutcome().to;
 
         alleyOutcome.from = { money: dinner.money, safety: dinner.safety };
-        alleyOutcome.to = { money: dinner.money - alleyMoneyLoss, safety: Math.max(dinner.safety - alleySafetyLoss, 0) };
+        alleyOutcome.to = { money: Math.min(dinner.money, alleyMoneyLeft), safety: Math.max(dinner.safety - alleySafetyLoss, 0) };
 
         resetOutcomeStats(alleyOutcome);
         showOutcomeText(alleyOutcome);
@@ -4551,8 +4614,6 @@ function updateCrowdOutcome(progress, base) {
 
         // текст и «минусы» — под то, что случилось; деньги целы — их не показываем
         crowdOutcome.element.classList.toggle("outcome--no-money", isWon);
-        crowdOutcome.money.stat.querySelector(".outcome__delta").textContent = "−" + moneyLoss + "$";
-        crowdOutcome.safety.stat.querySelector(".outcome__delta").textContent = "−" + safetyLoss + "%";
         setOutcomeLines(crowdOutcome, isWon
             ? ["Пока актёр, переодетый в бабушку, отвлекал,", "его напарник лез в рюкзак.", "Ты вовремя заметил, и деньги целы"]
             : ["Пока актёр, переодетый в бабушку, отвлекал,", "его напарник вытащил кошелёк из рюкзака.", "Ты потерял " + moneyLoss + "$"]);
@@ -4617,7 +4678,7 @@ function setOutcomeLines(o, textLines) {
 // снизу поднимаются руки с телефоном, сообщения по прокрутке приходят по одному (со звуком), потом — экран с кнопкой «играть снова»
 
 // когда (от начала финала, в экранах прокрутки) достаём телефон
-const finalePhoneFrom = 1.5;
+const finalePhoneFrom = 2.0;
 
 // сообщения появляются по прокрутке: первое — когда руки поднялись, дальше — через каждые полэкрана с небольшим
 const finaleFirstMessageAfter = 0.5;
@@ -4669,6 +4730,17 @@ function getFinaleBase() {
 
 
 // на экране телефона — первые count сообщений
+// «фух… я хотя бы выжил» — и сколько осталось денег и безопасности после главы 3 (переулок или людная улица)
+function setFinaleSummary() {
+    const result = alleyOutcome.isStatsDone ? alleyOutcome.to : crowdOutcome.to;
+
+    setLineText(findLine(".speech--finale-0"),
+        'фух, <b class="speech__key">я хотя бы выжил!</b><br>' +
+        'у меня осталось <b class="speech__key">' + result.money + '$</b><br>' +
+        'и <b class="speech__key">' + result.safety + "%</b> безопасности");
+}
+
+
 function setFinaleMessages(count) {
     finale.covers.forEach(function (pieces, index) {
         pieces.forEach(function (cover) {
@@ -4703,6 +4775,7 @@ function updateFinale(progress) {
 
     if (!finale.isShown && base !== null && progress >= base) {
         finale.isShown = true;
+        setFinaleSummary();
         setSpeaker(true);
         finale.element.classList.add("finale--visible");
         document.body.classList.add("is-finale");

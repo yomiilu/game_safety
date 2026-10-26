@@ -7,7 +7,7 @@
 @media (max-width: 767px) {
 
     :root {
-        --u: min(3vw, 1.4dvh);
+        --u: min(3vw, 1.4svh);
     }
 
     /* камера: куда сдвинута сцена. мальчик стоит левее центра на --cam-step, собеседник — правее на столько же.
@@ -29,7 +29,7 @@
 
     /* полоса и кнопка «начать» — выше середины */
     .preloader {
-        padding-bottom: 16dvh;
+        padding-bottom: 16svh;
     }
 
 
@@ -80,12 +80,7 @@
         display: none;
     }
 
-    /* цифры мельче и плотнее, шкала короче — чтобы не залезали под бургер */
-    .game-header__stats {
-        left: calc(1.3889 * var(--u));
-        gap: calc(1.3889 * var(--u));
-    }
-
+    /* цифры мельче и плотнее — чтобы рядом поместились звук и бургер */
     .game-header__stats .game-header__text {
         font-size: calc(2.0833 * var(--u));
         line-height: calc(2.0833 * var(--u));
@@ -101,14 +96,19 @@
         height: calc(2.7778 * var(--u));
     }
 
-    /* шкалы безопасности на телефоне нет — только цифры; слева такой же отступ, как у бургера справа */
+    /* шкалы безопасности на телефоне нет — только цифры; отступ слева такой же, как справа у бургера */
     .game-header__scale {
         display: none;
     }
 
     .game-header__stats {
-        left: calc(2.7778 * var(--u));
-        gap: calc(4.1667 * var(--u));
+        left: calc(1.3889 * var(--u));
+        gap: calc(1.7361 * var(--u));
+    }
+
+    /* справа (звук и бургер) — такой же отступ от края, как слева у цифр */
+    .game-header__chapter {
+        right: calc(1.3889 * var(--u));
     }
 
     .chapters-menu {
@@ -127,18 +127,26 @@
         color: #8A8A8A;
     }
 
+    /* звук на телефоне — в шапке, перед бургером: обычный блок, тёмный на белой шапке */
     .chapters-menu__sound {
-        position: relative;
-        display: block;
-        margin-top: calc(2.0833 * var(--u));
-        padding: 0 calc(0.6944 * var(--u));
+        display: none;
     }
 
-    /* звук в меню — обычный блок, а не плашка в углу экрана */
-    html body .chapters-menu .sound {
+    html body .game-header .sound {
         position: static;
         display: flex;
+        gap: calc(0.6944 * var(--u));
         filter: invert(0.75);
+        pointer-events: none;
+    }
+
+    /* шапка сама клики не ловит — звук нажимается, только когда шапка видна (как бургер) */
+    html body.is-header-active .game-header .sound {
+        pointer-events: auto;
+    }
+
+    .game-header .sound__slider {
+        width: calc(4.8611 * var(--u));
     }
 
 
@@ -350,13 +358,13 @@
 
     /* сцена чуть выше экрана: тёмный край внизу картинки уходит за экран (как на компьютере) */
     .hotel__stage {
-        width: 158.7175dvh;
-        height: 110dvh;
+        width: 158.7175lvh;
+        height: 110lvh;
     }
 
-    /* ресепшионист — на 74.7% ширины сцены, то есть на 39.2dvh правее её середины */
+    /* ресепшионист — на 74.7% ширины сцены, то есть на 39.2lvh правее её середины */
     .hotel {
-        --cam-step: 39.2dvh;
+        --cam-step: 39.2lvh;
     }
 
     .hotel__boy {
@@ -442,7 +450,7 @@
     /* высота тетради — по ширине экрана, но не выше 90% высоты: на коротких телефонах тетрадь целиком в экране,
        сверху и снизу одинаковые отступы */
     .notebook {
-        --notebook-height: min(185vw, 90dvh);
+        --notebook-height: min(185vw, 90svh);
         --line: calc(var(--notebook-height) * 0.044);
         flex-shrink: 0;
         width: calc(var(--notebook-height) * 184 / 185);
@@ -489,7 +497,7 @@
 
     /* финал: телефон во всю ширину экрана (он занимает 46% картинки), руки за краями */
     .finale__phone {
-        width: min(196vw, calc(165dvh * 1413 / 1751));
+        width: min(196vw, calc(165svh * 1413 / 1751));
         height: auto;
         aspect-ratio: 1413 / 1751;
     }
@@ -497,5 +505,10 @@
     /* на телефоне кнопка и так в середине экрана — телефон не поднимаем, чтобы верх не обрезался */
     .finale--end .finale__phone {
         transform: translate(-42.9%, 0);
+    }
+
+    /* свет фонарей без режима наложения: на телефоне смешивание слоёв каждый кадр — главный тормоз */
+    .lamp-glow {
+        mix-blend-mode: normal;
     }
 }
