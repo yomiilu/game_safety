@@ -422,9 +422,10 @@
         left: calc(51% - calc(15.9722 * var(--u)));
     }
 
+    /* сразу над капюшоном девочки: хвостик к ней, но головы не касается */
     html body .room .speech.speech--girl-1 {
-        right: calc(15.8% - calc(12.1528 * var(--u)));
-        bottom: 70%;
+        right: calc(18% - calc(12.1528 * var(--u)));
+        bottom: 72%;
         left: auto;
     }
 
