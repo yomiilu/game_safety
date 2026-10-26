@@ -1306,15 +1306,17 @@ body.is-street .game-header {
     pointer-events: none;
 }
 
-/* разворот тетради (1600 × 1000): при появлении чуть подлетает и выпрямляется.
+/* разворот тетради (1600 × 1000): при появлении чуть подлетает и выпрямляется до ровного — строки на обеих страницах на одном уровне.
    --longread-page — когда тетрадь уходит, а чёрный фон остаётся (последняя тетрадь) */
 .notebook {
+    /* шаг линеек на странице: 44 из 1000 по высоте (страница во всю высоту тетради) */
+    --line: calc(60.0000 * var(--u) * 0.044);
     position: relative;
     opacity: var(--longread-page, 1);
     width: calc(96.0000 * var(--u));
     height: calc(60.0000 * var(--u));
     perspective: calc(250.0000 * var(--u));
-    transform: translateY(calc((1 - var(--longread, 0)) * 4.1667 * var(--u))) rotate(calc(-1deg - (1 - var(--longread, 0)) * 3deg)) scale(calc(0.92 + var(--longread, 0) * 0.08));
+    transform: translateY(calc((1 - var(--longread, 0)) * 4.1667 * var(--u))) rotate(calc((1 - var(--longread, 0)) * -4deg)) scale(calc(0.92 + var(--longread, 0) * 0.08));
 }
 
 .notebook__cover,
@@ -1354,10 +1356,12 @@ body.is-street .game-header {
     height: 100%;
 }
 
-/* текст на странице: слева — после красного поля, справа — после пружины и до поля */
+/* текст на странице: слева — после красного поля, справа — после пружины и до поля.
+   сверху — так, чтобы буквы первой строки стояли на первой линейке (она на 12.8% высоты страницы):
+   базовая линия в строке = половина строки + четверть размера шрифта, и ещё чуть выше самой линейки */
 .notebook__content {
     position: absolute;
-    top: 9%;
+    top: calc(12.8% - var(--line) / 2 - 0.25 * 1.5278 * var(--u) - 0.15 * var(--u));
     bottom: 8%;
 }
 
@@ -1446,11 +1450,14 @@ body.is-street .game-header {
     clip-path: inset(0 0 0 0);
 }
 
+/* весь текст тетради стоит на линейках страницы: высота строки = шаг линеек (--line), пропуски между блоками — ровно одна линейка.
+   у разных размеров шрифта базовая линия в строке разная — крупный и мелкий текст чуть сдвинуты (top), чтобы буквы стояли на линейке */
 .longread__kicker {
-    margin-bottom: calc(0.4167 * var(--u));
+    position: relative;
+    top: calc(0.0347 * var(--u));
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.3889 * var(--u));
-    line-height: calc(2.0833 * var(--u));
+    line-height: var(--line);
     font-weight: 400;
     color: #8A8A8A;
 }
@@ -1458,35 +1465,30 @@ body.is-street .game-header {
 /* в тетради всего два размера шрифта: заголовок и всё остальное.
    разницу дают цвет, отступы, рукописная черта и пометка маркером */
 .longread__title {
+    position: relative;
+    top: calc(-0.1736 * var(--u));
+    margin-bottom: var(--line);
     font-family: "Kom Post", sans-serif;
-    font-size: calc(2.2222 * var(--u));
-    line-height: calc(2.6389 * var(--u));
+    font-size: var(--line);
+    line-height: var(--line);
     font-weight: 400;
     color: #2B2A2B;
 }
 
-/* рукописная черта под заголовком — та же, что шкала в шапке */
-.longread__divider {
-    display: block;
-    width: calc(11.1111 * var(--u));
-    height: calc(0.4167 * var(--u));
-    margin: calc(1.0417 * var(--u)) 0 calc(1.7361 * var(--u));
-}
-
 .longread__paragraph {
-    margin-bottom: calc(1.3889 * var(--u));
+    margin-bottom: var(--line);
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.5278 * var(--u));
-    line-height: calc(2.2222 * var(--u));
+    line-height: var(--line);
     font-weight: 400;
     color: #3E3E3E;
 }
 
 .longread__accent {
-    margin-bottom: calc(1.3889 * var(--u));
+    margin-bottom: var(--line);
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.5278 * var(--u));
-    line-height: calc(2.2222 * var(--u));
+    line-height: var(--line);
     font-weight: 400;
 }
 
@@ -1505,29 +1507,26 @@ body.is-street .game-header {
     color: #000000;
 }
 
-/* советы — на правой странице */
+/* советы — на правой странице; первая строка пустая, чтобы «Лучше заранее:» стояло вровень с заголовком слева */
 .longread__tips {
     position: relative;
+    padding-top: var(--line);
 }
 
-/* заголовок советов подчёркнут той же рукописной чертой */
+/* «Лучше заранее:» — размером заголовка */
 .longread__tips-title {
-    display: inline-block;
-    margin-bottom: calc(1.3889 * var(--u));
-    padding-bottom: calc(0.6944 * var(--u));
-    background-image: url("../img/scale-fill.svg");
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    background-size: 100% calc(0.4167 * var(--u));
+    position: relative;
+    top: calc(-0.1736 * var(--u));
+    margin-bottom: var(--line);
     font-family: "Kom Post", sans-serif;
-    font-size: calc(1.6667 * var(--u));
-    line-height: calc(2.3611 * var(--u));
+    font-size: var(--line);
+    line-height: var(--line);
     font-weight: 400;
     color: #2B2A2B;
 }
 
 .longread__list {
-    margin-bottom: calc(1.3889 * var(--u));
+    margin-bottom: var(--line);
     padding: 0;
     list-style: none;
 }
@@ -1535,11 +1534,10 @@ body.is-street .game-header {
 /* пункт с рукописной галочкой */
 .longread__item {
     position: relative;
-    margin-bottom: calc(0.6944 * var(--u));
-    padding-left: calc(2.2222 * var(--u));
+    padding-left: var(--line);
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.5278 * var(--u));
-    line-height: calc(2.2222 * var(--u));
+    line-height: var(--line);
     font-weight: 400;
     color: #3E3E3E;
 }
@@ -1547,7 +1545,7 @@ body.is-street .game-header {
 .longread__item::before {
     content: "";
     position: absolute;
-    top: calc(0.3472 * var(--u));
+    top: calc((var(--line) - 1.3542 * var(--u)) / 2);
     left: 0;
     width: calc(1.3194 * var(--u));
     height: calc(1.3542 * var(--u));
@@ -1557,13 +1555,11 @@ body.is-street .game-header {
     background-size: 100% 100%;
 }
 
-/* последняя строка отделена пунктиром и серее */
+/* последняя строка — серее */
 .longread__tips-note {
-    padding-top: calc(1.3889 * var(--u));
-    border-top: calc(0.1389 * var(--u)) dashed #ACAAAB;
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.5278 * var(--u));
-    line-height: calc(2.2222 * var(--u));
+    line-height: var(--line);
     font-weight: 400;
     color: #6F6F6F;
 }
@@ -2197,6 +2193,12 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
 .alley .speech--boy {
     bottom: calc(41.6667 * var(--u));
     left: calc(50% - calc(29.8611 * var(--u)));
+}
+
+/* подсказка, как бежать назад, — плашка шире: вся последовательность влезает в одну строку */
+.alley .speech--alley-tip {
+    width: calc(38.8889 * var(--u));
+    height: calc(13.7807 * var(--u));
 }
 
 /* резкая темнота: экран почти чёрный, мальчика едва видно */
@@ -3002,6 +3004,11 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     transform: translate(-42.9%, 0);
 }
 
+/* на экране с кнопкой телефон чуть поднимается — кнопка под пальцем оказывается выше */
+.finale--end .finale__phone {
+    transform: translate(-42.9%, -10vh);
+}
+
 .finale__screen {
     position: absolute;
     top: 0;
@@ -3028,57 +3035,48 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
 }
 
 .finale__cover--1 {
-    top: 16.56%;
-    left: 25.62%;
-    width: 20.52%;
-    height: 5.03%;
+    top: 15.36%;
+    left: 25.55%;
+    width: 20.74%;
+    height: 5.14%;
 }
 
 .finale__cover--2 {
-    top: 22.67%;
-    left: 34.68%;
-    width: 26.19%;
-    height: 5.77%;
+    top: 21.47%;
+    left: 34.61%;
+    width: 26.40%;
+    height: 5.88%;
 }
 
 .finale__cover--3 {
-    top: 29.81%;
-    left: 25.62%;
-    width: 21.09%;
+    top: 28.73%;
+    left: 25.55%;
+    width: 21.16%;
     height: 12.51%;
 }
 
-/* последнее сообщение задевает большой палец — закрываем его в обход пальца */
 .finale__cover--4 {
-    top: 44.95%;
-    left: 33.83%;
-    width: 21.94%;
-    height: 4.63%;
-}
-
-.finale__cover--4b {
-    top: 44.95%;
-    left: 55.77%;
-    width: 5.24%;
-    height: 2.91%;
+    top: 42.43%;
+    left: 33.69%;
+    width: 27.74%;
+    height: 5.08%;
 }
 
 .finale__cover--shown {
     opacity: 0;
 }
 
-/* кнопка «играть снова»: кусочек картинки экрана ровно там, где нарисована кнопка; дышит — чуть больше и обратно */
+/* кнопка «играть снова»: опущена так, что её правый край под большим пальцем; дышит — чуть больше и обратно */
 .finale__again {
     position: absolute;
-    top: 40.66%;
-    left: 26.75%;
-    width: 32.55%;
-    height: 7.33%;
+    top: 43.69%;
+    left: 26.19%;
+    width: 33.62%;
+    height: 8.00%;
     padding: 0;
     background-color: transparent;
-    background-image: url("../img/phone-end.png");
-    background-size: 307.17% 1364.06%;
-    background-position: 39.66% 43.88%;
+    background-image: url("../img/phone-button.png?v=2");
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     border: none;
     cursor: pointer;
@@ -3091,6 +3089,17 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     opacity: 1;
     pointer-events: auto;
     animation: again-pulse 1.4s ease-in-out infinite;
+}
+
+/* большой палец правой руки — поверх кнопки */
+.finale__thumb {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+}
+
+.finale--end .finale__thumb {
+    opacity: 1;
 }
 
 @keyframes again-pulse {
@@ -3790,6 +3799,39 @@ body.is-choosing .game-header {
     font-weight: 400;
     color: #3E3E3E;
     white-space: nowrap;
+}
+
+/* сняли деньги — цифра коротко краснеет и вздрагивает */
+.game-header__money--hit {
+    animation: money-hit 0.9s ease;
+}
+
+@keyframes money-hit {
+    0% {
+        color: #3E3E3E;
+        translate: 0 0;
+    }
+
+    15% {
+        color: #C8323C;
+        translate: calc(-0.2778 * var(--u)) 0;
+    }
+
+    30% {
+        translate: calc(0.2778 * var(--u)) 0;
+    }
+
+    45% {
+        translate: 0 0;
+    }
+
+    70% {
+        color: #C8323C;
+    }
+
+    100% {
+        color: #3E3E3E;
+    }
 }
 
 /* значки вместо подписей «на счету» и «уровень безопасности» */

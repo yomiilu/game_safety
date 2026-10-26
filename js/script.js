@@ -327,10 +327,8 @@ const typingLinePause = 250;
 // скорость стирания (мс на букву)
 const erasingDelay = 15;
 
-// на какой части прокрутки меняется предложение
-// (два числа, чтобы текст не дёргался туда-сюда на границе)
-const nextTextFrom = 1;
-const prevTextFrom = 0.8;
+// первое предложение стирается вместе с закрытием глаз (сколько глаза закрылись — столько букв стёрто),
+// глаза закрылись — печатается второе. назад, выше начала закрытия, — снова первое
 
 const typewriter = {
     isTyping: false,
@@ -339,7 +337,11 @@ const typewriter = {
     sentences: [],
     chars: [],
     shownSentence: -1,
-    runId: 0
+    runId: 0,
+    // сейчас первое предложение стирается по прокрутке; typedCount — сколько букв было напечатано к началу стирания
+    isErasing: false,
+    typedCount: 0,
+    visibleCount: -1
 };
 
 
@@ -504,12 +506,83 @@ function updateText(progress) {
         return;
     }
 
-    if (progress > nextTextFrom) {
-        showSentence(1);
+    const closed = getEyesClosed();
+
+    // глаза ещё открыты — на экране первое предложение
+    if (progress < closeStart) {
+        // вернулись, когда первое предложение было уже частично стёрто, — печатаем его заново
+        if (typewriter.isErasing) {
+            typewriter.isErasing = false;
+            typewriter.shownSentence = -2;
+        }
+
+        showSentence(0);
+        return;
     }
 
-    if (progress < prevTextFrom) {
-        showSentence(0);
+    // глаза закрылись — второе предложение
+    if (closed >= 0.98) {
+        typewriter.isErasing = false;
+        showSentence(1);
+        return;
+    }
+
+    // глаза закрываются — первое предложение стирается в такт с ними
+    if (typewriter.shownSentence === 0) {
+        eraseWithEyes(closed);
+    }
+}
+
+
+// насколько закрыты глаза первого экрана (среднее, от 0 до 1)
+function getEyesClosed() {
+    let sum = 0;
+    let count = 0;
+
+    eyes.forEach(function (eye) {
+        if (!eye.isAlwaysOpen) {
+            sum = sum + eye.scrollClose;
+            count = count + 1;
+        }
+    });
+
+    return count === 0 ? 1 : sum / count;
+}
+
+
+// оставляем видимой только часть первого предложения: чем сильнее закрыты глаза, тем меньше букв
+function eraseWithEyes(closed) {
+    // начало стирания: печать (если ещё шла) останавливаем
+    if (!typewriter.isErasing) {
+        typewriter.isErasing = true;
+        typewriter.runId = typewriter.runId + 1;
+        typewriter.isTyping = false;
+        stopTypewriterSound("title");
+        typewriter.cursor.classList.remove("hero__cursor--done");
+
+        typewriter.typedCount = typewriter.chars.filter(function (char) {
+            return char.element.classList.contains("hero__char--visible");
+        }).length;
+        typewriter.visibleCount = -1;
+    }
+
+    const visibleCount = Math.round(typewriter.typedCount * (1 - closed));
+
+    if (visibleCount === typewriter.visibleCount) {
+        return;
+    }
+
+    typewriter.visibleCount = visibleCount;
+
+    typewriter.chars.forEach(function (char, index) {
+        char.element.classList.toggle("hero__char--visible", index < visibleCount);
+    });
+
+    // курсор стоит сразу за последней оставшейся буквой
+    if (visibleCount > 0) {
+        typewriter.chars[visibleCount - 1].element.after(typewriter.cursor);
+    } else if (typewriter.chars.length > 0) {
+        typewriter.chars[0].element.before(typewriter.cursor);
     }
 }
 
@@ -1140,6 +1213,12 @@ function buildLineChars(line) {
     line.chars = [];
 
     for (let i = 0; i < text.length; i++) {
+        // перенос строки, заданный в html через <br>
+        if (text[i].isBreak) {
+            textElement.appendChild(document.createElement("br"));
+            continue;
+        }
+
         const char = document.createElement("span");
 
         char.className = "speech__char";
@@ -1172,8 +1251,17 @@ function readSpeechText(textElement) {
     const letters = [];
 
     textElement.childNodes.forEach(function (node) {
+        if (node.nodeName === "BR") {
+            letters.push({
+                char: "",
+                isBreak: true
+            });
+            return;
+        }
+
         const isKey = node.nodeType === 1 && node.classList.contains("speech__key");
-        const part = node.textContent.replace(/\s+/g, " ");
+        // неразрывные пробелы (&nbsp;) оставляем — они держат слова в одной строке
+        const part = node.textContent.replace(/[ \t\n\r]+/g, " ");
 
         for (let i = 0; i < part.length; i++) {
             letters.push({
@@ -1182,6 +1270,15 @@ function readSpeechText(textElement) {
             });
         }
     });
+
+    // пробелы рядом с <br> не нужны
+    for (let i = letters.length - 1; i >= 0; i--) {
+        const isNearBreak = (letters[i - 1] && letters[i - 1].isBreak) || (letters[i + 1] && letters[i + 1].isBreak);
+
+        if (letters[i].char === " " && isNearBreak) {
+            letters.splice(i, 1);
+        }
+    }
 
     // пробелы по краям (от переносов строк в html) не нужны
     while (letters.length && letters[0].char === " ") {
@@ -2440,11 +2537,58 @@ const hotel = {
     level: 0,
     element: null,
     // шапка уже показывает вторую главу
-    isChapterTwo: false
+    isChapterTwo: false,
+    // 50$ за отель уже сняты
+    isPaid: false
 };
 
 
 // отметка прокрутки, когда отель полностью проявился; null — отеля ещё нет
+// за отель ресепшионист берёт 50$ («с вас 50$») — с этой суммы дальше считаются итоги ужина
+const hotelPrice = 50;
+
+
+// сколько денег у игрока после оплаты отеля
+function getHotelMoney() {
+    return getRideOutcome().to.money - hotelPrice;
+}
+
+
+// «с вас 50$» договорено — деньги в шапке уменьшаются; прокрутили назад, до этой реплики, — возвращаются
+function updateHotelPayment() {
+    const ride = getRideOutcome();
+
+    if (ride === null || !ride.isStatsDone || getDinnerOutcome()?.isShown) {
+        return;
+    }
+
+    const isPaid = findLine(".speech--receptionist-1").isFinished;
+
+    if (isPaid === hotel.isPaid) {
+        return;
+    }
+
+    hotel.isPaid = isPaid;
+    setGameHeader({
+        money: isPaid ? getHotelMoney() : ride.to.money
+    });
+
+    if (isPaid) {
+        hitHeaderMoney();
+    }
+}
+
+
+// цифра денег в шапке коротко вспыхивает красным — деньги сняли
+function hitHeaderMoney() {
+    const money = document.querySelector(".game-header__money");
+
+    money.classList.remove("game-header__money--hit");
+    void money.offsetWidth;
+    money.classList.add("game-header__money--hit");
+}
+
+
 function getHotelBase() {
     if (!drive.isActive) {
         return null;
@@ -2463,6 +2607,8 @@ function getHotelBase() {
 
 function updateHotel(progress) {
     let target = 0;
+
+    updateHotelPayment();
 
     if (drive.isActive) {
         const from = drive.start + hotelFrom;
@@ -2910,7 +3056,7 @@ function updateRoomOutcome(progress, base) {
     if (!roomOutcome.isShown && room.isLit && lastLine.isFinished && progress >= textFrom) {
         // считаем от того, что было у игрока до доставки (после поездки)
         const ride = getRideOutcome();
-        const money = ride.to.money;
+        const money = getHotelMoney();
         const safety = ride.to.safety;
 
         roomOutcome.from = { money: money, safety: safety };
@@ -3123,7 +3269,7 @@ function updateCafeOutcome(progress, base) {
     if (!cafeOutcome.isShown && cafe.isLit && lastLine.isFinished && progress >= textFrom) {
         // считаем от того, что было у игрока до кафе (после поездки)
         const ride = getRideOutcome();
-        const money = ride.to.money;
+        const money = getHotelMoney();
         const safety = ride.to.safety;
 
         cafeOutcome.from = { money: money, safety: safety };
@@ -3323,8 +3469,8 @@ function goToWalk() {
         const moneyLoss = isRoom ? roomMoneyLoss : cafeMoneyLoss;
         const safetyLoss = isRoom ? roomSafetyLoss : cafeSafetyLoss;
 
-        dinnerOutcome.from = { money: ride.to.money, safety: ride.to.safety };
-        dinnerOutcome.to = { money: ride.to.money - moneyLoss, safety: ride.to.safety - safetyLoss };
+        dinnerOutcome.from = { money: getHotelMoney(), safety: ride.to.safety };
+        dinnerOutcome.to = { money: getHotelMoney() - moneyLoss, safety: ride.to.safety - safetyLoss };
 
         finishOutcome(dinnerOutcome);
         document.body.classList.add("is-dinner-outcome");
@@ -3507,7 +3653,7 @@ const turnPhrases = [
     "так, по карте сначала {turn}",
     "теперь {turn}",
     "дальше {turn}",
-    "и последний поворот — {turn}. что-то тут совсем темно…"
+    "и последний поворот {turn}. что-то тут совсем темно…"
 ];
 
 // сердце: с какой скоростью бьётся в темноте и во время побега (мс на один «тук-тук»)
@@ -3560,10 +3706,11 @@ function setupAlleyRoute() {
     // ровно эти кнопки и надо будет нажать
     const way = getEscapeAnswer().map(function (turn) {
         return turnWords[turn];
-    }).join(" → ");
+    }).join("\u00a0→\u00a0");
 
+    // вся последовательность — одной строкой (неразрывные пробелы), под словами «бежать назад вот так:»
     document.querySelector(".speech--alley-tip .speech__inner").innerHTML =
-        'если придётся бежать назад, жму: <b class="speech__key">' + way + "</b>. запомню!";
+        'бежать назад вот так:<br><b class="speech__key">' + way + "</b>";
 }
 
 
@@ -3915,7 +4062,7 @@ function nextEscapeStep() {
     }, time * escapeHurryAt);
 
     escapeGame.timeoutId = setTimeout(function () {
-        caughtEscape("ты замешкался — и тебя догнали");
+        caughtEscape("ты замешкался, и тебя догнали");
     }, time);
 }
 
@@ -3983,13 +4130,13 @@ function onEscapeMove(button) {
 
     if (move === "back") {
         button.classList.add("escape__button--wrong");
-        caughtEscape("ты побежал назад — прямо к нему в руки");
+        caughtEscape("ты побежал назад, прямо к нему в руки");
         return;
     }
 
     if (move !== escapeGame.answer[escapeGame.index]) {
         button.classList.add("escape__button--wrong");
-        caughtEscape("не тот поворот — там тупик, и тебя догнали");
+        caughtEscape("это был не тот поворот, там тупик, и тебя догнали");
         return;
     }
 
@@ -4016,7 +4163,7 @@ function caughtEscape(reason) {
     escapeGame.isPlaying = false;
     clearEscapeTimers();
 
-    escapeGame.resultText.textContent = "тебя схватили! " + reason + ". попробуй ещё раз — запоминай повороты";
+    escapeGame.resultText.textContent = "тебя схватили! " + reason + ". попробуй ещё раз и запоминай повороты";
 
     // силуэт — прямо перед глазами
     alley.element.classList.remove("alley--hurry");
@@ -4088,7 +4235,8 @@ const crowdOutcomeStatsFrom = crowdTheftFrom + 1.4;
 
 // что теряем: заметил — только испуг; не заметил — кошелёк
 const crowdWonSafetyLoss = 5;
-const crowdLostMoneyLoss = 60;
+// вытащили кошелёк — на счету остаётся 20$, сколько бы ни было до этого
+const crowdLostMoneyLeft = 20;
 const crowdLostSafetyLoss = 15;
 
 const crowdOutcome = createOutcome(".outcome--crowd", "crowd-outcome");
@@ -4388,7 +4536,7 @@ function updateCrowdOutcome(progress, base) {
     if (!crowdOutcome.isShown && resultLine.isFinished && progress >= textFrom) {
         const isWon = crowd.phase === "won";
         const dinner = getDinnerOutcome().to;
-        const moneyLoss = isWon ? 0 : crowdLostMoneyLoss;
+        const moneyLoss = isWon ? 0 : Math.max(dinner.money - crowdLostMoneyLeft, 0);
         const safetyLoss = isWon ? crowdWonSafetyLoss : crowdLostSafetyLoss;
 
         crowdOutcome.from = { money: dinner.money, safety: dinner.safety };
@@ -4399,7 +4547,7 @@ function updateCrowdOutcome(progress, base) {
         crowdOutcome.money.stat.querySelector(".outcome__delta").textContent = "−" + moneyLoss + "$";
         crowdOutcome.safety.stat.querySelector(".outcome__delta").textContent = "−" + safetyLoss + "%";
         setOutcomeLines(crowdOutcome, isWon
-            ? ["Пока бабушка отвлекала,", "её напарник лез в рюкзак.", "Ты вовремя заметил — деньги целы"]
+            ? ["Пока бабушка отвлекала,", "её напарник лез в рюкзак.", "Ты вовремя заметил, и деньги целы"]
             : ["Пока бабушка отвлекала,", "её напарник вытащил кошелёк из рюкзака.", "Ты потерял " + moneyLoss + "$"]);
 
         resetOutcomeStats(crowdOutcome);
@@ -4482,12 +4630,11 @@ const finale = {
 function setupFinale() {
     finale.element = document.querySelector(".finale");
 
-    // последнее сообщение закрыто двумя кусками (в обход пальца) — открываются вместе
     finale.covers = [
         [".finale__cover--1"],
         [".finale__cover--2"],
         [".finale__cover--3"],
-        [".finale__cover--4", ".finale__cover--4b"]
+        [".finale__cover--4"]
     ].map(function (selectors) {
         return selectors.map(function (selector) {
             return document.querySelector(selector);
