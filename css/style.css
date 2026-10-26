@@ -4,7 +4,7 @@
    то есть calc(10 * var(--u)) — это те же 10vw из макета */
 
 :root {
-    --u: min(1vw, 1.6vh);
+    --u: min(1vw, 1.6dvh);
 }
 
 
@@ -38,7 +38,7 @@ body.is-choice-locked {
     justify-content: center;
     gap: calc(2.7778 * var(--u));
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     background-color: #0F0F0F;
     opacity: 1;
     transition: opacity 0.8s ease, visibility 0.8s ease;
@@ -262,7 +262,7 @@ body.is-street .sound {
 .hero {
     position: relative;
     width: 100vw;
-    height: 5600vh;
+    height: 5600dvh;
     background-color: #0F0F0F;
 }
 
@@ -270,7 +270,7 @@ body.is-street .sound {
     position: sticky;
     top: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     background-color: #0F0F0F;
     overflow: hidden;
 }
@@ -761,7 +761,7 @@ body.is-intro-heart .hero__pulse {
 /* по горизонтали — от картинки отеля (рядом с головой ресепшиониста),
    по высоте — ровно как плашки мальчика: низ на 41.6667 от низа экрана */
 .speech--receptionist {
-    top: calc(100vh - calc(52.9861 * var(--u)));
+    top: calc(100dvh - calc(52.9861 * var(--u)));
     right: 25%;
     bottom: auto;
 }
@@ -881,20 +881,20 @@ body.is-intro-heart .hero__pulse {
 /* вариант — рукописная плашка, как кнопка «начать» */
 .choice__option {
     position: relative;
-    width: calc(34.7222 * var(--u));
-    height: calc(10.4167 * var(--u));
+    width: calc(38.1944 * var(--u));
+    height: calc(12.5000 * var(--u));
     padding: 0;
     background: none;
     border: none;
     cursor: pointer;
     opacity: 1;
-    transform: translateY(-70vh) rotate(-8deg);
+    transform: translateY(-70dvh) rotate(-8deg);
     transition: transform 0.35s ease, opacity 0.06s ease;
 }
 
 /* второй вариант ждёт за нижним краем экрана */
 .choice__option + .choice__option {
-    transform: translateY(70vh) rotate(8deg);
+    transform: translateY(70dvh) rotate(8deg);
 }
 
 /* варианты прилетают: первый сверху, второй снизу — и с пружинкой встают на место
@@ -957,7 +957,7 @@ body.is-intro-heart .hero__pulse {
     justify-content: center;
     width: 100%;
     height: 92%;
-    padding: 0 calc(3.4722 * var(--u));
+    padding: 0 calc(4.1667 * var(--u));
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.6667 * var(--u));
     line-height: calc(2.2222 * var(--u));
@@ -993,8 +993,8 @@ body.is-intro-heart .hero__pulse {
     position: absolute;
     top: 0;
     left: 50%;
-    width: max(100vw, 173.2739vh);
-    height: max(100vh, 57.7121vw);
+    width: max(100vw, 173.2739dvh);
+    height: max(100dvh, 57.7121vw);
     transform: translateX(-50%);
 }
 
@@ -1585,8 +1585,8 @@ body.is-street .game-header {
     position: absolute;
     top: 0;
     left: 50%;
-    width: max(100vw, 144.2886vh);
-    height: max(100vh, 69.3056vw);
+    width: max(100vw, 144.2886dvh);
+    height: max(100dvh, 69.3056vw);
     transform: translateX(-50%);
 }
 
@@ -1732,8 +1732,8 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100vw, 169.7238vh);
-    height: max(100vh, 58.9193vw);
+    width: max(100vw, 169.7238dvh);
+    height: max(100dvh, 58.9193vw);
     transform: translate(-50%, -50%);
 }
 
@@ -1920,8 +1920,8 @@ body.is-hotel.is-dinner-outcome .sound {
     position: absolute;
     top: calc(50% + calc(2.7778 * var(--u)));
     left: 50%;
-    width: max(100vw, 153.9078vh);
-    height: max(100vh, 64.9740vw);
+    width: max(100vw, 153.9078dvh);
+    height: max(100dvh, 64.9740vw);
     transform: translate(-50%, -50%);
 }
 
@@ -2003,8 +2003,8 @@ body.is-hotel.is-dinner-outcome .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100vw, 161.3445vh);
-    height: max(100vh, 61.9792vw);
+    width: max(100vw, 161.3445dvh);
+    height: max(100dvh, 61.9792vw);
     transform: translate(-50%, -50%);
 }
 
@@ -2145,8 +2145,8 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100vw, 140.7731vh);
-    height: max(100vh, 71.0363vw);
+    width: max(100vw, 140.7731dvh);
+    height: max(100dvh, 71.0363vw);
     transform: translate(calc(-50% + var(--alley-shift, 0%)), -50%) scale(var(--alley-zoom, 1));
     transition: transform 1.2s ease;
 }
@@ -2656,8 +2656,8 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(110vw, 169.2308vh);
-    height: max(110vh, 71.5000vw);
+    width: max(110vw, 169.2308dvh);
+    height: max(110dvh, 71.5000vw);
     transform: translate(-50%, -54%);
 }
 
@@ -2806,8 +2806,9 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     transition: opacity 1.2s ease;
 }
 
+/* во время игры улица темнеет так же сильно, как тёмный переулок (люди поверх — их видно) */
 .crowd--game .crowd__night {
-    opacity: 0.6;
+    opacity: 0.86;
 }
 
 .crowd--game .crowd__pulse {
@@ -2921,8 +2922,8 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(110vw, 169.2308vh);
-    height: max(110vh, 71.5000vw);
+    width: max(110vw, 169.2308dvh);
+    height: max(110dvh, 71.5000vw);
     transform: translate(-50%, -54%);
 }
 
@@ -2991,10 +2992,10 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
 /* руки с телефоном: очень крупно, низ рук за краем экрана, поднимаются снизу */
 .finale__phone {
     position: absolute;
-    top: 8vh;
+    top: 8dvh;
     left: 50%;
-    width: calc(165vh * 1413 / 1751);
-    height: 165vh;
+    width: calc(165dvh * 1413 / 1751);
+    height: 165dvh;
     transform: translate(-42.9%, 105%);
     transition: transform 1.3s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
@@ -3006,7 +3007,7 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
 
 /* на экране с кнопкой телефон чуть поднимается — кнопка под пальцем оказывается выше */
 .finale--end .finale__phone {
-    transform: translate(-42.9%, -10vh);
+    transform: translate(-42.9%, -10dvh);
 }
 
 .finale__screen {
@@ -4004,7 +4005,7 @@ body.is-header-active .game-header__burger {
     left: 0;
     z-index: 8;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     background-color: rgba(0, 0, 0, 0.8);
     opacity: 0;
     visibility: hidden;

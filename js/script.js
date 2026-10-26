@@ -1984,6 +1984,9 @@ function updateDrive(progress, now) {
     updateTrees(drive.current);
     updateCars(drive.current, now);
 
+    // на телефоне камера по ходу поездки переезжает с машины на деревья у дороги (на компьютере не используется)
+    street.style.setProperty("--drive", smoothStep(0.15, 0.65, drive.current).toFixed(3));
+
     // доехали — экран уходит в черноту
     const blackoutStart = drive.start + driveLength + blackoutDelay;
     const blackout = smoothStep(blackoutStart, blackoutStart + blackoutLength, progress);
@@ -2499,8 +2502,10 @@ function updateLongread(progress) {
 
         // тетрадь полностью закрыла экран — итог с деньгами под ней больше не нужен,
         // иначе он проступит, когда тетрадь будет уходить (при прокрутке назад вернётся)
+        // а пока тетрадь проявляется, итог растворяется вместе с ней — чтобы не просвечивал сквозь страницы
         item.getOutcomes().forEach(function (o) {
             o.element.classList.toggle("outcome--behind", local >= longreadFadeIn);
+            o.element.style.opacity = local > 0 && local < longreadFadeIn ? (1 - fadeIn).toFixed(3) : "";
         });
 
         if (item.flipAt !== null) {
@@ -4077,7 +4082,9 @@ function placeEscapeButtons() {
 
     const minX = margin;
     const maxX = width - size - margin;
-    const minY = height * escapeFieldTop;
+    // кнопки — только ниже полоски времени (на телефоне подсказка длиннее, и полоска опускается)
+    const timerBottom = escapeGame.timer.getBoundingClientRect().bottom - escapeGame.element.getBoundingClientRect().top;
+    const minY = Math.max(height * escapeFieldTop, timerBottom + margin);
     const maxY = height - size - margin;
 
     const placed = [];
@@ -4547,8 +4554,8 @@ function updateCrowdOutcome(progress, base) {
         crowdOutcome.money.stat.querySelector(".outcome__delta").textContent = "−" + moneyLoss + "$";
         crowdOutcome.safety.stat.querySelector(".outcome__delta").textContent = "−" + safetyLoss + "%";
         setOutcomeLines(crowdOutcome, isWon
-            ? ["Пока бабушка отвлекала,", "её напарник лез в рюкзак.", "Ты вовремя заметил, и деньги целы"]
-            : ["Пока бабушка отвлекала,", "её напарник вытащил кошелёк из рюкзака.", "Ты потерял " + moneyLoss + "$"]);
+            ? ["Пока актёр, переодетый в бабушку, отвлекал,", "его напарник лез в рюкзак.", "Ты вовремя заметил, и деньги целы"]
+            : ["Пока актёр, переодетый в бабушку, отвлекал,", "его напарник вытащил кошелёк из рюкзака.", "Ты потерял " + moneyLoss + "$"]);
 
         resetOutcomeStats(crowdOutcome);
         showOutcomeText(crowdOutcome);
@@ -4612,10 +4619,13 @@ function setOutcomeLines(o, textLines) {
 // когда (от начала финала, в экранах прокрутки) достаём телефон
 const finalePhoneFrom = 1.5;
 
-// сообщения появляются по прокрутке: первое — когда руки поднялись, дальше — через каждые полэкрана с небольшим;
-// после последнего ещё столько же — и экран с кнопкой «играть снова»
+// сообщения появляются по прокрутке: первое — когда руки поднялись, дальше — через каждые полэкрана с небольшим
 const finaleFirstMessageAfter = 0.5;
 const finaleMessageStep = 0.6;
+
+// экран с кнопкой «играть снова» — не по прокрутке, а через время после последнего сообщения (мс):
+// чтобы его нельзя было пролистать не читая
+const finaleEndDelay = 2500;
 
 const finale = {
     element: null,
@@ -4623,7 +4633,8 @@ const finale = {
     isShown: false,
     isPhone: false,
     // сколько сообщений уже на экране
-    messageCount: 0
+    messageCount: 0,
+    endTimer: null
 };
 
 
@@ -4677,6 +4688,8 @@ function setFinalePhone(isPhone) {
 
 
 function hideFinale() {
+    clearTimeout(finale.endTimer);
+    finale.endTimer = null;
     finale.isShown = false;
     setFinalePhone(false);
     setFinaleMessages(0);
@@ -4734,10 +4747,20 @@ function updateFinale(progress) {
         setFinaleMessages(count);
     }
 
-    // все прочитаны и ещё немного прокрутили — экран с кнопкой «играть снова»
-    const endFrom = phoneFrom + finaleFirstMessageAfter + finale.covers.length * finaleMessageStep;
+    // все сообщения на экране — через время экран с кнопкой «играть снова»; прокрутили назад — отменяем
+    const isAllRead = finale.isPhone && count === finale.covers.length;
 
-    finale.element.classList.toggle("finale--end", finale.isPhone && progress >= endFrom);
+    if (isAllRead && finale.endTimer === null && !finale.element.classList.contains("finale--end")) {
+        finale.endTimer = setTimeout(function () {
+            finale.element.classList.add("finale--end");
+        }, finaleEndDelay);
+    }
+
+    if (!isAllRead) {
+        clearTimeout(finale.endTimer);
+        finale.endTimer = null;
+        finale.element.classList.remove("finale--end");
+    }
 }
 
 

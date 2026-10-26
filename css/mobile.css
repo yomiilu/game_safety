@@ -7,7 +7,7 @@
 @media (max-width: 767px) {
 
     :root {
-        --u: min(3vw, 1.4vh);
+        --u: min(3vw, 1.4dvh);
     }
 
     /* камера: куда сдвинута сцена. мальчик стоит левее центра на --cam-step, собеседник — правее на столько же.
@@ -25,6 +25,11 @@
 
     .preloader__scale {
         width: calc(9.0000 * var(--u));
+    }
+
+    /* полоса и кнопка «начать» — выше середины */
+    .preloader {
+        padding-bottom: 16dvh;
     }
 
 
@@ -55,18 +60,16 @@
         left: 10%;
     }
 
+    /* под текстом — один глаз, на таком же расстоянии от низа, как верхний от верха */
     .hero__eye--4 {
         top: auto;
         right: auto;
-        bottom: 8%;
-        left: 6%;
+        bottom: 9%;
+        left: 28%;
     }
 
     .hero__eye--5 {
-        top: 66%;
-        right: auto;
-        bottom: auto;
-        left: 46%;
+        display: none;
     }
 
 
@@ -98,8 +101,14 @@
         height: calc(2.7778 * var(--u));
     }
 
+    /* шкалы безопасности на телефоне нет — только цифры; слева такой же отступ, как у бургера справа */
     .game-header__scale {
-        width: calc(6.2500 * var(--u));
+        display: none;
+    }
+
+    .game-header__stats {
+        left: calc(2.7778 * var(--u));
+        gap: calc(4.1667 * var(--u));
     }
 
     .chapters-menu {
@@ -141,8 +150,10 @@
         gap: calc(2.7778 * var(--u));
     }
 
+    /* в три строки текст — плашка выше, чтобы строки не касались рамки */
     .choice__option {
         width: 90vw;
+        height: calc(14.5833 * var(--u));
     }
 
     /* глаза — по одному в каждом углу, на разной высоте, чтобы не налезали друг на друга */
@@ -181,50 +192,50 @@
     }
 
     .game__character--boy {
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
         left: calc(50% - var(--cam-step) - calc(12.7569 * var(--u)));
     }
 
     .game__character--taxi {
         right: calc(50% - var(--cam-step) - calc(7.1042 * var(--u)));
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
     }
 
     .cafe__boy,
     .walk__boy {
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
         left: calc(50% - var(--cam-step) - calc(8.4635 * var(--u)));
     }
 
     html body .cafe:not(.cafe--dark) .cafe__girl {
-        bottom: calc(4.1667 * var(--u));
+        bottom: calc(0.0000 * var(--u));
         left: calc(50% + var(--cam-step) - calc(14.0625 * var(--u)));
     }
 
     /* в темноте девочка прячется у левого края экрана (камера в это время на мальчике) */
     html body .cafe--dark .cafe__girl {
-        bottom: calc(4.1667 * var(--u));
+        bottom: calc(0.0000 * var(--u));
         left: calc(0% - var(--cam-step) - calc(6.9444 * var(--u)));
     }
 
     .walk__grandpa {
         right: calc(50% - var(--cam-step) - calc(6.7728 * var(--u)));
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
     }
 
     /* людная улица: мальчик, вор у него за спиной, незнакомец — на расстоянии экрана справа */
     .crowd__boy {
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
         left: calc(50% - var(--cam-step) - calc(8.4635 * var(--u)));
     }
 
     .crowd__figure {
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
     }
 
     .crowd__stranger {
         right: calc(50% - var(--cam-step) - calc(6.5549 * var(--u)));
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
     }
 
     /* на телефоне мальчик и так посередине — во время игры остаётся на месте */
@@ -253,7 +264,7 @@
 
     /* в переулке мальчик один — посередине, преследователь — у правого края */
     .alley__boy {
-        bottom: calc(7.6389 * var(--u));
+        bottom: calc(2.0833 * var(--u));
         left: calc(50% - calc(8.4635 * var(--u)));
     }
 
@@ -295,13 +306,13 @@
 
     html body .speech.speech--boy {
         right: auto;
-        bottom: calc(54.1667 * var(--u));
+        bottom: calc(48.6111 * var(--u));
         left: calc(50% - var(--cam-step, 0px) - calc(15.9722 * var(--u)));
     }
 
     html body .speech.speech--taxi {
         right: auto;
-        bottom: calc(54.1667 * var(--u));
+        bottom: calc(48.6111 * var(--u));
         left: calc(50% + var(--cam-step, 0px) - calc(15.9722 * var(--u)));
     }
 
@@ -339,13 +350,13 @@
 
     /* сцена чуть выше экрана: тёмный край внизу картинки уходит за экран (как на компьютере) */
     .hotel__stage {
-        width: 158.7175vh;
-        height: 110vh;
+        width: 158.7175dvh;
+        height: 110dvh;
     }
 
-    /* ресепшионист — на 74.7% ширины сцены, то есть на 39.2vh правее её середины */
+    /* ресепшионист — на 74.7% ширины сцены, то есть на 39.2dvh правее её середины */
     .hotel {
-        --cam-step: 39.2vh;
+        --cam-step: 39.2dvh;
     }
 
     .hotel__boy {
@@ -415,23 +426,27 @@
        машина вдвое уже, а точка схода, от которой она растёт, — та же */
 
     .street__stage {
-        translate: 26% 0;
+        /* в конце поездки левый край фона ровно у края экрана: дальше ехать некуда */
+        translate: calc(26% + var(--drive, 0) * (23.5% - 50vw)) 0;
     }
 
     .street__car {
-        top: 31.4300%;
-        left: 15.9600%;
-        width: 13.0000%;
+        top: 30.7300%;
+        left: 16.0200%;
+        width: 17.0000%;
     }
 
 
     /* ---------- тетрадь: видна по одной странице, между страницами камера переезжает ---------- */
 
+    /* высота тетради — по ширине экрана, но не выше 90% высоты: на коротких телефонах тетрадь целиком в экране,
+       сверху и снизу одинаковые отступы */
     .notebook {
-        --line: calc(185vw * 0.044);
+        --notebook-height: min(185vw, 90dvh);
+        --line: calc(var(--notebook-height) * 0.044);
         flex-shrink: 0;
-        width: 184vw;
-        height: 185vw;
+        width: calc(var(--notebook-height) * 184 / 185);
+        height: var(--notebook-height);
         transition: translate 0.9s ease;
     }
 
@@ -440,12 +455,13 @@
         animation: none;
     }
 
+    /* сдвиг на четверть ширины тетради — посередине экрана ровно одна страница */
     .longread--view-left .notebook {
-        translate: 46vw 0;
+        translate: calc(var(--notebook-height) * 46 / 185) 0;
     }
 
     .longread--view-right .notebook {
-        translate: -46vw 0;
+        translate: calc(var(--notebook-height) * -46 / 185) 0;
     }
 
 
@@ -473,7 +489,7 @@
 
     /* финал: телефон во всю ширину экрана (он занимает 46% картинки), руки за краями */
     .finale__phone {
-        width: min(196vw, calc(165vh * 1413 / 1751));
+        width: min(196vw, calc(165dvh * 1413 / 1751));
         height: auto;
         aspect-ratio: 1413 / 1751;
     }
