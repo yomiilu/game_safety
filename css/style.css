@@ -5,9 +5,10 @@
 
 :root {
     --u: min(1vw, 1.6svh);
-    /* свой курсор: бумажный самолётик; над кнопками — тёмный (кончик носа — в точке 2 × 2) */
-    --cursor: url("../img/cursor.svg?v=2") 2 2, auto;
-    --cursor-pointer: url("../img/cursor-pointer.svg?v=2") 2 2, pointer;
+    /* свой курсор: бумажный самолётик; над кнопками — тёмный (кончик носа — в точке 2 × 2).
+       картинки — png, а не svg: svg-курсор браузер перерисовывает при каждом обновлении страницы, и он мигает обычным */
+    --cursor: url("../img/cursor.png") 2 2, auto;
+    --cursor-pointer: url("../img/cursor-pointer.png") 2 2, pointer;
 }
 
 
