@@ -5,12 +5,16 @@
 
 :root {
     --u: min(1vw, 1.6svh);
+    /* свой курсор: бумажный самолётик; над кнопками — тёмный (кончик носа — в точке 2 × 2) */
+    --cursor: url("../img/cursor.svg?v=2") 2 2, auto;
+    --cursor-pointer: url("../img/cursor-pointer.svg?v=2") 2 2, pointer;
 }
 
 
 body {
     font-family: "Kom Post", sans-serif;
     background-color: #0F0F0F;
+    cursor: var(--cursor);
     overflow-x: hidden;
 }
 
@@ -107,7 +111,7 @@ body.is-choice-locked {
     padding: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     opacity: 0;
     visibility: hidden;
     transform: translateY(calc(1.3889 * var(--u)));
@@ -183,7 +187,7 @@ body.is-street .sound {
     padding: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     opacity: 0.8;
     transition: opacity 0.2s ease;
 }
@@ -224,7 +228,7 @@ body.is-street .sound {
         rgba(255, 255, 255, 0.25) var(--filled, 60%),
         rgba(255, 255, 255, 0.25) 100%
     );
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     opacity: 0.8;
     -webkit-appearance: none;
     appearance: none;
@@ -241,7 +245,7 @@ body.is-street .sound {
     border: none;
     border-radius: 50%;
     background-color: #FFFFFF;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     -webkit-appearance: none;
     appearance: none;
 }
@@ -252,7 +256,7 @@ body.is-street .sound {
     border: none;
     border-radius: 50%;
     background-color: #FFFFFF;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
 }
 
 
@@ -886,7 +890,7 @@ body.is-intro-heart .hero__pulse {
     padding: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     opacity: 1;
     transform: translateY(-70svh) rotate(-8deg);
     transition: transform 0.35s ease, opacity 0.06s ease;
@@ -2741,7 +2745,7 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     padding: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     pointer-events: none;
     transform: translateX(-200vw);
 }
@@ -3080,7 +3084,7 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     background-size: 100% 100%;
     background-repeat: no-repeat;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.8s ease;
@@ -3240,7 +3244,7 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     padding: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: transform 0.08s ease;
 }
 
@@ -3900,7 +3904,7 @@ body.is-choosing .game-header {
     padding: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     pointer-events: none;
     transition: transform 0.25s ease;
 }
@@ -4052,7 +4056,7 @@ body.is-menu-open .chapters-backdrop {
     font-weight: 400;
     color: #3E3E3E;
     text-align: left;
-    cursor: pointer;
+    cursor: var(--cursor-pointer);
     transition: transform 0.2s ease, color 0.2s ease;
 }
 
@@ -4073,7 +4077,7 @@ body.is-menu-open .chapters-backdrop {
 .chapters-menu__link:disabled {
     color: #3E3E3E;
     opacity: 0.4;
-    cursor: default;
+    cursor: var(--cursor);
 }
 
 .chapters-menu__soon {
