@@ -45,7 +45,12 @@ let mouseY = window.innerHeight / 2;
 
 
 // «один vw макета» в пикселях — то же, что --u в css: min(1vw, 1.6vh)
+// --u в пикселях — так же, как в css (на телефоне единица крупнее, см. mobile.css)
 function getDesignUnit() {
+    if (mobileQuery.matches) {
+        return Math.min(window.innerWidth * 2.4, window.innerHeight * 1.15) / 100;
+    }
+
     return Math.min(window.innerWidth, window.innerHeight * 1.6) / 100;
 }
 
@@ -528,6 +533,9 @@ const darkEnd = 2.4;
 const gameStart = 2.72;
 const gameEnd = 3.4;
 
+// как часто стучит сердце на первых чёрных экранах (мс на удар) — спокойнее, чем в переулке
+const introHeartbeat = 1000;
+
 
 function updateDarkness(progress) {
     const dark = smoothStep(darkStart, darkEnd, progress);
@@ -539,6 +547,21 @@ function updateDarkness(progress) {
     document.body.style.setProperty("--game", game.toFixed(3));
 
     updateCursorLight(dark * (1 - game));
+
+    // первые чёрные экраны (заставка, темнота, первый выбор): тихо стучит сердце, по краям краснеет.
+    // только после «начать» — до него звук всё равно не включится
+    const isIntroDark = game < 0.5 || (choice.isShown && !document.body.classList.contains("is-street"));
+    const isIntroHeart = isIntroDark && !document.body.classList.contains("is-loading");
+
+    if (isIntroHeart !== document.body.classList.contains("is-intro-heart")) {
+        document.body.classList.toggle("is-intro-heart", isIntroHeart);
+
+        if (isIntroHeart) {
+            startHeartbeat(introHeartbeat);
+        } else if (!alley.isDark) {
+            stopHeartbeat();
+        }
+    }
 
     // шапка «активна» (по ней можно кликать), когда она полностью видна
     const isLightsOut = document.body.classList.contains("is-lights-out");
@@ -667,8 +690,13 @@ function updateCursorLight(firstDarkness) {
     }
 
     // в переулке резко стемнело, потом — чёрный экран итога
-    if (alley.isDark || alleyOutcome.isShown) {
+    if (alley.isDark || alleyOutcome.isShown || crowdOutcome.isShown) {
         level = 1;
+    }
+
+    // финал: светлая улица, потом руки с телефоном — свет от курсора не нужен
+    if (finale.isShown) {
+        level = 0;
     }
 
     light.element.style.setProperty("--light-level", level.toFixed(3));
@@ -836,6 +864,10 @@ const cafeDarkFrom = 2.2;
 
 // в переулке: когда резко темнеет (в экранах прокрутки от выбора пути)
 const alleyDarkFrom = 2.9;
+
+// на людной улице: когда подходит бабушка и когда вор лезет в рюкзак (в экранах прокрутки от выбора пути)
+const crowdStrangerFrom = 0.8;
+const crowdTheftFrom = 1.9;
 
 const dialogue = [
     {
@@ -1007,6 +1039,45 @@ const dialogue = [
         from: 2.3,
         speed: 1
     },
+    // людная улица: бабушка отвлекает, вор лезет в рюкзак (отсчёт — от выбора пути)
+    {
+        selector: ".speech--crowd-1",
+        scene: "crowd",
+        from: 0.3,
+        speed: 1
+    },
+    {
+        selector: ".speech--crowd-2",
+        scene: "crowd",
+        from: crowdStrangerFrom + 0.1,
+        speed: 1,
+        waitFor: function () {
+            return crowd.isStrangerReady;
+        }
+    },
+    {
+        selector: ".speech--crowd-3",
+        scene: "crowd",
+        from: crowdStrangerFrom + 0.6,
+        speed: 1.5
+    },
+    {
+        selector: ".speech--crowd-4",
+        scene: "crowd",
+        from: crowdTheftFrom,
+        speed: 1.5,
+        // после кражи: заметил вора или нет
+        waitFor: function () {
+            return crowd.phase === "won" || crowd.phase === "lost";
+        }
+    },
+    // финал: мальчику пишут (отсчёт — от конца тетради главы 3)
+    {
+        selector: ".speech--finale-1",
+        scene: "finale",
+        from: 0.7,
+        speed: 1
+    },
     {
         selector: ".speech--alley-5",
         scene: "alley",
@@ -1037,8 +1108,6 @@ let boyPoses = null;
 function setupDialogue() {
     dialogue.forEach(function (settings) {
         const element = document.querySelector(settings.selector);
-        const textElement = element.querySelector(".speech__inner");
-        const text = readSpeechText(textElement);
 
         const line = {
             selector: settings.selector,
@@ -1054,31 +1123,47 @@ function setupDialogue() {
             runId: 0
         };
 
-        textElement.innerHTML = "";
-
-        for (let i = 0; i < text.length; i++) {
-            const char = document.createElement("span");
-
-            char.className = "speech__char";
-            char.textContent = text[i].char;
-
-            // самое важное в реплике — чёрным
-            if (text[i].isKey) {
-                char.classList.add("speech__char--key");
-            }
-
-            textElement.appendChild(char);
-
-            line.chars.push({
-                element: char,
-                isSpace: text[i].char === " "
-            });
-        }
-
+        buildLineChars(line);
         lines.push(line);
     });
 
     boyPoses = document.querySelector(".game__character--boy");
+}
+
+
+// раскладываем текст реплики на невидимые буквы (и заново — если текст поменяли)
+function buildLineChars(line) {
+    const textElement = line.element.querySelector(".speech__inner");
+    const text = readSpeechText(textElement);
+
+    textElement.innerHTML = "";
+    line.chars = [];
+
+    for (let i = 0; i < text.length; i++) {
+        const char = document.createElement("span");
+
+        char.className = "speech__char";
+        char.textContent = text[i].char;
+
+        // самое важное в реплике — чёрным
+        if (text[i].isKey) {
+            char.classList.add("speech__char--key");
+        }
+
+        textElement.appendChild(char);
+
+        line.chars.push({
+            element: char,
+            isSpace: text[i].char === " "
+        });
+    }
+}
+
+
+// новый текст реплики (html с <b class="speech__key">); пока она ещё не показана
+function setLineText(line, html) {
+    line.element.querySelector(".speech__inner").innerHTML = html;
+    buildLineChars(line);
 }
 
 
@@ -1125,12 +1210,22 @@ function setLineCharsVisible(line, isVisible) {
 }
 
 
+// кто сейчас говорит: на телефоне камера отъезжает на этого персонажа
+// (метка остаётся, пока не заговорит кто-то другой; на компьютере ничего не меняет)
+function setSpeaker(isBoy) {
+    document.body.classList.toggle("is-speaker-boy", isBoy);
+    document.body.classList.toggle("is-speaker-other", !isBoy);
+}
+
+
 function showLine(line) {
     line.runId = line.runId + 1;
 
     const runId = line.runId;
 
     line.element.classList.add("speech--visible");
+
+    setSpeaker(line.element.classList.contains("speech--boy"));
 
     // реплика уже была допечатана (её просто ненадолго прятали) — показываем целиком
     if (line.isFinished) {
@@ -1222,13 +1317,25 @@ function getLineFrom(line) {
         return base === null ? Infinity : base + line.from;
     }
 
+    if (line.scene === "crowd") {
+        const base = getCrowdBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
+    if (line.scene === "finale") {
+        const base = getFinaleBase();
+
+        return base === null ? Infinity : base + line.from;
+    }
+
     return line.from;
 }
 
 
 // у номера и кафе — свои ветки реплик: реплика ждёт предыдущую только из общей части или своей ветки
 function getLineBranch(line) {
-    if (line.scene === "room" || line.scene === "cafe") {
+    if (line.scene === "room" || line.scene === "cafe" || line.scene === "alley" || line.scene === "crowd" || line.scene === "finale") {
         return line.scene;
     }
 
@@ -1385,7 +1492,7 @@ function skipTitle() {
 
 // текст на чёрных экранах-итогах (после такси, после кафе)
 function skipOutcomeText() {
-    [outcome, driverOutcome, cafeOutcome, roomOutcome, alleyOutcome].forEach(function (o) {
+    [outcome, driverOutcome, cafeOutcome, roomOutcome, alleyOutcome, crowdOutcome].forEach(function (o) {
         if (!o.isShown || o.isTextFinished) {
             return;
         }
@@ -2189,6 +2296,8 @@ function createLongread(selector, length, flipAt, getBase, getOutcomes) {
         getOutcomes: getOutcomes,
         element: null,
         steps: [],
+        // с какой отметки начинаются советы на правой странице (на телефоне тогда показываем её)
+        tipsAt: Infinity,
         isFlipped: false,
         flipTimer: null
     };
@@ -2203,9 +2312,13 @@ const longreads = [
         return [roomOutcome, cafeOutcome];
     }),
     createLongread(".longread--3", dinnerLongreadLength, dinnerLongreadFlipAt, getAlleyLongreadBase, function () {
-        return [alleyOutcome];
+        return [alleyOutcome, crowdOutcome];
     })
 ];
+
+// после последней тетради дальше пока ничего нет — уходит только тетрадь, чёрный фон остаётся
+// (иначе из-под неё снова проступает экран побега)
+longreads[2].keepBlack = true;
 
 
 function setupLongread() {
@@ -2229,6 +2342,12 @@ function setupLongread() {
                 at: Number(element.dataset.step)
             });
         });
+
+        const tips = item.element.querySelector(".longread__tips.longread__step");
+
+        if (tips) {
+            item.tipsAt = Number(tips.dataset.step);
+        }
     });
 }
 
@@ -2274,7 +2393,12 @@ function updateLongread(progress) {
         const fadeIn = smoothStep(0, longreadFadeIn, local);
         const fadeOut = 1 - smoothStep(item.length - longreadFadeOut, item.length, local);
 
-        item.element.style.setProperty("--longread", (fadeIn * fadeOut).toFixed(3));
+        if (item.keepBlack) {
+            item.element.style.setProperty("--longread", fadeIn.toFixed(3));
+            item.element.style.setProperty("--longread-page", fadeOut.toFixed(3));
+        } else {
+            item.element.style.setProperty("--longread", (fadeIn * fadeOut).toFixed(3));
+        }
 
         // тетрадь полностью закрыла экран — итог с деньгами под ней больше не нужен,
         // иначе он проступит, когда тетрадь будет уходить (при прокрутке назад вернётся)
@@ -2285,6 +2409,14 @@ function updateLongread(progress) {
         if (item.flipAt !== null) {
             setLongreadFlipped(item, local >= item.flipAt);
         }
+
+        // на телефоне тетрадь видна по одной странице: справа — лист до переворота и советы,
+        // слева — текст главы (на компьютере эти метки ничего не меняют)
+        const isBeforeFlip = item.flipAt !== null && local < item.flipAt;
+        const isRight = isBeforeFlip || local >= item.tipsAt - 0.1;
+
+        item.element.classList.toggle("longread--view-right", isRight);
+        item.element.classList.toggle("longread--view-left", !isRight);
 
         // каждый кусок текста появляется, когда до него докрутили, и прячется, если прокрутили назад
         item.steps.forEach(function (step) {
@@ -2532,7 +2664,9 @@ const scareTimeline = [
     { at: 0, className: "room--door" },
     { at: 1000, className: "room--stranger" },
     // идти начинает, только когда полностью проступила
-    { at: 2600, className: "room--walk" }
+    { at: 2600, className: "room--walk" },
+    // на телефоне после этого камера уезжает к выключателю — можно искать свет
+    { at: 5100, className: "room--search" }
 ];
 
 // дверь открывается через столько (мс) после того, как в руке появился фонарик
@@ -2582,6 +2716,8 @@ function getRoomBase() {
 
 
 function showRoom() {
+    // новая сцена начинается с мальчика
+    setSpeaker(true);
     room.isShown = true;
     room.element.classList.add("room--visible");
     document.body.classList.add("is-room");
@@ -2692,7 +2828,7 @@ function turnLightsOn() {
 
 function stopScare() {
     room.scareRunId = room.scareRunId + 1;
-    room.element.classList.remove("room--door", "room--stranger", "room--walk", "room--arrived");
+    room.element.classList.remove("room--door", "room--stranger", "room--walk", "room--arrived", "room--search");
     stopDoorSound();
 }
 
@@ -2857,6 +2993,7 @@ function getCafeBase() {
 
 
 function showCafe() {
+    setSpeaker(true);
     cafe.isShown = true;
     cafe.element.classList.add("cafe--visible");
     document.body.classList.add("is-cafe");
@@ -3116,6 +3253,11 @@ function updateWalk(progress) {
     // в шапке — третья глава, пока на экране улица
     if (isWalk !== walk.isChapterThree) {
         walk.isChapterThree = isWalk;
+
+        if (isWalk) {
+            setSpeaker(true);
+        }
+
         setCurrentChapter(isWalk ? 3 : 2);
     }
 }
@@ -3273,6 +3415,10 @@ function selectWalkChoice(option) {
         if (selected === "alley") {
             showAlley();
         }
+
+        if (selected === "street") {
+            showCrowd();
+        }
     }, streetDelay);
 }
 
@@ -3280,6 +3426,7 @@ function selectWalkChoice(option) {
 function resetWalkChoice() {
     walkChoice.selected = null;
     hideAlley();
+    hideCrowd();
     walkChoice.element.classList.remove("choice--made");
 
     walkChoice.options.forEach(function (option) {
@@ -3408,11 +3555,33 @@ function setupAlleyRoute() {
 
         inner.innerHTML = phrase.replace("{turn}", '<b class="speech__key">' + turnWords[alleyRoute[index]] + "</b>");
     });
+
+    // и сразу проговаривает, как бежать обратно: те же повороты с конца и в другую сторону —
+    // ровно эти кнопки и надо будет нажать
+    const way = getEscapeAnswer().map(function (turn) {
+        return turnWords[turn];
+    }).join(" → ");
+
+    document.querySelector(".speech--alley-tip .speech__inner").innerHTML =
+        'если придётся бежать назад, жму: <b class="speech__key">' + way + "</b>. запомню!";
+}
+
+
+// обратный путь: последний поворот — первым, и в другую сторону
+function getEscapeAnswer() {
+    return alleyRoute.slice().reverse().map(function (turn) {
+        return mirrorTurn[turn];
+    });
 }
 
 
 function setupAlley() {
     alley.element = document.querySelector(".alley");
+
+    // зубы заранее готовим к показу — иначе при первом появлении телефон рисует их по частям
+    alley.element.querySelector(".alley__stalker").decode().catch(function () {
+        // не вышло — покажем как есть
+    });
 }
 
 
@@ -3573,15 +3742,21 @@ function hideAlleyOutcome() {
 }
 
 
-// отметка прокрутки, когда начинается тетрадь главы 3; null — ещё рано
+// отметка прокрутки, когда начинается тетрадь главы 3 (после переулка или людной улицы); null — ещё рано
 function getAlleyLongreadBase() {
-    const base = getAlleyBase();
+    const alleyBase = getAlleyBase();
 
-    if (base === null || !alleyOutcome.isStatsDone) {
-        return null;
+    if (alleyBase !== null && alleyOutcome.isStatsDone) {
+        return alleyBase + alleyOutcomeStatsFrom + alleyLongreadAfterOutcome;
     }
 
-    return base + alleyOutcomeStatsFrom + alleyLongreadAfterOutcome;
+    const crowdBase = getCrowdBase();
+
+    if (crowdBase !== null && crowdOutcome.isStatsDone) {
+        return crowdBase + crowdOutcomeStatsFrom + alleyLongreadAfterOutcome;
+    }
+
+    return null;
 }
 
 
@@ -3666,10 +3841,7 @@ function startEscape() {
     escapeGame.isWon = false;
     escapeGame.index = 0;
 
-    // обратный путь: последний поворот — первым, и в другую сторону
-    escapeGame.answer = alleyRoute.slice().reverse().map(function (turn) {
-        return mirrorTurn[turn];
-    });
+    escapeGame.answer = getEscapeAnswer();
 
     // кружок на каждый поворот
     escapeGame.stepsBox.innerHTML = "";
@@ -3888,6 +4060,540 @@ function resetEscape() {
 }
 
 
+// ---------- глава 3: людная улица и карманники ----------
+// длинная дорога по освещённой улице. подходит бабушка и просит показать дорогу —
+// пока мальчик смотрит в карту, второй подкрадывается сзади к рюкзаку. надо успеть на него нажать
+
+// за сколько (мс) бабушка подходит и сколько есть времени, чтобы заметить вора
+const crowdStrangerRideTime = 1200;
+
+// игра «следи за рюкзаком»: вор подходит то слева, то справа и тянется к рюкзаку — успей на него нажать.
+// time — за сколько (мс) вор дотягивается до рюкзака (с каждым разом быстрее)
+const crowdWaves = [
+    { side: -1, time: 1900 },
+    { side: 1, time: 1500 },
+    { side: -1, time: 1150 }
+];
+
+// на сколько (в --u) от мальчика останавливается вор — вытянутой рукой у самого рюкзака
+const crowdReachGap = 10;
+
+// за сколько (мс) мальчик отходит к середине перед игрой
+const crowdBoyMoveTime = 900;
+
+
+// итог: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора пути)
+const crowdOutcomeFrom = crowdTheftFrom + 0.8;
+const crowdOutcomeStatsFrom = crowdTheftFrom + 1.4;
+
+// что теряем: заметил — только испуг; не заметил — кошелёк
+const crowdWonSafetyLoss = 5;
+const crowdLostMoneyLoss = 60;
+const crowdLostSafetyLoss = 15;
+
+const crowdOutcome = createOutcome(".outcome--crowd", "crowd-outcome");
+
+const crowd = {
+    element: null,
+    boy: null,
+    thief: null,
+    stepsBox: null,
+    steps: [],
+    timerFill: null,
+    // какая сейчас волна и сколько воров отогнали
+    wave: -1,
+    caught: 0,
+    waveTimer: null,
+    isShown: false,
+    isStrangerShown: false,
+    isStrangerReady: false,
+    // null — ещё не лезли, "theft" — лезет прямо сейчас, "won" — успел заметить, "lost" — не успел
+    phase: null,
+    timeoutId: null,
+    runId: 0
+};
+
+
+function setupCrowd() {
+    crowd.element = document.querySelector(".crowd");
+    crowd.boy = document.querySelector(".crowd__boy");
+    crowd.thief = document.querySelector(".crowd__thief");
+    crowd.stepsBox = document.querySelector(".crowd__steps");
+    crowd.timerFill = document.querySelector(".crowd__timer-fill");
+
+    crowd.thief.addEventListener("click", onThiefClick);
+}
+
+
+// отметка прокрутки, от которой считаются события людной улицы; null — её нет
+function getCrowdBase() {
+    if (!crowd.isShown) {
+        return null;
+    }
+
+    return getWalkChoiceMark();
+}
+
+
+function showCrowd() {
+    setSpeaker(true);
+    crowd.isShown = true;
+    crowd.element.classList.add("crowd--visible");
+    document.body.classList.add("is-crowd");
+}
+
+
+function hideCrowd() {
+    crowd.isShown = false;
+    crowd.element.classList.remove("crowd--visible");
+    document.body.classList.remove("is-crowd");
+
+    resetTheft();
+    hideCrowdStranger();
+    hideCrowdOutcome();
+}
+
+
+function showCrowdStranger() {
+    crowd.isStrangerShown = true;
+    crowd.element.classList.add("crowd--stranger");
+
+    const runId = crowd.runId;
+
+    setTimeout(function () {
+        if (runId === crowd.runId && crowd.isStrangerShown) {
+            crowd.isStrangerReady = true;
+        }
+    }, crowdStrangerRideTime);
+}
+
+
+function hideCrowdStranger() {
+    crowd.runId = crowd.runId + 1;
+    crowd.isStrangerShown = false;
+    crowd.isStrangerReady = false;
+    crowd.element.classList.remove("crowd--stranger");
+}
+
+
+// игра началась: прокрутка заперта, сверху подсказка, кружки (сколько воров отогнать) и полоска времени
+function startTheft(base) {
+    crowd.phase = "theft";
+    crowd.wave = -1;
+    crowd.caught = 0;
+    crowd.element.classList.add("crowd--alert", "crowd--game");
+
+    crowd.stepsBox.innerHTML = "";
+    crowd.steps = [];
+
+    crowdWaves.forEach(function () {
+        const step = document.createElement("span");
+
+        step.className = "escape__step";
+        crowd.stepsBox.appendChild(step);
+        crowd.steps.push(step);
+    });
+
+    window.scrollTo(0, hero.offsetTop + (base + crowdTheftFrom + 0.02) * window.innerHeight);
+    document.body.classList.add("is-choice-locked");
+
+    // темнеет, стучит сердце, гнетущий гул
+    crowd.element.style.setProperty("--beat", heartbeatRun + "ms");
+    startHeartbeat(heartbeatRun);
+    startDarkSound();
+
+    // бабушка исчезает, мальчик отходит к середине — и только потом подходит первый вор
+    crowd.waveTimer = setTimeout(nextCrowdWave, crowdBoyMoveTime);
+}
+
+
+// где по горизонтали (px от середины слоя) стоит мальчик — от него считаем, куда идут фигуры
+function getCrowdBoyX() {
+    const layer = crowd.boy.parentElement;
+
+    return crowd.boy.offsetLeft + crowd.boy.offsetWidth / 2 - layer.offsetWidth / 2;
+}
+
+
+// насколько от мальчика уйти, чтобы фигура точно была за краем экрана
+// (мальчик стоит не по центру — берём полэкрана с запасом и ширину фигуры)
+function getCrowdEdge(figure) {
+    return window.innerWidth / 2 + 20 * getDesignUnit() + figure.offsetWidth;
+}
+
+
+// ставим фигуру сразу (без анимации) или плавно ведём её за time мс
+function moveCrowdFigure(figure, x, time) {
+    if (!time) {
+        figure.style.transition = "none";
+        figure.style.transform = "translateX(" + x + "px)";
+        void figure.offsetWidth;
+        return;
+    }
+
+    figure.style.transition = "transform " + time + "ms linear";
+    figure.style.transform = "translateX(" + x + "px)";
+}
+
+
+function nextCrowdWave() {
+    clearTimeout(crowd.waveTimer);
+    crowd.wave = crowd.wave + 1;
+
+    if (crowd.wave >= crowdWaves.length) {
+        finishTheft(true);
+        return;
+    }
+
+    const wave = crowdWaves[crowd.wave];
+    const figure = crowd.thief;
+    const boyX = getCrowdBoyX();
+
+    figure.classList.toggle("crowd__figure--right", wave.side < 0);
+    figure.classList.remove("crowd__figure--reach");
+    moveCrowdFigure(figure, boyX + wave.side * getCrowdEdge(figure), 0);
+
+    // с каждым вором сердце бьётся чаще
+    const beat = Math.round(heartbeatRun - (heartbeatRun - heartbeatFastest) * crowd.wave / (crowdWaves.length - 1));
+
+    crowd.element.style.setProperty("--beat", beat + "ms");
+    setHeartbeatRate(beat);
+
+    // вор подходит к рюкзаку; не успел нажать — дотянулся
+    const time = wave.time;
+    const reachX = boyX + wave.side * crowdReachGap * getDesignUnit();
+
+    moveCrowdFigure(figure, reachX, time);
+    startCrowdTimer(time);
+
+    crowd.waveTimer = setTimeout(function () {
+        crowd.thief.classList.add("crowd__figure--reach");
+        finishTheft(false);
+    }, time);
+}
+
+
+function startCrowdTimer(time) {
+    crowd.timerFill.style.transition = "none";
+    crowd.timerFill.style.transform = "scaleX(1)";
+    void crowd.timerFill.offsetWidth;
+    crowd.timerFill.style.transition = "transform " + time + "ms linear";
+    crowd.timerFill.style.transform = "scaleX(0)";
+}
+
+
+// успел — вор отскакивает обратно за край, кружок закрашивается, дальше следующая волна
+function onThiefClick() {
+    if (crowd.phase !== "theft") {
+        return;
+    }
+
+    clearTimeout(crowd.waveTimer);
+
+    const wave = crowdWaves[crowd.wave];
+
+    moveCrowdFigure(crowd.thief, getCrowdBoyX() + wave.side * getCrowdEdge(crowd.thief), 350);
+    crowd.steps[crowd.caught].classList.add("escape__step--done");
+    crowd.caught = crowd.caught + 1;
+    crowd.timerFill.style.transition = "none";
+
+    crowd.waveTimer = setTimeout(nextCrowdWave, 450);
+}
+
+
+// isCaught — отогнал всех воров; иначе — один дотянулся и вытащил кошелёк
+function finishTheft(isCaught) {
+    clearTimeout(crowd.waveTimer);
+
+    crowd.phase = isCaught ? "won" : "lost";
+    crowd.element.classList.remove("crowd--alert");
+    stopHeartbeat();
+    stopDarkSound();
+    crowd.element.classList.add(isCaught ? "crowd--won" : "crowd--lost");
+
+    // не успел — вор с кошельком убегает туда, откуда пришёл
+    if (!isCaught) {
+        const wave = crowdWaves[crowd.wave];
+
+        setTimeout(function () {
+            moveCrowdFigure(crowd.thief, getCrowdBoyX() + wave.side * getCrowdEdge(crowd.thief), 700);
+        }, 400);
+    }
+
+    setLineText(findLine(".speech--crowd-4"), isCaught
+        ? 'эй! <b class="speech__key">руки от рюкзака!</b>'
+        : 'стойте! <b class="speech__key">мой кошелёк!</b>');
+
+    document.body.classList.remove("is-choice-locked");
+}
+
+
+function resetTheft() {
+    clearTimeout(crowd.waveTimer);
+
+    if (crowd.phase === "theft") {
+        stopHeartbeat();
+        stopDarkSound();
+    }
+
+    crowd.phase = null;
+    crowd.element.classList.remove("crowd--alert", "crowd--game", "crowd--won", "crowd--lost");
+
+    // вор — далеко за край
+    crowd.thief.style.transition = "none";
+    crowd.thief.style.transform = "";
+    crowd.thief.classList.remove("crowd__figure--reach");
+}
+
+
+function updateCrowd(progress) {
+    const base = getCrowdBase();
+
+    if (base === null) {
+        return;
+    }
+
+    // после первой реплики подходит незнакомец
+    const firstLine = findLine(".speech--crowd-1");
+
+    if (!crowd.isStrangerShown && progress >= base + crowdStrangerFrom && firstLine.isFinished) {
+        showCrowdStranger();
+    }
+
+    if (crowd.isStrangerShown && crowd.phase === null && progress < base + crowdStrangerFrom - speechGap) {
+        hideCrowdStranger();
+    }
+
+    // мальчик полез в карту — сзади подкрадывается вор
+    const mapLine = findLine(".speech--crowd-3");
+
+    if (crowd.phase === null && progress >= base + crowdTheftFrom && mapLine.isFinished) {
+        startTheft(base);
+    }
+
+    // кража позади и прокрутили назад — всё как было
+    if ((crowd.phase === "won" || crowd.phase === "lost") && progress < base + crowdTheftFrom - speechGap) {
+        resetTheft();
+    }
+
+    updateCrowdOutcome(progress, base);
+}
+
+
+// после кражи — чёрный экран: что случилось, удар по цифрам
+function updateCrowdOutcome(progress, base) {
+    const textFrom = base + crowdOutcomeFrom;
+    const resultLine = findLine(".speech--crowd-4");
+
+    if (!crowdOutcome.isShown && resultLine.isFinished && progress >= textFrom) {
+        const isWon = crowd.phase === "won";
+        const dinner = getDinnerOutcome().to;
+        const moneyLoss = isWon ? 0 : crowdLostMoneyLoss;
+        const safetyLoss = isWon ? crowdWonSafetyLoss : crowdLostSafetyLoss;
+
+        crowdOutcome.from = { money: dinner.money, safety: dinner.safety };
+        crowdOutcome.to = { money: dinner.money - moneyLoss, safety: Math.max(dinner.safety - safetyLoss, 0) };
+
+        // текст и «минусы» — под то, что случилось; деньги целы — их не показываем
+        crowdOutcome.element.classList.toggle("outcome--no-money", isWon);
+        crowdOutcome.money.stat.querySelector(".outcome__delta").textContent = "−" + moneyLoss + "$";
+        crowdOutcome.safety.stat.querySelector(".outcome__delta").textContent = "−" + safetyLoss + "%";
+        setOutcomeLines(crowdOutcome, isWon
+            ? ["Пока бабушка отвлекала,", "её напарник лез в рюкзак.", "Ты вовремя заметил — деньги целы"]
+            : ["Пока бабушка отвлекала,", "её напарник вытащил кошелёк из рюкзака.", "Ты потерял " + moneyLoss + "$"]);
+
+        resetOutcomeStats(crowdOutcome);
+        showOutcomeText(crowdOutcome);
+        document.body.classList.add("is-crowd-outcome");
+    }
+
+    if (crowdOutcome.isShown && progress < textFrom - speechGap) {
+        hideCrowdOutcome();
+        return;
+    }
+
+    if (crowdOutcome.isShown && crowdOutcome.isTextFinished && !crowdOutcome.isStatsPlayed && progress >= base + crowdOutcomeStatsFrom) {
+        playOutcomeStats(crowdOutcome);
+    }
+}
+
+
+function hideCrowdOutcome() {
+    if (!crowdOutcome.isShown) {
+        return;
+    }
+
+    hideOutcome(crowdOutcome);
+    document.body.classList.remove("is-crowd-outcome");
+}
+
+
+// новый текст экрана-итога (строками); раскладываем его на невидимые буквы заново
+function setOutcomeLines(o, textLines) {
+    const textElement = o.element.querySelector(".outcome__inner");
+
+    textElement.innerHTML = "";
+    o.chars = [];
+
+    textLines.forEach(function (line, lineIndex) {
+        for (let i = 0; i < line.length; i++) {
+            const char = document.createElement("span");
+
+            char.className = "outcome__char";
+            char.textContent = line[i];
+            textElement.appendChild(char);
+
+            o.chars.push({
+                element: char,
+                isSpace: line[i] === " ",
+                isLineEnd: i === line.length - 1
+            });
+        }
+
+        if (lineIndex < textLines.length - 1) {
+            textElement.appendChild(document.createElement("br"));
+        }
+    });
+}
+
+
+// ---------- финал: сообщение от мамы и «играть снова» ----------
+// после тетради главы 3 мальчик снова на людной улице: «мне кто-то писал». экран темнеет до 70%,
+// снизу поднимаются руки с телефоном, сообщения по прокрутке приходят по одному (со звуком), потом — экран с кнопкой «играть снова»
+
+// когда (от начала финала, в экранах прокрутки) достаём телефон
+const finalePhoneFrom = 1.5;
+
+// сообщения появляются по прокрутке: первое — когда руки поднялись, дальше — через каждые полэкрана с небольшим;
+// после последнего ещё столько же — и экран с кнопкой «играть снова»
+const finaleFirstMessageAfter = 0.5;
+const finaleMessageStep = 0.6;
+
+const finale = {
+    element: null,
+    covers: [],
+    isShown: false,
+    isPhone: false,
+    // сколько сообщений уже на экране
+    messageCount: 0
+};
+
+
+function setupFinale() {
+    finale.element = document.querySelector(".finale");
+
+    // последнее сообщение закрыто двумя кусками (в обход пальца) — открываются вместе
+    finale.covers = [
+        [".finale__cover--1"],
+        [".finale__cover--2"],
+        [".finale__cover--3"],
+        [".finale__cover--4", ".finale__cover--4b"]
+    ].map(function (selectors) {
+        return selectors.map(function (selector) {
+            return document.querySelector(selector);
+        });
+    });
+
+    // «играть снова» — с самого начала
+    document.querySelector(".finale__again").addEventListener("click", function () {
+        window.scrollTo(0, 0);
+        location.reload();
+    });
+}
+
+
+// отметка прокрутки, когда начинается финал (сразу после тетради главы 3); null — ещё рано
+function getFinaleBase() {
+    const notebookBase = getAlleyLongreadBase();
+
+    return notebookBase === null ? null : notebookBase + dinnerLongreadLength;
+}
+
+
+// на экране телефона — первые count сообщений
+function setFinaleMessages(count) {
+    finale.covers.forEach(function (pieces, index) {
+        pieces.forEach(function (cover) {
+            cover.classList.toggle("finale__cover--shown", index < count);
+        });
+    });
+
+    finale.messageCount = count;
+}
+
+
+function setFinalePhone(isPhone) {
+    finale.isPhone = isPhone;
+    finale.element.classList.toggle("finale--phone", isPhone);
+    document.body.classList.toggle("is-finale-phone", isPhone);
+}
+
+
+function hideFinale() {
+    finale.isShown = false;
+    setFinalePhone(false);
+    setFinaleMessages(0);
+    finale.element.classList.remove("finale--visible", "finale--end");
+    document.body.classList.remove("is-finale");
+}
+
+
+function updateFinale(progress) {
+    const base = getFinaleBase();
+
+    if (!finale.isShown && base !== null && progress >= base) {
+        finale.isShown = true;
+        setSpeaker(true);
+        finale.element.classList.add("finale--visible");
+        document.body.classList.add("is-finale");
+    }
+
+    // прокрутили назад — финала нет
+    if (finale.isShown && (base === null || progress < base - speechGap)) {
+        hideFinale();
+        return;
+    }
+
+    if (!finale.isShown) {
+        return;
+    }
+
+    // «надо проверить сообщение» — и по прокрутке достаём телефон (назад — убираем)
+    const phoneFrom = base + finalePhoneFrom;
+
+    if (!finale.isPhone && progress >= phoneFrom && findLine(".speech--finale-1").isFinished) {
+        setFinalePhone(true);
+    }
+
+    if (finale.isPhone && progress < phoneFrom - speechGap) {
+        setFinalePhone(false);
+    }
+
+    // сколько сообщений должно быть на экране при этой прокрутке
+    let count = 0;
+
+    if (finale.isPhone) {
+        const passed = (progress - phoneFrom - finaleFirstMessageAfter) / finaleMessageStep;
+
+        count = Math.min(Math.max(Math.floor(passed) + 1, 0), finale.covers.length);
+    }
+
+    // новое сообщение пришло — звук уведомления (назад листаем молча)
+    if (count > finale.messageCount) {
+        playMessageSound();
+    }
+
+    if (count !== finale.messageCount) {
+        setFinaleMessages(count);
+    }
+
+    // все прочитаны и ещё немного прокрутили — экран с кнопкой «играть снова»
+    const endFrom = phoneFrom + finaleFirstMessageAfter + finale.covers.length * finaleMessageStep;
+
+    finale.element.classList.toggle("finale--end", finale.isPhone && progress >= endFrom);
+}
+
+
 // ---------- главный цикл ----------
 
 function animate(now) {
@@ -3926,6 +4632,8 @@ function animate(now) {
     updateWalk(progress);
     updateWalkChoice(progress);
     updateAlley(progress);
+    updateCrowd(progress);
+    updateFinale(progress);
     updateDarkEyes(now);
 }
 
@@ -3970,12 +4678,15 @@ document.addEventListener("DOMContentLoaded", function () {
     setupWalkChoice();
     setupAlley();
     setupEscape();
+    setupCrowd();
+    setupFinale();
     setupDrive();
     setupOutcome(outcome);
     setupOutcome(driverOutcome);
     setupOutcome(cafeOutcome);
     setupOutcome(roomOutcome);
     setupOutcome(alleyOutcome);
+    setupOutcome(crowdOutcome);
     setupLongread();
     setupClickSkip();
     // первый текст начинает печататься после клика по «начать» в прелоадере

@@ -209,6 +209,12 @@ function stopDoorSound() {
 }
 
 
+// пришло новое сообщение — короткий «дзынь» с начала
+function playMessageSound() {
+    playChannel("message", true);
+}
+
+
 // ---------- сердцебиение (переулок) ----------
 // звук по кругу; когда сердце должно биться чаще — проигрываем его быстрее
 
@@ -270,6 +276,9 @@ function setupSound() {
 
     // сердцебиение в тёмном переулке (по кругу) — тоже поверх реплик
     createChannel("heart", "sounds/heartbeat.mp3", 0, true, true);
+
+    // уведомление о новом сообщении в финале (один раз на каждое) — тоже поверх
+    createChannel("message", "sounds/message.m4a", 0, false, true);
 
     loadSoundSettings();
     applyVolume();

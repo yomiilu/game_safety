@@ -73,6 +73,9 @@ function setCurrentChapter(chapter) {
         chapterTitle: chapterTitles[chapter]
     });
 
+    // на телефоне глава написана не в шапке, а в меню
+    document.querySelector(".chapters-menu__current").textContent = "глава " + chapter + "/" + totalChapters + " " + chapterTitles[chapter];
+
     document.querySelectorAll(".chapters-menu__link").forEach(function (link) {
         link.classList.toggle("chapters-menu__link--current", link.dataset.chapter === String(chapter));
     });
@@ -91,6 +94,9 @@ const chaptersMenu = {
 function setupChaptersMenu() {
     chaptersMenu.header = document.querySelector(".game-header");
     chaptersMenu.burger = document.querySelector(".game-header__burger");
+
+    placeSoundControl();
+    mobileQuery.addEventListener("change", placeSoundControl);
 
     chaptersMenu.burger.addEventListener("click", function (event) {
         event.stopPropagation();
@@ -118,6 +124,27 @@ function setupChaptersMenu() {
             setChaptersMenuOpen(false);
         }
     });
+}
+
+
+// на телефоне в шапке остаются только цифры: звук переезжает в меню глав (и обратно, если экран стал широким)
+const mobileQuery = window.matchMedia("(max-width: 767px)");
+
+
+function placeSoundControl() {
+    const soundControl = document.querySelector(".sound");
+    const menuSlot = document.querySelector(".chapters-menu__sound");
+
+    if (mobileQuery.matches) {
+        menuSlot.appendChild(soundControl);
+    } else {
+        const header = document.querySelector(".game-header");
+
+        // на прежнее место — прямо перед шапкой
+        if (soundControl.nextElementSibling !== header) {
+            header.parentNode.insertBefore(soundControl, header);
+        }
+    }
 }
 
 

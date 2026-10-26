@@ -1,5 +1,468 @@
-/* мобилка: заполним, когда будут макеты */
+/* ---------- телефон ----------
+   один экран компьютера = один экран телефона: прокрутка та же, меняется только раскладка.
+   единица --u крупнее, чтобы персонажи, плашки и текст не были мелкими на узком экране.
+   персонажи стоят далеко друг от друга, а «камера» отъезжает на того, кто говорит
+   (метки is-speaker-boy / is-speaker-other на body ставит js) */
 
 @media (max-width: 767px) {
 
+    :root {
+        --u: min(3vw, 1.4vh);
+    }
+
+    /* камера: куда сдвинута сцена. мальчик стоит левее центра на --cam-step, собеседник — правее на столько же.
+       говорит мальчик — сцена сдвигается вправо, собеседник — влево */
+    body {
+        --cam-side: 1;
+    }
+
+    body.is-speaker-other {
+        --cam-side: -1;
+    }
+
+
+    /* ---------- прелоадер: шкала загрузки уже, чтобы влезла в ширину ---------- */
+
+    .preloader__scale {
+        width: calc(9.0000 * var(--u));
+    }
+
+
+    /* ---------- первый экран: глаза мельче и вокруг заголовка, а не поверх него ---------- */
+
+    .hero__eye {
+        zoom: 0.6;
+    }
+
+    .hero__eye--1 {
+        top: 9%;
+        right: auto;
+        bottom: auto;
+        left: 4%;
+    }
+
+    .hero__eye--2 {
+        top: 18%;
+        right: auto;
+        bottom: auto;
+        left: 52%;
+    }
+
+    .hero__eye--3 {
+        top: 27%;
+        right: auto;
+        bottom: auto;
+        left: 10%;
+    }
+
+    .hero__eye--4 {
+        top: auto;
+        right: auto;
+        bottom: 8%;
+        left: 6%;
+    }
+
+    .hero__eye--5 {
+        top: 66%;
+        right: auto;
+        bottom: auto;
+        left: 46%;
+    }
+
+
+    /* ---------- шапка: только деньги и безопасность, остальное — в меню ---------- */
+
+    .game-header__chapter-number,
+    .game-header__chapter-title {
+        display: none;
+    }
+
+    /* цифры мельче и плотнее, шкала короче — чтобы не залезали под бургер */
+    .game-header__stats {
+        left: calc(1.3889 * var(--u));
+        gap: calc(1.3889 * var(--u));
+    }
+
+    .game-header__stats .game-header__text {
+        font-size: calc(2.0833 * var(--u));
+        line-height: calc(2.0833 * var(--u));
+    }
+
+    .game-header__icon--money {
+        width: calc(2.8889 * var(--u));
+        height: calc(2.7778 * var(--u));
+    }
+
+    .game-header__icon--safety {
+        width: calc(2.1806 * var(--u));
+        height: calc(2.7778 * var(--u));
+    }
+
+    .game-header__scale {
+        width: calc(6.2500 * var(--u));
+    }
+
+    .chapters-menu {
+        width: 88vw;
+    }
+
+    .chapters-menu__current {
+        position: relative;
+        display: block;
+        margin-bottom: calc(1.3889 * var(--u));
+        padding: 0 calc(0.6944 * var(--u));
+        font-family: "Kom Post", sans-serif;
+        font-size: calc(1.8056 * var(--u));
+        line-height: calc(2.2222 * var(--u));
+        font-weight: 400;
+        color: #8A8A8A;
+    }
+
+    .chapters-menu__sound {
+        position: relative;
+        display: block;
+        margin-top: calc(2.0833 * var(--u));
+        padding: 0 calc(0.6944 * var(--u));
+    }
+
+    /* звук в меню — обычный блок, а не плашка в углу экрана */
+    html body .chapters-menu .sound {
+        position: static;
+        display: flex;
+        filter: invert(0.75);
+    }
+
+
+    /* ---------- выбор: варианты друг под другом, во всю ширину ---------- */
+
+    .choice__options {
+        flex-direction: column;
+        align-items: center;
+        gap: calc(2.7778 * var(--u));
+    }
+
+    .choice__option {
+        width: 90vw;
+    }
+
+    /* глаза — по одному в каждом углу, на разной высоте, чтобы не налезали друг на друга */
+    .choice__eye {
+        zoom: 0.75;
+    }
+
+    .choice__eye--1 {
+        top: 4%;
+        left: -6%;
+    }
+
+    .choice__eye--2 {
+        top: 15%;
+        right: -6%;
+    }
+
+    .choice__eye--3 {
+        bottom: 15%;
+        left: -6%;
+    }
+
+    .choice__eye--4 {
+        right: -6%;
+        bottom: 3%;
+    }
+
+
+    /* ---------- персонажи: крупнее и выше; мальчик слева, собеседник справа, по экрану друг от друга ---------- */
+
+    .game,
+    .cafe,
+    .walk,
+    .crowd {
+        --cam-step: 50vw;
+    }
+
+    .game__character--boy {
+        bottom: calc(7.6389 * var(--u));
+        left: calc(50% - var(--cam-step) - calc(12.7569 * var(--u)));
+    }
+
+    .game__character--taxi {
+        right: calc(50% - var(--cam-step) - calc(7.1042 * var(--u)));
+        bottom: calc(7.6389 * var(--u));
+    }
+
+    .cafe__boy,
+    .walk__boy {
+        bottom: calc(7.6389 * var(--u));
+        left: calc(50% - var(--cam-step) - calc(8.4635 * var(--u)));
+    }
+
+    html body .cafe:not(.cafe--dark) .cafe__girl {
+        bottom: calc(4.1667 * var(--u));
+        left: calc(50% + var(--cam-step) - calc(14.0625 * var(--u)));
+    }
+
+    /* в темноте девочка прячется у левого края экрана (камера в это время на мальчике) */
+    html body .cafe--dark .cafe__girl {
+        bottom: calc(4.1667 * var(--u));
+        left: calc(0% - var(--cam-step) - calc(6.9444 * var(--u)));
+    }
+
+    .walk__grandpa {
+        right: calc(50% - var(--cam-step) - calc(6.7728 * var(--u)));
+        bottom: calc(7.6389 * var(--u));
+    }
+
+    /* людная улица: мальчик, вор у него за спиной, незнакомец — на расстоянии экрана справа */
+    .crowd__boy {
+        bottom: calc(7.6389 * var(--u));
+        left: calc(50% - var(--cam-step) - calc(8.4635 * var(--u)));
+    }
+
+    .crowd__figure {
+        bottom: calc(7.6389 * var(--u));
+    }
+
+    .crowd__stranger {
+        right: calc(50% - var(--cam-step) - calc(6.5549 * var(--u)));
+        bottom: calc(7.6389 * var(--u));
+    }
+
+    /* на телефоне мальчик и так посередине — во время игры остаётся на месте */
+    html body .crowd--game .crowd__boy {
+        left: calc(50% - var(--cam-step) - calc(8.4635 * var(--u)));
+    }
+
+    /* пока вор лезет в рюкзак, камера на мальчике */
+    html body .crowd--alert .crowd__stage,
+    html body .crowd--alert .crowd__people {
+        translate: var(--cam-step) 0;
+    }
+
+    .crowd__alert {
+        width: 90vw;
+    }
+
+    .crowd__timer {
+        width: 80vw;
+    }
+
+    /* на телефоне подсказка в две строки — иначе не влезет */
+    .crowd__alert-text {
+        white-space: normal;
+    }
+
+    /* в переулке мальчик один — посередине, преследователь — у правого края */
+    .alley__boy {
+        bottom: calc(7.6389 * var(--u));
+        left: calc(50% - calc(8.4635 * var(--u)));
+    }
+
+    .alley__stalker {
+        top: calc(9.7222 * var(--u));
+        right: calc(50% - calc(19.4444 * var(--u)));
+    }
+
+    /* аэропорт: фон шире экрана, чтобы камере было куда ехать */
+    .game__bg {
+        left: calc(0% - var(--cam-step));
+        width: calc(100% + var(--cam-step) * 2);
+        max-width: none;
+    }
+
+    /* камера: всё, что в сцене, сдвигается вместе (выбор и затемнения стоят на месте) */
+    .game__bg,
+    .game > .game__character,
+    .cafe__stage,
+    .cafe__people,
+    .cafe__talk,
+    .walk__stage,
+    .walk__people,
+    .crowd__stage,
+    .crowd__people {
+        translate: calc(var(--cam-side) * var(--cam-step)) 0;
+        transition: translate 0.8s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    /* в тёмном кафе камера на мальчике — девочку надо найти фонариком */
+    html body .cafe--dark .cafe__stage,
+    html body .cafe--dark .cafe__people,
+    html body .cafe--dark .cafe__talk {
+        translate: var(--cam-step) 0;
+    }
+
+
+    /* ---------- плашки реплик: крупнее, над головой того, кто говорит ---------- */
+
+    html body .speech.speech--boy {
+        right: auto;
+        bottom: calc(54.1667 * var(--u));
+        left: calc(50% - var(--cam-step, 0px) - calc(15.9722 * var(--u)));
+    }
+
+    html body .speech.speech--taxi {
+        right: auto;
+        bottom: calc(54.1667 * var(--u));
+        left: calc(50% + var(--cam-step, 0px) - calc(15.9722 * var(--u)));
+    }
+
+    /* в аэропорту и отеле плашки лежат прямо в сцене, а у них своё покачивание (translate),
+       поэтому камеру учитываем прямо в координате */
+    html body .game > .speech.speech--boy,
+    html body .hotel > .speech.speech--boy {
+        left: calc(50% - var(--cam-step) + var(--cam-side) * var(--cam-step) - calc(15.9722 * var(--u)));
+        transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.8s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    html body .game > .speech.speech--taxi {
+        left: calc(50% + var(--cam-step) + var(--cam-side) * var(--cam-step) - calc(15.9722 * var(--u)));
+        transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.8s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    /* в переулке камеры нет — плашки посередине */
+    html body .alley .speech.speech--boy {
+        left: calc(50% - calc(15.9722 * var(--u)));
+    }
+
+
+    /* ---------- отель: мальчик левее, ресепшионист на сцене правее — камера между ними ---------- */
+
+    /* сцена чуть выше экрана: тёмный край внизу картинки уходит за экран (как на компьютере) */
+    .hotel__stage {
+        width: 158.7175vh;
+        height: 110vh;
+    }
+
+    /* ресепшионист — на 74.7% ширины сцены, то есть на 39.2vh правее её середины */
+    .hotel {
+        --cam-step: 39.2vh;
+    }
+
+    .hotel__boy {
+        left: calc(50% - var(--cam-step) - calc(12.7569 * var(--u)));
+    }
+
+    .hotel__stage,
+    .hotel__boy {
+        translate: calc(var(--cam-side) * var(--cam-step)) 0;
+        transition: translate 0.8s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    /* реплики ресепшиониста — над ним (они внутри сцены и едут вместе с ней) */
+    html body .hotel .speech.speech--receptionist {
+        top: auto;
+        right: calc(25.3% - calc(15.9722 * var(--u)));
+        bottom: 76%;
+        left: auto;
+    }
+
+
+    /* ---------- номер: камера на мальчике; на девочке — когда говорит она;
+       в темноте сначала на двери (видно, как открывается и подходит фигура), потом — на выключателе ---------- */
+
+    .room__stage {
+        transition: translate 0.9s cubic-bezier(0.45, 0, 0.2, 1);
+    }
+
+    body.is-speaker-other .room__stage {
+        translate: -34% 0;
+    }
+
+    html body .room--door .room__stage {
+        translate: -38% 0;
+    }
+
+    /* фигура уже идёт — камера уезжает к выключателю (на 25.6% ширины номера) */
+    html body .room--flashlight.room--search .room__stage {
+        translate: 24.4% 0;
+    }
+
+    html body .room--lit.room--door .room__stage {
+        translate: 0 0;
+    }
+
+    html body.is-speaker-other .room--lit .room__stage {
+        translate: -34% 0;
+    }
+
+    /* реплики мальчика — над ним (он посередине номера), девочки — над ней (на 84.2%) */
+    html body .room .speech.speech--room-1,
+    html body .room .speech.speech--room-2 {
+        right: auto;
+        bottom: 70%;
+        left: calc(51% - calc(15.9722 * var(--u)));
+    }
+
+    html body .room .speech.speech--girl-1 {
+        right: calc(15.8% - calc(12.1528 * var(--u)));
+        bottom: 70%;
+        left: auto;
+    }
+
+
+    /* ---------- поездка: машина сильно меньше ----------
+       дорога уходит вдаль левее середины картинки, поэтому кадр улицы сдвинут к ней.
+       машина вдвое уже, а точка схода, от которой она растёт, — та же */
+
+    .street__stage {
+        translate: 26% 0;
+    }
+
+    .street__car {
+        top: 31.4300%;
+        left: 15.9600%;
+        width: 13.0000%;
+    }
+
+
+    /* ---------- тетрадь: видна по одной странице, между страницами камера переезжает ---------- */
+
+    .notebook {
+        flex-shrink: 0;
+        width: 184vw;
+        height: 185vw;
+        transition: translate 0.9s ease;
+    }
+
+    /* тетрадь на телефоне не покачивается — её сдвигает камера */
+    .longread .notebook {
+        animation: none;
+    }
+
+    .longread--view-left .notebook {
+        translate: 46vw 0;
+    }
+
+    .longread--view-right .notebook {
+        translate: -46vw 0;
+    }
+
+
+    /* ---------- итоги ---------- */
+
+    /* деньги и безопасность — друг под другом, иначе не влезают в ширину */
+    .outcome__stats {
+        flex-direction: column;
+        align-items: center;
+        gap: calc(3.4722 * var(--u));
+    }
+
+    .outcome__text {
+        max-width: 90vw;
+        font-size: calc(1.9444 * var(--u));
+        line-height: calc(2.6389 * var(--u));
+    }
+
+
+    /* ---------- побег ---------- */
+
+    .escape__hint {
+        max-width: 90vw;
+    }
+
+    /* финал: телефон во всю ширину экрана (он занимает 46% картинки), руки за краями */
+    .finale__phone {
+        width: min(196vw, calc(165vh * 1413 / 1751));
+        height: auto;
+        aspect-ratio: 1413 / 1751;
+    }
 }

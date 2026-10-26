@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра</title>
 
-    <!-- ?v=91 — номер версии: меняем его при каждом обновлении сайта,
+    <!-- ?v=117 — номер версии: меняем его при каждом обновлении сайта,
          чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=91">
-    <link rel="stylesheet" href="css/fonts.css?v=91">
-    <link rel="stylesheet" href="css/style.css?v=91">
-    <link rel="stylesheet" href="css/mobile.css?v=91">
+    <link rel="stylesheet" href="css/reset.css?v=117">
+    <link rel="stylesheet" href="css/fonts.css?v=117">
+    <link rel="stylesheet" href="css/style.css?v=117">
+    <link rel="stylesheet" href="css/mobile.css?v=117">
 </head>
 
 <body>
@@ -57,7 +57,7 @@
 
         <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=91" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=117" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
@@ -90,6 +90,9 @@
             <nav class="chapters-menu" aria-label="Главы">
                 <img class="chapters-menu__bg" src="img/info-plate.svg" alt="">
 
+                <!-- на телефоне: текущая глава живёт здесь, а не в шапке -->
+                <p class="chapters-menu__current">глава 1/4 “прибытие”</p>
+
                 <ul class="chapters-menu__list">
                     <li class="chapters-menu__item">
                         <button class="chapters-menu__link" type="button" data-chapter="intro">предисловие</button>
@@ -111,6 +114,9 @@
                         <button class="chapters-menu__link" type="button" data-chapter="4" disabled>глава 4 <span class="chapters-menu__soon">скоро</span></button>
                     </li>
                 </ul>
+
+                <!-- на телефоне: звук переезжает сюда из угла экрана -->
+                <div class="chapters-menu__sound"></div>
             </nav>
         </header>
 
@@ -199,6 +205,9 @@
                 <div class="hero__darkness"></div>
 
                 <div class="hero__dark-light"></div>
+
+                <!-- на первых чёрных экранах по краям чуть краснеет в такт сердцу -->
+                <div class="hero__pulse"></div>
 
                 <!-- игровой экран: проявляется из темноты в конце скролла -->
                 <div class="game">
@@ -424,10 +433,10 @@
                 <!-- обучение после первой главы: разворот тетради, текст проявляется по частям при прокрутке -->
                 <section class="longread longread--1" aria-label="Такси в чужом городе">
                     <div class="notebook">
-                        <img class="notebook__cover" src="img/notebook-cover.svg" alt="">
+                        <img class="notebook__cover" src="img/notebook-cover.svg?v=2" alt="">
 
                         <div class="notebook__page notebook__page--left">
-                            <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                            <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--left">
                                 <p class="longread__kicker longread__step" data-step="0.10">глава 1 · что стоит знать</p>
                                 <h2 class="longread__title longread__step" data-step="0.15">такси в чужом городе</h2>
@@ -441,7 +450,7 @@
                         </div>
 
                         <div class="notebook__page notebook__page--right">
-                            <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                            <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--right">
                                 <div class="longread__tips longread__step" data-step="1.80">
                                     <p class="longread__tips-title">Лучше заранее:</p>
@@ -457,7 +466,7 @@
                             </div>
                         </div>
 
-                        <img class="notebook__rings" src="img/notebook-rings.svg" alt="">
+                        <img class="notebook__rings" src="img/notebook-rings.svg?v=2" alt="">
                     </div>
                 </section>
 
@@ -750,6 +759,11 @@
                     <div class="cafe__stage">
                         <img class="cafe__bg" src="img/bg5.svg?v=2" alt="">
                         <div class="cafe__shade"></div>
+
+                        <!-- лампы над стойкой чуть покачиваются, вывеска «кафе» мерцает -->
+                        <div class="lamp-glow lamp-glow--pendant cafe__lamp cafe__lamp--1"></div>
+                        <div class="lamp-glow lamp-glow--pendant cafe__lamp cafe__lamp--2"></div>
+                        <div class="lamp-glow lamp-glow--neon cafe__sign"></div>
                     </div>
 
                     <!-- мальчик, девочка и их реплики стоят от центра экрана, как в аэропорту -->
@@ -864,28 +878,28 @@
                      потом правая страница переворачивается — и там уже глава 2 -->
                 <section class="longread longread--2" aria-label="Ужин в чужом городе">
                     <div class="notebook">
-                        <img class="notebook__cover" src="img/notebook-cover.svg" alt="">
+                        <img class="notebook__cover" src="img/notebook-cover.svg?v=2" alt="">
 
                         <!-- левая страница главы 1 (текст копирует js из первого обучения) -->
                         <div class="notebook__page notebook__page--left">
-                            <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                            <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--left" data-copy-from=".longread--1 .notebook__content--left"></div>
                         </div>
 
                         <!-- правая страница главы 2: открывается, когда лист перевернули -->
                         <div class="notebook__page notebook__page--right">
-                            <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                            <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--right">
                                 <div class="longread__tips longread__step" data-step="3.60">
                                     <p class="longread__tips-title">Лучше заранее:</p>
                                     <ul class="longread__list">
-                                        <li class="longread__item longread__step" data-step="3.80">встречать курьера у двери или на ресепшене</li>
-                                        <li class="longread__item longread__step" data-step="3.95">не впускать незнакомцев в номер</li>
-                                        <li class="longread__item longread__step" data-step="4.10">держать сумку и телефон при себе</li>
-                                        <li class="longread__item longread__step" data-step="4.25">узнавать цены до заказа</li>
-                                        <li class="longread__item longread__step" data-step="4.40">выбирать места с отзывами</li>
+                                        <li class="longread__item longread__step" data-step="3.80">просить оставить заказ на ресепшене</li>
+                                        <li class="longread__item longread__step" data-step="3.95">не открывать, пока не понял, кто за дверью</li>
+                                        <li class="longread__item longread__step" data-step="4.10">не оставлять телефон и кошелёк на столе</li>
+                                        <li class="longread__item longread__step" data-step="4.25">смотреть цены в меню до заказа</li>
+                                        <li class="longread__item longread__step" data-step="4.40">проверять отзывы о месте</li>
                                     </ul>
-                                    <p class="longread__tips-note longread__step" data-step="4.70">А если что-то кажется странным — уходи и зови персонал.</p>
+                                    <p class="longread__tips-note longread__step" data-step="4.70">Если с заказом или счётом что-то не так, лучше сразу позвать администратора.</p>
                                 </div>
                             </div>
                         </div>
@@ -893,26 +907,26 @@
                         <!-- лист, который переворачивается: спереди правая страница главы 1, сзади левая страница главы 2 -->
                         <div class="notebook__leaf">
                             <div class="notebook__face notebook__face--front">
-                                <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                                <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                                 <div class="notebook__content notebook__content--right" data-copy-from=".longread--1 .notebook__content--right"></div>
                             </div>
 
                             <div class="notebook__face notebook__face--back">
-                                <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                                <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                                 <div class="notebook__content notebook__content--left">
                                     <p class="longread__kicker longread__step" data-step="1.90">глава 2 · что стоит знать</p>
                                     <h2 class="longread__title longread__step" data-step="1.95">ужин в чужом городе</h2>
                                     <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="2.05">
-                                    <p class="longread__paragraph longread__step" data-step="2.25">Курьер у двери номера — незнакомец. Впустив его внутрь, ты показываешь, где живёшь, что у тебя есть и что ты один. А в шумном кафе легко отвлечься: пока ты смотришь в меню, кто-то смотрит в твою сумку.</p>
+                                    <p class="longread__paragraph longread__step" data-step="2.25">Доставка в номер кажется самым спокойным вариантом, но курьер всё равно чужой человек. Если открыть ему дверь и пустить внутрь, он увидит, что ты живёшь один и что у тебя с собой.</p>
                                     <p class="longread__accent longread__step" data-step="2.75">
-                                        <mark class="longread__mark">Внезапный «сбой со светом» — частая уловка.</mark>
+                                        <mark class="longread__mark">Еду лучше забирать у двери или на ресепшене.</mark>
                                     </p>
-                                    <p class="longread__paragraph longread__step" data-step="3.10">В темноте и суете проще всего украсть деньги или телефон. Цены «для туристов» и счёт без меню — ещё один способ остаться без денег.</p>
+                                    <p class="longread__paragraph longread__step" data-step="3.10">В кафе свои риски. В толпе легко не заметить, как кто-то тянется к сумке или к телефону на столе, а в туристических местах цены иногда называют на глаз.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <img class="notebook__rings" src="img/notebook-rings.svg" alt="">
+                        <img class="notebook__rings" src="img/notebook-rings.svg?v=2" alt="">
                     </div>
                 </section>
 
@@ -921,6 +935,12 @@
                     <div class="walk__stage">
                         <img class="walk__bg" src="img/bg6.svg?v=2" alt="">
                         <div class="walk__shade"></div>
+
+                        <!-- свет фонарей у тротуаров и у лестницы -->
+                        <div class="lamp-glow lamp-glow--globe walk__lamp walk__lamp--1"></div>
+                        <div class="lamp-glow lamp-glow--globe lamp-glow--flicker walk__lamp walk__lamp--2"></div>
+                        <div class="lamp-glow lamp-glow--small walk__lamp walk__lamp--3"></div>
+                        <div class="lamp-glow lamp-glow--small walk__lamp walk__lamp--4"></div>
                     </div>
 
                     <!-- мальчик в куртке и с рюкзаком и его реплики — от центра экрана, как в кафе -->
@@ -1020,6 +1040,9 @@
                     <div class="alley__stage">
                         <img class="alley__bg" src="img/bg7.svg" alt="">
                         <div class="alley__shade"></div>
+
+                        <!-- свет в переулке иногда коротко моргает -->
+                        <div class="alley__flicker"></div>
                     </div>
 
                     <!-- мальчик проговаривает повороты (какие именно — js выбирает случайно при загрузке) -->
@@ -1057,7 +1080,7 @@
                         <div class="speech speech--boy speech--alley-tip">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
-                                <span class="speech__inner">если придётся бежать назад — поворачиваю <b class="speech__key">с конца</b>: <b class="speech__key">последний поворот первым</b>, и <b class="speech__key">налево станет направо</b></span>
+                                <span class="speech__inner">если придётся бежать назад, жму: <b class="speech__key">налево → направо → налево → направо</b>. запомню!</span>
                             </p>
                         </div>
                     </div>
@@ -1065,8 +1088,9 @@
                     <!-- резкая темнота и красная пульсация по краям — в такт сердцу -->
                     <div class="alley__dark"></div>
 
-                    <!-- в темноте на мгновения проступает силуэт того, кто идёт следом, — с каждым поворотом ближе -->
-                    <img class="alley__stalker" src="img/criminal.svg" alt="">
+                    <!-- в темноте на мгновения проступают зубы того, кто идёт следом, — с каждым поворотом ближе.
+                         схватили — выпрыгивают на весь экран -->
+                    <img class="alley__stalker" src="img/teeth.svg?v=2" alt="">
 
                     <div class="alley__pulse"></div>
 
@@ -1132,7 +1156,7 @@
                     <!-- мини-игра: бежать назад тем же путём, повороты — в обратном порядке и в другую сторону -->
                     <div class="escape">
                         <p class="escape__title">беги назад тем же путём!</p>
-                        <p class="escape__hint">жми повороты с конца: последний — первым, и наоборот (налево ↔ направо). «назад» не жми — схватят!</p>
+                        <p class="escape__hint">жми по очереди те повороты, которые он запомнил для обратного пути. «назад» не жми — схватят!</p>
 
                         <div class="escape__steps"></div>
 
@@ -1168,31 +1192,147 @@
                     </div>
                 </div>
 
+                <!-- глава 3: людная освещённая улица. проявляется, если выбрали идти длинной дорогой -->
+                <div class="crowd">
+                    <div class="crowd__stage">
+                        <img class="crowd__bg" src="img/bg10.jpg" alt="">
+                        <div class="crowd__shade"></div>
+
+                        <!-- во время игры улица темнеет (фонари светят поверх темноты) -->
+                        <div class="crowd__night"></div>
+
+                        <!-- свет фонарей: мягко дышит, один иногда мигает -->
+                        <div class="lamp-glow lamp-glow--street crowd__lamp crowd__lamp--1"></div>
+                        <div class="lamp-glow lamp-glow--street crowd__lamp crowd__lamp--2"></div>
+                        <div class="lamp-glow lamp-glow--street lamp-glow--flicker crowd__lamp crowd__lamp--3"></div>
+                    </div>
+
+                    <div class="crowd__people">
+                        <!-- вор то слева, то справа тянется к рюкзаку — на него надо нажать -->
+                        <button class="crowd__figure crowd__thief" type="button" aria-label="Вор">
+                            <img class="crowd__figure-img" src="img/thief.svg?v=3" alt="">
+                        </button>
+
+                        <img class="crowd__boy" src="img/main-character-walk.svg" alt="Главный герой">
+
+                        <!-- бабушка, которая отвлекает разговором (сообщница вора) -->
+                        <img class="crowd__stranger" src="img/grandma.svg?v=4" alt="Бабушка">
+
+                        <div class="speech speech--boy speech--crowd-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">дольше, зато <b class="speech__key">светло и много людей</b>. так спокойнее</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--taxi speech--crowd-2">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">сынок, не подскажешь, <b class="speech__key">как пройти к вокзалу</b>? покажи на карте</span>
+                            </p>
+                        </div>
+
+                        <div class="speech speech--boy speech--crowd-3">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">сейчас, <b class="speech__key">открою карту</b>…</span>
+                            </p>
+                        </div>
+
+                        <!-- реплика после кражи: текст зависит от того, успел ли игрок (ставит js) -->
+                        <div class="speech speech--boy speech--crowd-4">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">эй! руки от рюкзака!</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- красное по краям и «тук-тук» в такт сердцу — как в тёмном переулке -->
+                    <div class="alley__pulse crowd__pulse"></div>
+
+                    <div class="alley__thumps crowd__thumps">
+                        <span class="alley__thump alley__thump--1">тук</span>
+                        <span class="alley__thump alley__thump--2">тук</span>
+                    </div>
+
+                    <!-- подсказка, пока вор лезет в рюкзак -->
+                    <div class="crowd__alert">
+                        <p class="crowd__alert-text">следи за рюкзаком! жми на того, кто к нему тянется</p>
+                        <div class="escape__steps crowd__steps"></div>
+                        <div class="escape__timer crowd__timer">
+                            <div class="escape__timer-fill crowd__timer-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- итог людной улицы: заметил вора или нет (текст и цифры ставит js) -->
+                    <div class="outcome outcome--crowd">
+                        <div class="outcome__flash"></div>
+
+                        <p class="outcome__text">
+                            <span class="outcome__inner">
+                                Пока бабушка отвлекала,
+                                <br>
+                                её напарник лез в рюкзак
+                            </span>
+                        </p>
+
+                        <div class="outcome__stats">
+                            <div class="outcome__stat outcome__stat--money">
+                                <img class="outcome__icon outcome__icon--money" src="img/money-icon.svg" alt="Деньги">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">320</span>
+                                    <span class="outcome__unit">$</span>
+                                </div>
+
+                                <span class="outcome__delta">−40$</span>
+                            </div>
+
+                            <div class="outcome__stat outcome__stat--safety">
+                                <img class="outcome__icon outcome__icon--safety" src="img/safety-icon.svg" alt="Безопасность">
+
+                                <div class="outcome__value">
+                                    <span class="outcome__number">97</span>
+                                    <span class="outcome__unit">%</span>
+                                </div>
+
+                                <span class="outcome__delta">−30%</span>
+
+                                <div class="outcome__scale">
+                                    <img class="outcome__scale-empty" src="img/scale.svg" alt="">
+                                    <img class="outcome__scale-fill" src="img/scale-fill.svg" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- обучение после третьей главы: тетрадь открыта на главе 2, потом лист переворачивается — глава 3 -->
                 <section class="longread longread--3" aria-label="Короткий путь в чужом городе">
                     <div class="notebook">
-                        <img class="notebook__cover" src="img/notebook-cover.svg" alt="">
+                        <img class="notebook__cover" src="img/notebook-cover.svg?v=2" alt="">
 
                         <!-- левая страница главы 2 (текст копирует js из второго обучения) -->
                         <div class="notebook__page notebook__page--left">
-                            <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                            <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--left" data-copy-from=".longread--2 .notebook__face--back .notebook__content"></div>
                         </div>
 
                         <!-- правая страница главы 3: открывается, когда лист перевернули -->
                         <div class="notebook__page notebook__page--right">
-                            <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                            <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--right">
                                 <div class="longread__tips longread__step" data-step="3.60">
                                     <p class="longread__tips-title">Лучше заранее:</p>
                                     <ul class="longread__list">
-                                        <li class="longread__item longread__step" data-step="3.80">выбирать освещённые людные улицы</li>
-                                        <li class="longread__item longread__step" data-step="3.95">строить маршрут, пока светло</li>
+                                        <li class="longread__item longread__step" data-step="3.80">выбирать освещённые улицы, где есть люди</li>
+                                        <li class="longread__item longread__step" data-step="3.95">смотреть маршрут заранее, пока светло</li>
                                         <li class="longread__item longread__step" data-step="4.10">держать телефон заряженным</li>
-                                        <li class="longread__item longread__step" data-step="4.25">идти уверенно, не уткнувшись в телефон</li>
-                                        <li class="longread__item longread__step" data-step="4.40">делиться маршрутом с близкими</li>
+                                        <li class="longread__item longread__step" data-step="4.25">в толпе носить рюкзак спереди</li>
+                                        <li class="longread__item longread__step" data-step="4.40">скидывать близким, где ты</li>
                                     </ul>
-                                    <p class="longread__tips-note longread__step" data-step="4.70">А если кажется, что за тобой идут, — зайди в магазин или кафе и попроси помощи.</p>
+                                    <p class="longread__tips-note longread__step" data-step="4.70">Если кажется, что за тобой идут, зайди в магазин или кафе и попроси помощи.</p>
                                 </div>
                             </div>
                         </div>
@@ -1200,28 +1340,66 @@
                         <!-- лист, который переворачивается: спереди правая страница главы 2, сзади левая страница главы 3 -->
                         <div class="notebook__leaf">
                             <div class="notebook__face notebook__face--front">
-                                <img class="notebook__paper" src="img/notebook-page-right.svg" alt="">
+                                <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                                 <div class="notebook__content notebook__content--right" data-copy-from=".longread--2 .notebook__page--right .notebook__content"></div>
                             </div>
 
                             <div class="notebook__face notebook__face--back">
-                                <img class="notebook__paper" src="img/notebook-page-left.svg" alt="">
+                                <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                                 <div class="notebook__content notebook__content--left">
                                     <p class="longread__kicker longread__step" data-step="1.90">глава 3 · что стоит знать</p>
                                     <h2 class="longread__title longread__step" data-step="1.95">короткий путь в чужом городе</h2>
                                     <img class="longread__divider longread__step" src="img/scale-fill.svg" alt="" data-step="2.05">
-                                    <p class="longread__paragraph longread__step" data-step="2.25">Карты прокладывают самый быстрый путь, но не самый безопасный. В тёмном переулке или пустом дворе тебе никто не поможет, а пойти следом за тобой можно незаметно.</p>
+                                    <p class="longread__paragraph longread__step" data-step="2.25">Навигатор строит самый быстрый маршрут, но не смотрит, светло ли там и есть ли люди. Тёмный переулок сэкономит пять минут, но если что-то случится, рядом никого не будет.</p>
                                     <p class="longread__accent longread__step" data-step="2.75">
-                                        <mark class="longread__mark">Пара сэкономленных минут не стоит риска.</mark>
+                                        <mark class="longread__mark">Если сомневаешься, иди длинной дорогой.</mark>
                                     </p>
-                                    <p class="longread__paragraph longread__step" data-step="3.10">«Я хожу тут двадцать лет» от незнакомца ничего не гарантирует: у местных свои привычки, а турист заметен издалека.</p>
+                                    <p class="longread__paragraph longread__step" data-step="3.10">Но и в толпе есть свои риски. Карманники часто работают вдвоём: один отвлекает вопросом или просьбой, второй в это время лезет в сумку.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <img class="notebook__rings" src="img/notebook-rings.svg" alt="">
+                        <img class="notebook__rings" src="img/notebook-rings.svg?v=2" alt="">
                     </div>
                 </section>
+
+                <!-- финал: мальчик снова на людной улице, ему пишут — экран темнеет, снизу поднимаются руки с телефоном,
+                     сообщения появляются по одному, потом — экран телефона с кнопкой «играть снова» -->
+                <div class="finale">
+                    <div class="finale__stage">
+                        <img class="finale__bg" src="img/bg10.jpg" alt="">
+                        <div class="finale__shade"></div>
+                    </div>
+
+                    <div class="finale__people">
+                        <img class="finale__boy" src="img/main-character-walk.svg" alt="Главный герой">
+
+                        <div class="speech speech--boy speech--finale-1">
+                            <img class="speech__bg" src="img/speech.svg" alt="">
+                            <p class="speech__text">
+                                <span class="speech__inner">ой, мне кто-то писал, надо <b class="speech__key">проверить сообщение</b></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="finale__dark"></div>
+
+                    <div class="finale__phone">
+                        <img class="finale__screen finale__screen--chat" src="img/phone-chat.png" alt="Переписка с мамой">
+
+                        <!-- сообщения закрыты «пустым экраном» и проступают по одному, сверху вниз -->
+                        <div class="finale__cover finale__cover--1"></div>
+                        <div class="finale__cover finale__cover--2"></div>
+                        <div class="finale__cover finale__cover--3"></div>
+                        <div class="finale__cover finale__cover--4"></div>
+                        <div class="finale__cover finale__cover--4b"></div>
+
+                        <img class="finale__screen finale__screen--end" src="img/phone-end.png" alt="Экран телефона">
+
+                        <!-- кнопка — кусочек той же картинки ровно поверх нарисованной кнопки: она и пульсирует -->
+                        <button class="finale__again" type="button" aria-label="Играть снова"></button>
+                    </div>
+                </div>
 
                 <div class="hero__noise"></div>
 
@@ -1231,10 +1409,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=91"></script>
-    <script src="js/preloader.js?v=91"></script>
-    <script src="js/game-header.js?v=91"></script>
-    <script src="js/script.js?v=91"></script>
+    <script src="js/sound.js?v=117"></script>
+    <script src="js/preloader.js?v=117"></script>
+    <script src="js/game-header.js?v=117"></script>
+    <script src="js/script.js?v=117"></script>
 </body>
 
 </html>
