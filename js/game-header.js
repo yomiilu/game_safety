@@ -11,8 +11,12 @@
 
 const totalChapters = 4;
 
+// сколько денег было в начале — шкала денег полная, когда их столько же
+const startMoney = 320;
+
 const gameHeader = {
     money: null,
+    moneyFill: null,
     safety: null,
     scaleFill: null,
     chapterNumber: null,
@@ -23,14 +27,16 @@ const gameHeader = {
 function setupGameHeader() {
     gameHeader.money = document.querySelector(".game-header__money");
     gameHeader.safety = document.querySelector(".game-header__safety");
-    gameHeader.scaleFill = document.querySelector(".game-header__scale-fill");
+    gameHeader.scaleFill = document.querySelector(".game-header__scale-fill--safety");
+    gameHeader.moneyFill = document.querySelector(".game-header__scale-fill--money");
     gameHeader.chapterNumber = document.querySelector(".game-header__chapter-number");
     gameHeader.chapterTitle = document.querySelector(".game-header__chapter-title");
 
-    // шкала при старте берёт процент из текста в html
+    // шкалы при старте берут цифры из текста в html
     const startSafety = parseInt(gameHeader.safety.textContent, 10);
 
     setGameHeader({
+        money: parseInt(gameHeader.money.textContent, 10),
         safety: startSafety
     });
 }
@@ -39,6 +45,11 @@ function setupGameHeader() {
 function setGameHeader(data) {
     if (data.money !== undefined) {
         gameHeader.money.textContent = data.money + "$";
+
+        // шкала денег — какая часть стартовых денег осталась (так же, как шкала безопасности)
+        const moneyLevel = Math.min(Math.max(data.money / startMoney * 100, 0), 100);
+
+        gameHeader.moneyFill.style.setProperty("--level", moneyLevel.toFixed(1) + "%");
     }
 
     if (data.safety !== undefined) {

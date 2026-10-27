@@ -1570,6 +1570,101 @@ body.is-street .game-header {
 }
 
 
+/* ---------- рисунки под текстом тетради (нарисованы автором) ----------
+   стоят внутри блока текста (тогда при перелистывании переезжают на лист вместе с текстом),
+   поэтому координаты — в % от блока текста. на поле за красной линией заходят совсем чуть-чуть */
+.notebook__doodle {
+    position: absolute;
+    max-width: none;
+    height: auto;
+    pointer-events: none;
+}
+
+.notebook__doodle--route {
+    top: 73.3%;
+    left: 35.3%;
+    width: 67.6%;
+    rotate: -4deg;
+}
+
+.notebook__doodle--sun {
+    top: 66.0%;
+    left: 2.9%;
+    width: 26.5%;
+    rotate: 6deg;
+}
+
+.notebook__doodle--ttt {
+    top: 83.0%;
+    left: 5.9%;
+    width: 22.1%;
+    rotate: -5deg;
+}
+
+.notebook__doodle--date {
+    top: 64.8%;
+    left: 44.1%;
+    width: 17.6%;
+    rotate: -8deg;
+}
+
+.notebook__doodle--cat {
+    top: 68.4%;
+    left: 2.9%;
+    width: 50.0%;
+    rotate: -2deg;
+}
+
+.notebook__doodle--pizza {
+    top: 66.0%;
+    left: 61.8%;
+    width: 38.2%;
+    rotate: 7deg;
+}
+
+.notebook__doodle--smile {
+    top: 90.3%;
+    left: 58.8%;
+    width: 19.1%;
+    rotate: -6deg;
+}
+
+.notebook__doodle--star {
+    top: 87.8%;
+    left: 88.2%;
+    width: 11.8%;
+    rotate: 10deg;
+}
+
+.notebook__doodle--tree {
+    top: 64.8%;
+    left: 2.9%;
+    width: 32.4%;
+    rotate: -3deg;
+}
+
+.notebook__doodle--boy {
+    top: 63.5%;
+    left: 39.7%;
+    width: 36.8%;
+    rotate: 3deg;
+}
+
+.notebook__doodle--flower {
+    top: 66.0%;
+    left: 79.4%;
+    width: 27.9%;
+    rotate: 5deg;
+}
+
+.notebook__doodle--pupu {
+    top: 87.8%;
+    left: 76.5%;
+    width: 23.5%;
+    rotate: -7deg;
+}
+
+
 /* ---------- сцена 3: отель ---------- */
 
 /* проявляется плавно (--hotel от 0 до 1 задаёт js) */
@@ -4111,17 +4206,18 @@ body.is-walk .walk__grandpa,
     animation-duration: 4.2s;
 }
 
+/* --char-scale — во сколько раз персонажи крупнее (на телефоне, см. mobile.css); дыхание поверх него */
 @keyframes idle-breathe {
     0% {
-        scale: 1 1;
+        scale: var(--char-scale, 1) var(--char-scale, 1);
     }
 
     50% {
-        scale: 1.006 1.014;
+        scale: calc(var(--char-scale, 1) * 1.006) calc(var(--char-scale, 1) * 1.014);
     }
 
     100% {
-        scale: 1 1;
+        scale: var(--char-scale, 1) var(--char-scale, 1);
     }
 }
 

@@ -8,6 +8,24 @@
 
     :root {
         --u: min(3vw, 1.4svh);
+        /* персонажи на телефоне чуть крупнее (от ног вверх) */
+        --char-scale: 1.05;
+    }
+
+    .game__character,
+    .room__boy,
+    .room__stranger,
+    .cafe__boy,
+    .cafe__girl,
+    .walk__boy,
+    .walk__grandpa,
+    .alley__boy,
+    .crowd__boy,
+    .crowd__figure,
+    .crowd__stranger,
+    .finale__boy {
+        scale: var(--char-scale);
+        transform-origin: 50% 100%;
     }
 
     /* камера: куда сдвинута сцена. мальчик стоит левее центра на --cam-step, собеседник — правее на столько же.
@@ -96,7 +114,7 @@
         height: calc(2.7778 * var(--u));
     }
 
-    /* шкалы безопасности на телефоне нет — только цифры; отступ слева такой же, как справа у бургера */
+    /* шкал денег и безопасности на телефоне нет — только цифры; отступ слева такой же, как справа у бургера */
     .game-header__scale {
         display: none;
     }
@@ -464,6 +482,30 @@
         animation: none;
     }
 
+    /* текст тетради на телефоне чуть мельче: иначе длинные страницы не помещаются в линейки и вылезают за низ тетради.
+       сдвиги по высоте — те же, что на компьютере, но для этих размеров (базовая линия = половина строки + четверть шрифта) */
+    .longread__paragraph,
+    .longread__accent,
+    .longread__item,
+    .longread__tips-note {
+        font-size: calc(1.2000 * var(--u));
+    }
+
+    .longread__title,
+    .longread__tips-title {
+        top: calc(-0.1260 * var(--u));
+        font-size: calc(1.7040 * var(--u));
+    }
+
+    .longread__kicker {
+        top: calc(0.0300 * var(--u));
+        font-size: calc(1.0800 * var(--u));
+    }
+
+    .notebook__content {
+        top: calc(12.8% - var(--line) / 2 - 0.25 * 1.2 * var(--u) - 0.15 * var(--u));
+    }
+
     /* сдвиг на четверть ширины тетради — посередине экрана ровно одна страница */
     .longread--view-left .notebook {
         translate: calc(var(--notebook-height) * 46 / 185) 0;
@@ -511,5 +553,78 @@
     /* свет фонарей без режима наложения: на телефоне смешивание слоёв каждый кадр — главный тормоз */
     .lamp-glow {
         mix-blend-mode: normal;
+    }
+
+    /* на телефоне под текстом меньше места — рисунки встают в ряд у нижнего края, поменьше */
+    .notebook__doodle--sun {
+        top: 81.8%;
+        left: 1.5%;
+        width: 27.9%;
+    }
+
+    .notebook__doodle--ttt {
+        top: 81.8%;
+        left: 30.9%;
+        width: 20.6%;
+    }
+
+    .notebook__doodle--route {
+        top: 81.8%;
+        left: 52.9%;
+        width: 41.2%;
+    }
+
+    .notebook__doodle--date {
+        top: 81.8%;
+        left: 95.6%;
+        width: 13.2%;
+    }
+
+    .notebook__doodle--cat {
+        top: 81.8%;
+        left: 1.5%;
+        width: 38.2%;
+    }
+
+    .notebook__doodle--pizza {
+        top: 81.8%;
+        left: 42.6%;
+        width: 27.9%;
+    }
+
+    .notebook__doodle--smile {
+        top: 81.8%;
+        left: 72.1%;
+        width: 19.1%;
+    }
+
+    .notebook__doodle--star {
+        top: 81.8%;
+        left: 92.6%;
+        width: 14.7%;
+    }
+
+    .notebook__doodle--tree {
+        top: 81.8%;
+        left: 1.5%;
+        width: 26.5%;
+    }
+
+    .notebook__doodle--boy {
+        top: 81.8%;
+        left: 29.4%;
+        width: 25.0%;
+    }
+
+    .notebook__doodle--flower {
+        top: 81.8%;
+        left: 55.9%;
+        width: 25.0%;
+    }
+
+    .notebook__doodle--pupu {
+        top: 81.8%;
+        left: 82.4%;
+        width: 23.5%;
     }
 }

@@ -9,12 +9,12 @@
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 
-    <!-- ?v=143 — номер версии: меняем его при каждом обновлении сайта,
+    <!-- ?v=153 — номер версии: меняем его при каждом обновлении сайта,
          чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=143">
-    <link rel="stylesheet" href="css/fonts.css?v=143">
-    <link rel="stylesheet" href="css/style.css?v=143">
-    <link rel="stylesheet" href="css/mobile.css?v=143">
+    <link rel="stylesheet" href="css/reset.css?v=153">
+    <link rel="stylesheet" href="css/fonts.css?v=153">
+    <link rel="stylesheet" href="css/style.css?v=153">
+    <link rel="stylesheet" href="css/mobile.css?v=153">
 </head>
 
 <body>
@@ -60,12 +60,17 @@
 
         <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=143" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=153" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
                     <img class="game-header__icon game-header__icon--money" src="img/money-icon.svg" alt="На счету">
                     <span class="game-header__text game-header__money">320$</span>
+
+                    <div class="game-header__scale">
+                        <img class="game-header__scale-empty" src="img/scale.svg" alt="">
+                        <img class="game-header__scale-fill game-header__scale-fill--money" src="img/scale-fill.svg" alt="">
+                    </div>
                 </div>
 
                 <div class="game-header__stat">
@@ -74,7 +79,7 @@
 
                     <div class="game-header__scale">
                         <img class="game-header__scale-empty" src="img/scale.svg" alt="">
-                        <img class="game-header__scale-fill" src="img/scale-fill.svg" alt="">
+                        <img class="game-header__scale-fill game-header__scale-fill--safety" src="img/scale-fill.svg" alt="">
                     </div>
                 </div>
             </div>
@@ -465,6 +470,12 @@
                                     </ul>
                                     <p class="longread__tips-note longread__step" data-step="2.90">А если водитель едет страшно, можно попросить ехать спокойнее или просто выйти в людном месте.</p>
                                 </div>
+
+                                <!-- рисунки под текстом: живая тетрадь (дорисовываются после советов) -->
+                                <img class="notebook__doodle notebook__doodle--route longread__step" data-step="2.75" src="img/doodles/route.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--sun longread__step" data-step="2.90" src="img/doodles/sun.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--ttt longread__step" data-step="3.05" src="img/doodles/ttt.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--date longread__step" data-step="3.20" src="img/doodles/date.svg?v=3" alt="">
                             </div>
                         </div>
 
@@ -903,6 +914,12 @@
                                     </ul>
                                     <p class="longread__tips-note longread__step" data-step="4.70">Если с заказом или счётом что-то не так, лучше сразу позвать администратора.</p>
                                 </div>
+
+                                <!-- рисунки под текстом: живая тетрадь (дорисовываются после советов) -->
+                                <img class="notebook__doodle notebook__doodle--cat longread__step" data-step="4.20" src="img/doodles/cat.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--pizza longread__step" data-step="4.40" src="img/doodles/pizza.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--smile longread__step" data-step="4.60" src="img/doodles/smile.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--star longread__step" data-step="4.80" src="img/doodles/star.svg?v=3" alt="">
                             </div>
                         </div>
 
@@ -1335,6 +1352,12 @@
                                     </ul>
                                     <p class="longread__tips-note longread__step" data-step="4.70">Если кажется, что за тобой идут, зайди в магазин или кафе и попроси помощи.</p>
                                 </div>
+
+                                <!-- рисунки под текстом: живая тетрадь (дорисовываются после советов) -->
+                                <img class="notebook__doodle notebook__doodle--tree longread__step" data-step="4.20" src="img/doodles/tree.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--boy longread__step" data-step="4.40" src="img/doodles/boy.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--flower longread__step" data-step="4.60" src="img/doodles/flower.svg?v=3" alt="">
+                                <img class="notebook__doodle notebook__doodle--pupu longread__step" data-step="4.80" src="img/doodles/pupu.svg?v=3" alt="">
                             </div>
                         </div>
 
@@ -1416,10 +1439,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=143"></script>
-    <script src="js/preloader.js?v=143"></script>
-    <script src="js/game-header.js?v=143"></script>
-    <script src="js/script.js?v=143"></script>
+    <script src="js/sound.js?v=153"></script>
+    <script src="js/preloader.js?v=153"></script>
+    <script src="js/game-header.js?v=153"></script>
+    <script src="js/script.js?v=153"></script>
 </body>
 
 </html>

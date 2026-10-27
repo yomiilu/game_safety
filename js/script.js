@@ -45,10 +45,10 @@ let mouseY = window.innerHeight / 2;
 
 
 // «один vw макета» в пикселях — то же, что --u в css: min(1vw, 1.6vh)
-// --u в пикселях — так же, как в css (на телефоне единица крупнее, см. mobile.css)
+// --u в пикселях — так же, как в css (на телефоне единица крупнее: min(3vw, 1.4vh), см. mobile.css)
 function getDesignUnit() {
     if (mobileQuery.matches) {
-        return Math.min(window.innerWidth * 2.4, window.innerHeight * 1.15) / 100;
+        return Math.min(window.innerWidth * 3, window.innerHeight * 1.4) / 100;
     }
 
     return Math.min(window.innerWidth, window.innerHeight * 1.6) / 100;
@@ -1338,11 +1338,39 @@ function setSpeaker(isBoy) {
 }
 
 
+// на телефоне все реплики — на одной высоте: сразу под шапкой, с одинаковым отступом.
+// плашки лежат в разных сценах (у номера и отеля своя высота), поэтому место считаем от того, где сцена на экране
+const speechTopGap = 2.0833;
+
+function placeSpeech(line) {
+    const element = line.element;
+
+    if (!mobileQuery.matches) {
+        element.style.top = "";
+        element.style.bottom = "";
+        return;
+    }
+
+    const parent = element.offsetParent;
+
+    if (!parent) {
+        return;
+    }
+
+    const headerBottom = document.querySelector(".game-header").getBoundingClientRect().bottom;
+    const top = headerBottom + speechTopGap * getDesignUnit() - parent.getBoundingClientRect().top;
+
+    element.style.top = Math.round(top) + "px";
+    element.style.bottom = "auto";
+}
+
+
 function showLine(line) {
     line.runId = line.runId + 1;
 
     const runId = line.runId;
 
+    placeSpeech(line);
     line.element.classList.add("speech--visible");
 
     setSpeaker(line.element.classList.contains("speech--boy"));
@@ -1390,6 +1418,14 @@ function showLine(line) {
         typeNextChar(0);
     }, speechTypingDelay);
 }
+
+
+// повернули телефон или сменился размер окна — реплику на экране ставим заново
+window.addEventListener("resize", function () {
+    if (currentLine >= 0) {
+        placeSpeech(lines[currentLine]);
+    }
+});
 
 
 function hideLine(line) {
