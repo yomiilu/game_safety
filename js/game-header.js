@@ -1,17 +1,6 @@
-// ---------- шапка игры ----------
-// одна шапка на все игровые экраны: чтобы поменять цифры и тексты, вызываем setGameHeader
-//
-// например:
-// setGameHeader({
-//     money: 250,
-//     safety: 80,
-//     chapter: 2,
-//     chapterTitle: "“заселение”"
-// });
 
 const totalChapters = 4;
 
-// сколько денег было в начале — шкала денег полная, когда их столько же
 const startMoney = 320;
 
 const gameHeader = {
@@ -32,7 +21,6 @@ function setupGameHeader() {
     gameHeader.chapterNumber = document.querySelector(".game-header__chapter-number");
     gameHeader.chapterTitle = document.querySelector(".game-header__chapter-title");
 
-    // шкалы при старте берут цифры из текста в html
     const startSafety = parseInt(gameHeader.safety.textContent, 10);
 
     setGameHeader({
@@ -46,7 +34,6 @@ function setGameHeader(data) {
     if (data.money !== undefined) {
         gameHeader.money.textContent = data.money + "$";
 
-        // шкала денег — какая часть стартовых денег осталась (так же, как шкала безопасности)
         const moneyLevel = Math.min(Math.max(data.money / startMoney * 100, 0), 100);
 
         gameHeader.moneyFill.style.setProperty("--level", moneyLevel.toFixed(1) + "%");
@@ -69,7 +56,6 @@ function setGameHeader(data) {
 }
 
 
-// названия глав — для шапки
 const chapterTitles = {
     1: "“прибытие”",
     2: "“ужин”",
@@ -77,14 +63,12 @@ const chapterTitles = {
 };
 
 
-// шапка и меню показывают, в какой главе игрок сейчас
 function setCurrentChapter(chapter) {
     setGameHeader({
         chapter: chapter,
         chapterTitle: chapterTitles[chapter]
     });
 
-    // на телефоне глава написана не в шапке, а в меню
     document.querySelector(".chapters-menu__current").textContent = "глава " + chapter + "/" + totalChapters + " " + chapterTitles[chapter];
 
     document.querySelectorAll(".chapters-menu__link").forEach(function (link) {
@@ -92,8 +76,6 @@ function setCurrentChapter(chapter) {
     });
 }
 
-
-// ---------- бургер и меню глав ----------
 
 const chaptersMenu = {
     header: null,
@@ -114,7 +96,6 @@ function setupChaptersMenu() {
         setChaptersMenuOpen(!chaptersMenu.isOpen);
     });
 
-    // клик по пункту — переходим к главе
     document.querySelectorAll(".chapters-menu__link").forEach(function (link) {
         link.addEventListener("click", function (event) {
             event.stopPropagation();
@@ -123,7 +104,6 @@ function setupChaptersMenu() {
         });
     });
 
-    // клик мимо меню или Esc — закрываем
     document.addEventListener("click", function (event) {
         if (chaptersMenu.isOpen && !event.target.closest(".chapters-menu")) {
             setChaptersMenuOpen(false);
@@ -138,7 +118,6 @@ function setupChaptersMenu() {
 }
 
 
-// на телефоне в шапке остаются только цифры: звук переезжает в меню глав (и обратно, если экран стал широким)
 const mobileQuery = window.matchMedia("(max-width: 767px)");
 
 
@@ -146,7 +125,6 @@ function placeSoundControl() {
     const soundControl = document.querySelector(".sound");
     const burger = document.querySelector(".game-header__burger");
 
-    // на телефоне — прямо в шапке, перед бургером
     if (mobileQuery.matches) {
         if (soundControl.nextElementSibling !== burger) {
             burger.parentNode.insertBefore(soundControl, burger);
@@ -154,7 +132,6 @@ function placeSoundControl() {
     } else {
         const header = document.querySelector(".game-header");
 
-        // на прежнее место — прямо перед шапкой
         if (soundControl.nextElementSibling !== header) {
             header.parentNode.insertBefore(soundControl, header);
         }

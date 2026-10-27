@@ -1,12 +1,6 @@
-/* десктоп и планшет: все размеры считаются от макета 1440 × 900.
-   --u — «один vw макета»: на обычных экранах (16:10 и уже) это ровно 1vw,
-   а на широких мониторах размер берётся от высоты, чтобы ничего не вылезало за экран.
-   то есть calc(10 * var(--u)) — это те же 10vw из макета */
 
 :root {
     --u: min(1vw, 1.6svh);
-    /* свой курсор: бумажный самолётик; над кнопками — тёмный (кончик носа — в точке 2 × 2).
-       картинки — png, а не svg: svg-курсор браузер перерисовывает при каждом обновлении страницы, и он мигает обычным */
     --cursor: url("../img/cursor.png") 2 2, auto;
     --cursor-pointer: url("../img/cursor-pointer.png") 2 2, pointer;
 }
@@ -19,18 +13,14 @@ body {
     overflow-x: hidden;
 }
 
-/* пока грузится прелоадер, страницу не листаем */
 body.is-loading {
     overflow: hidden;
 }
 
-/* пока игрок выбирает — страницу не листаем, чтобы для поездки осталось место */
 body.is-choice-locked {
     overflow: hidden;
 }
 
-
-/* ---------- прелоадер ---------- */
 
 .preloader {
     position: fixed;
@@ -55,7 +45,6 @@ body.is-choice-locked {
     pointer-events: none;
 }
 
-/* полоса и проценты */
 .preloader__loading {
     display: flex;
     flex-direction: column;
@@ -63,7 +52,6 @@ body.is-choice-locked {
     gap: calc(1.6667 * var(--u));
 }
 
-/* несколько шкал подряд — как одна длинная шкала */
 .preloader__bar {
     display: flex;
     gap: calc(0.5000 * var(--u));
@@ -75,7 +63,6 @@ body.is-choice-locked {
     height: calc(1.0833 * var(--u));
 }
 
-/* шкала тёмная, а фон чёрный — делаем её светлой */
 .preloader__empty {
     position: absolute;
     top: 0;
@@ -103,8 +90,6 @@ body.is-choice-locked {
     color: #C1C1C1;
 }
 
-/* кнопка «начать» в плашке: появляется после загрузки под полосой
-   (место под неё занято сразу, поэтому полоса не прыгает) */
 .preloader__start {
     position: relative;
     width: calc(23.1250 * var(--u));
@@ -161,9 +146,6 @@ body.is-choice-locked {
 }
 
 
-/* ---------- звук: кнопка и громкость ---------- */
-
-/* звук живёт справа сверху, сразу под шапкой игры */
 .sound {
     position: fixed;
     top: calc(7.2917 * var(--u));
@@ -175,7 +157,6 @@ body.is-choice-locked {
     gap: calc(0.8333 * var(--u));
 }
 
-/* когда шапки нет (выбор, улица) — звук поднимается в самый угол */
 body.is-choosing .sound,
 body.is-street .sound {
     top: calc(2.0833 * var(--u));
@@ -217,7 +198,6 @@ body.is-street .sound {
     display: block;
 }
 
-/* ползунок громкости: --filled задаёт js */
 .sound__slider {
     width: calc(6.9444 * var(--u));
     height: calc(0.2083 * var(--u));
@@ -261,9 +241,6 @@ body.is-street .sound {
 }
 
 
-/* ---------- первый экран ---------- */
-
-/* секция высокая, а экран внутри «прилипает» — пока листаем, глаза закрываются и меняется текст */
 .hero {
     position: relative;
     width: 100vw;
@@ -296,8 +273,6 @@ body.is-street .sound {
 }
 
 
-/* ---------- печатная машинка ---------- */
-
 .hero__char {
     opacity: 0;
 }
@@ -306,7 +281,6 @@ body.is-street .sound {
     opacity: 1;
 }
 
-/* курсор не занимает места, поэтому текст не сдвигается, пока он бегает */
 .hero__cursor {
     display: inline-block;
     width: calc(0.1389 * var(--u));
@@ -336,9 +310,6 @@ body.is-street .sound {
 }
 
 
-/* ---------- крипота на фоне ---------- */
-
-/* тусклое пятно света, которое тянется за курсором (координаты задаёт js) */
 .hero__light {
     position: absolute;
     top: 0;
@@ -355,7 +326,6 @@ body.is-street .sound {
     pointer-events: none;
 }
 
-/* в конце скролла экран полностью уходит в черноту (--dark от 0 до 1 задаёт js) */
 .hero__darkness {
     position: absolute;
     top: 0;
@@ -368,8 +338,6 @@ body.is-street .sound {
     pointer-events: none;
 }
 
-/* свет от курсора на всех чёрных экранах (первая темнота, выбор, чёрный экран после поездки).
-   лежит поверх сцен, но под зерном; насколько он виден — решает js через --light-level */
 .hero__dark-light {
     position: absolute;
     top: 0;
@@ -390,8 +358,6 @@ body.is-street .sound {
     transition: opacity 0.4s ease;
 }
 
-/* тёмные края экрана, медленно «дышат» */
-/* красное по краям в такт сердцу — мягче, чем в переулке (класс is-intro-heart ставит js) */
 .hero__pulse {
     position: absolute;
     top: 0;
@@ -452,7 +418,6 @@ body.is-intro-heart .hero__pulse {
     animation: vignette-breath 6s ease-in-out infinite;
 }
 
-/* плёночное зерно */
 .hero__noise {
     position: absolute;
     top: -50%;
@@ -468,7 +433,6 @@ body.is-intro-heart .hero__pulse {
     animation: noise-shake 0.6s steps(6) infinite;
 }
 
-/* моргание лампы: класс вешает js в случайный момент (глаза в номере не моргают — их видно только с фонариком) */
 .hero--flicker .eye:not(.room__eyes) {
     animation: lamp-flicker 0.45s linear;
 }
@@ -477,7 +441,6 @@ body.is-intro-heart .hero__pulse {
     animation: lamp-flicker 0.45s linear;
 }
 
-/* иногда (не каждый раз) текст при моргании ещё и дёргается с красно-синим двоением */
 .hero--flicker.hero--glitch .hero__title {
     animation: lamp-flicker 0.45s linear, title-glitch 0.45s steps(1);
 }
@@ -590,9 +553,6 @@ body.is-intro-heart .hero__pulse {
 }
 
 
-/* ---------- игровой экран ---------- */
-
-/* проявляется из темноты (--game от 0 до 1 задаёт js) */
 .game {
     position: absolute;
     top: 0;
@@ -604,7 +564,6 @@ body.is-intro-heart .hero__pulse {
     pointer-events: none;
 }
 
-/* фон от самого верха экрана, лишнее обрезается снизу */
 .game__bg {
     position: absolute;
     top: 0;
@@ -615,7 +574,6 @@ body.is-intro-heart .hero__pulse {
     object-position: center top;
 }
 
-/* затемнение фона: чёрный с непрозрачностью 40% */
 .game__shade {
     position: absolute;
     top: 0;
@@ -627,7 +585,6 @@ body.is-intro-heart .hero__pulse {
 }
 
 
-/* персонажи: выходят из-за края экрана по скроллу (сдвиг и шаги задаёт js) */
 .game__character {
     position: absolute;
     bottom: calc(2.0833 * var(--u));
@@ -635,8 +592,6 @@ body.is-intro-heart .hero__pulse {
     will-change: transform;
 }
 
-/* главный герой — слева. персонажи и плашки стоят от центра экрана,
-   чтобы на широких мониторах сцена не разъезжалась по краям */
 .game__character--boy {
     left: calc(50% - calc(41.6667 * var(--u)));
     width: calc(25.5139 * var(--u));
@@ -644,7 +599,6 @@ body.is-intro-heart .hero__pulse {
     transform: translateX(-100vw);
 }
 
-/* у героя две позы: картинки лежат друг на друге и меняются плавным переходом */
 .game__pose {
     position: absolute;
     top: 0;
@@ -658,8 +612,6 @@ body.is-intro-heart .hero__pulse {
     opacity: 1;
 }
 
-/* вторая поза шире первой, но выровнена по тому же левому краю.
-   max-width: none — иначе reset.css не даёт ей вылезти за рамку и мальчик сжимается */
 .game__pose--2 {
     width: calc(32.3125 * var(--u));
     max-width: none;
@@ -674,7 +626,6 @@ body.is-intro-heart .hero__pulse {
     opacity: 1;
 }
 
-/* таксист — справа, ближе к краю (тот же масштаб, что у героя) */
 .game__character--taxi {
     right: calc(50% - calc(41.6667 * var(--u)));
     width: calc(14.2083 * var(--u));
@@ -683,7 +634,6 @@ body.is-intro-heart .hero__pulse {
 }
 
 
-/* плашки с репликами: хвостик смотрит на голову того, кто говорит */
 .speech {
     position: absolute;
     width: calc(31.9444 * var(--u));
@@ -699,7 +649,6 @@ body.is-intro-heart .hero__pulse {
     transform-origin: 0% 100%;
 }
 
-/* у таксиста плашка зеркальная: хвостик справа внизу */
 .speech--taxi {
     right: calc(50% - calc(26.3889 * var(--u)));
     bottom: calc(41.6667 * var(--u));
@@ -719,7 +668,6 @@ body.is-intro-heart .hero__pulse {
     height: 100%;
 }
 
-/* область текста = тело плашки без хвостика, текст ровно по центру */
 .speech__text {
     position: absolute;
     top: 3.3%;
@@ -741,7 +689,6 @@ body.is-intro-heart .hero__pulse {
     text-align: center;
 }
 
-/* самое важное в реплике — чёрным и подчёркнуто (линия появляется вместе с буквами, пока текст печатается) */
 .speech__char--key {
     color: #000000;
     text-decoration-line: underline;
@@ -751,7 +698,6 @@ body.is-intro-heart .hero__pulse {
     text-decoration-skip-ink: none;
 }
 
-/* в зеркальной плашке отражаем только картинку, а область текста сдвигаем от хвостика */
 .speech--taxi .speech__bg {
     transform: scaleX(-1);
 }
@@ -761,23 +707,17 @@ body.is-intro-heart .hero__pulse {
     left: 2.6%;
 }
 
-/* плашка ресепшиониста лежит внутри картинки отеля и стоит в % от неё,
-   чтобы на любом мониторе хвостик смотрел ей в голову */
-/* по горизонтали — от картинки отеля (рядом с головой ресепшиониста),
-   по высоте — ровно как плашки мальчика: низ на 41.6667 от низа экрана */
 .speech--receptionist {
     top: calc(100dvh - calc(52.9861 * var(--u)));
     right: 25%;
     bottom: auto;
 }
 
-/* в отеле реплики мальчика чуть ниже и правее, чем в аэропорту */
 .hotel .speech--boy {
     bottom: calc(38.8889 * var(--u));
     left: calc(50% - calc(18.4028 * var(--u)));
 }
 
-/* в отеле фразы длиннее: больше отступ от краёв плашки, чтобы текст не прилипал */
 .hotel .speech__text {
     padding: 0 calc(3.125 * var(--u));
 }
@@ -791,9 +731,6 @@ body.is-intro-heart .hero__pulse {
 }
 
 
-/* ---------- выбор игрока ---------- */
-
-/* игровая сцена полностью уходит в черноту */
 .game__dim {
     position: absolute;
     top: 0;
@@ -832,7 +769,6 @@ body.is-intro-heart .hero__pulse {
     pointer-events: auto;
 }
 
-/* глаза на экране выбора — прозрачность 30%, по углам, чтобы не мешать вариантам */
 .choice__eyes {
     position: absolute;
     top: 0;
@@ -862,7 +798,6 @@ body.is-intro-heart .hero__pulse {
     bottom: calc(2.7778 * var(--u));
 }
 
-/* заголовок и варианты — поверх глаз */
 .choice__title,
 .choice__options {
     position: relative;
@@ -883,7 +818,6 @@ body.is-intro-heart .hero__pulse {
     gap: calc(3.4722 * var(--u));
 }
 
-/* вариант — рукописная плашка, как кнопка «начать» */
 .choice__option {
     position: relative;
     width: calc(38.1944 * var(--u));
@@ -897,13 +831,10 @@ body.is-intro-heart .hero__pulse {
     transition: transform 0.35s ease, opacity 0.06s ease;
 }
 
-/* второй вариант ждёт за нижним краем экрана */
 .choice__option + .choice__option {
     transform: translateY(70svh) rotate(8deg);
 }
 
-/* варианты прилетают: первый сверху, второй снизу — и с пружинкой встают на место
-   (задержка только у движения, не у яркости) */
 .choice--visible .choice__option,
 .choice--visible .choice__option + .choice__option {
     transform: translateY(0) rotate(0deg);
@@ -915,7 +846,6 @@ body.is-intro-heart .hero__pulse {
     transition-delay: 0.55s, 0s;
 }
 
-/* прилетели — дальше всё реагирует сразу и быстро, без задержек (класс ставит js) */
 .choice--ready .choice__option,
 .choice--ready .choice__option + .choice__option {
     transition: transform 0.35s ease, opacity 0.06s ease;
@@ -930,12 +860,10 @@ body.is-intro-heart .hero__pulse {
     transform: scale(1.04) rotate(1deg);
 }
 
-/* навели на один вариант — второй сразу тускнеет, даже без нажатия */
 .choice--ready:not(.choice--made) .choice__options:has(.choice__option:hover) .choice__option:not(:hover) {
     opacity: 0.3;
 }
 
-/* после выбора: выбранный вариант остаётся ярким, второй тусклый */
 .choice--ready.choice--made .choice__option {
     opacity: 0.3;
 }
@@ -971,9 +899,7 @@ body.is-intro-heart .hero__pulse {
     text-align: center;
 }
 
-/* ---------- сцена 2: улица ---------- */
 
-/* проявляется из темноты после выбора */
 .street {
     position: absolute;
     top: 0;
@@ -992,8 +918,6 @@ body.is-intro-heart .hero__pulse {
     visibility: visible;
 }
 
-/* сцена с пропорциями фона (1556 × 898) — заполняет экран, как object-fit: cover.
-   всё внутри задано в % от сцены, поэтому машина и деревья всегда стоят на своих местах фона */
 .street__stage {
     position: absolute;
     top: 0;
@@ -1011,7 +935,6 @@ body.is-intro-heart .hero__pulse {
     height: 100%;
 }
 
-/* затемнение фона, как на первом игровом экране */
 .street__shade {
     position: absolute;
     top: 0;
@@ -1022,7 +945,6 @@ body.is-intro-heart .hero__pulse {
     opacity: 0.4;
 }
 
-/* машина на дороге — какая именно, решает выбор игрока */
 .street__car {
     position: absolute;
     top: 25.5000%;
@@ -1030,12 +952,10 @@ body.is-intro-heart .hero__pulse {
     z-index: 100;
     display: none;
     width: 47.0000%;
-    /* машина «едет к нам»: растёт от точки схода дороги (её координаты внутри машины) */
     transform-origin: -1.6% 18.7%;
     will-change: transform;
 }
 
-/* чёрный экран после поездки (прозрачность задаёт js) */
 .street__blackout {
     position: absolute;
     top: 0;
@@ -1047,7 +967,6 @@ body.is-intro-heart .hero__pulse {
     pointer-events: none;
 }
 
-/* ---------- последствия выбора ---------- */
 
 .outcome {
     position: absolute;
@@ -1072,14 +991,12 @@ body.is-intro-heart .hero__pulse {
     visibility: visible;
 }
 
-/* после лонгрида итог с деньгами уже не показываем */
 .outcome.outcome--behind {
     opacity: 0;
     visibility: hidden;
     transition: none;
 }
 
-/* красная тревожная вспышка по краям экрана в момент удара */
 .outcome__flash {
     position: absolute;
     top: 0;
@@ -1117,7 +1034,6 @@ body.is-intro-heart .hero__pulse {
     opacity: 1;
 }
 
-/* карточки денег и безопасности: появляются после текста */
 .outcome__stats {
     position: relative;
     display: flex;
@@ -1141,7 +1057,6 @@ body.is-intro-heart .hero__pulse {
     gap: calc(1.3889 * var(--u));
 }
 
-/* значки тёмные — на чёрном делаем их светлыми */
 .outcome__icon {
     height: calc(5.5556 * var(--u));
     filter: invert(1);
@@ -1175,7 +1090,6 @@ body.is-intro-heart .hero__pulse {
     line-height: calc(4.1667 * var(--u));
 }
 
-/* пока число падает — оно красное и трясётся, значок дрожит */
 .outcome__stat--hit .outcome__value {
     color: #FF4D4D;
     animation: outcome-shake 0.09s linear infinite;
@@ -1186,7 +1100,6 @@ body.is-intro-heart .hero__pulse {
     animation: outcome-shake 0.12s linear infinite;
 }
 
-/* «−60$» и «−10%» падают сверху и остаются висеть */
 .outcome__delta {
     position: absolute;
     top: calc(4.1667 * var(--u));
@@ -1206,7 +1119,6 @@ body.is-intro-heart .hero__pulse {
     transform: translateY(0) rotate(-8deg);
 }
 
-/* шкала безопасности: светлая, заливку обрезает js через --level */
 .outcome__scale {
     position: relative;
     width: calc(25.0000 * var(--u));
@@ -1269,7 +1181,6 @@ body.is-intro-heart .hero__pulse {
 }
 
 
-/* деревья на тротуарах: положение, размер и прозрачность задаёт js (по перспективе дороги) */
 .street__tree {
     position: absolute;
     opacity: 0;
@@ -1281,21 +1192,15 @@ body.is-intro-heart .hero__pulse {
     display: block;
 }
 
-/* экран выбора остаётся под улицей — не даём ему ловить клики */
 body.is-street .choice {
     pointer-events: none;
 }
 
-/* на улице шапки нет */
 body.is-street .game-header {
     visibility: hidden;
 }
 
 
-/* ---------- лонгрид после первой главы ---------- */
-
-/* чёрный экран с тетрадью; проявляется и уходит по прокрутке (--longread от 0 до 1 задаёт js).
-   первое обучение лежит над улицей, но под отелем — отель проявляется поверх */
 .longread {
     position: absolute;
     top: 0;
@@ -1311,10 +1216,7 @@ body.is-street .game-header {
     pointer-events: none;
 }
 
-/* разворот тетради (1600 × 1000): при появлении чуть подлетает и выпрямляется до ровного — строки на обеих страницах на одном уровне.
-   --longread-page — когда тетрадь уходит, а чёрный фон остаётся (последняя тетрадь) */
 .notebook {
-    /* шаг линеек на странице: 44 из 1000 по высоте (страница во всю высоту тетради) */
     --line: calc(60.0000 * var(--u) * 0.044);
     position: relative;
     opacity: var(--longread-page, 1);
@@ -1333,7 +1235,6 @@ body.is-street .game-header {
     height: 100%;
 }
 
-/* пружина — поверх страниц и переворачиваемого листа */
 .notebook__rings {
     z-index: 3;
 }
@@ -1361,9 +1262,6 @@ body.is-street .game-header {
     height: 100%;
 }
 
-/* текст на странице: слева — после красного поля, справа — после пружины и до поля.
-   сверху — так, чтобы буквы первой строки стояли на первой линейке (она на 12.8% высоты страницы):
-   базовая линия в строке = половина строки + четверть размера шрифта, и ещё чуть выше самой линейки */
 .notebook__content {
     position: absolute;
     top: calc(12.8% - var(--line) / 2 - 0.25 * 1.5278 * var(--u) - 0.15 * var(--u));
@@ -1380,7 +1278,6 @@ body.is-street .game-header {
     left: 10%;
 }
 
-/* лист, который переворачивается: крепится к корешку и уходит налево (класс ставит js) */
 .notebook__leaf {
     position: absolute;
     top: 0;
@@ -1407,12 +1304,10 @@ body.is-street .game-header {
     backface-visibility: hidden;
 }
 
-/* обратная сторона листа — это уже левая страница следующего разворота */
 .notebook__face--back {
     transform: rotateY(180deg);
 }
 
-/* пока лист в воздухе, на нём лежит тень — к середине переворота гуще */
 .notebook__face::after {
     content: "";
     position: absolute;
@@ -1443,7 +1338,6 @@ body.is-street .game-header {
     }
 }
 
-/* каждый кусок текста появляется, будто его пишут ручкой слева направо (класс ставит js) */
 .longread__step {
     opacity: 0;
     clip-path: inset(0 100% 0 0);
@@ -1455,8 +1349,6 @@ body.is-street .game-header {
     clip-path: inset(0 0 0 0);
 }
 
-/* весь текст тетради стоит на линейках страницы: высота строки = шаг линеек (--line), пропуски между блоками — ровно одна линейка.
-   у разных размеров шрифта базовая линия в строке разная — крупный и мелкий текст чуть сдвинуты (top), чтобы буквы стояли на линейке */
 .longread__kicker {
     position: relative;
     top: calc(0.0347 * var(--u));
@@ -1467,8 +1359,6 @@ body.is-street .game-header {
     color: #8A8A8A;
 }
 
-/* в тетради всего два размера шрифта: заголовок и всё остальное.
-   разницу дают цвет, отступы, рукописная черта и пометка маркером */
 .longread__title {
     position: relative;
     top: calc(-0.1736 * var(--u));
@@ -1497,7 +1387,6 @@ body.is-street .game-header {
     font-weight: 400;
 }
 
-/* главная мысль выделена, как маркером от руки */
 .longread__mark {
     padding: 0 calc(0.4167 * var(--u));
     background-color: transparent;
@@ -1512,13 +1401,11 @@ body.is-street .game-header {
     color: #000000;
 }
 
-/* советы — на правой странице; первая строка пустая, чтобы «Лучше заранее:» стояло вровень с заголовком слева */
 .longread__tips {
     position: relative;
     padding-top: var(--line);
 }
 
-/* «Лучше заранее:» — размером заголовка */
 .longread__tips-title {
     position: relative;
     top: calc(-0.1736 * var(--u));
@@ -1536,7 +1423,6 @@ body.is-street .game-header {
     list-style: none;
 }
 
-/* пункт с рукописной галочкой */
 .longread__item {
     position: relative;
     padding-left: var(--line);
@@ -1560,7 +1446,6 @@ body.is-street .game-header {
     background-size: 100% 100%;
 }
 
-/* последняя строка — серее */
 .longread__tips-note {
     font-family: "Kom Post", sans-serif;
     font-size: calc(1.5278 * var(--u));
@@ -1570,9 +1455,6 @@ body.is-street .game-header {
 }
 
 
-/* ---------- рисунки под текстом тетради (нарисованы автором) ----------
-   стоят внутри блока текста (тогда при перелистывании переезжают на лист вместе с текстом),
-   поэтому координаты — в % от блока текста. на поле за красной линией заходят совсем чуть-чуть */
 .notebook__doodle {
     position: absolute;
     max-width: none;
@@ -1665,9 +1547,6 @@ body.is-street .game-header {
 }
 
 
-/* ---------- сцена 3: отель ---------- */
-
-/* проявляется плавно (--hotel от 0 до 1 задаёт js) */
 .hotel {
     position: absolute;
     top: 0;
@@ -1680,7 +1559,6 @@ body.is-street .game-header {
     pointer-events: none;
 }
 
-/* сцена с пропорциями фона (1440 × 998) — заполняет экран, как object-fit: cover */
 .hotel__stage {
     position: absolute;
     top: 0;
@@ -1698,7 +1576,6 @@ body.is-street .game-header {
     height: 100%;
 }
 
-/* затемнение фона, как на первом игровом экране */
 .hotel__shade {
     position: absolute;
     top: 0;
@@ -1709,8 +1586,6 @@ body.is-street .game-header {
     opacity: 0.4;
 }
 
-/* ресепшионист за стойкой, справа от монитора.
-   картинка обрезана по наклонной линии столешницы — всё, что ниже стола, не видно */
 .hotel__receptionist {
     position: absolute;
     top: 21.7435%;
@@ -1719,8 +1594,6 @@ body.is-street .game-header {
     clip-path: polygon(0% 0%, 100% 0%, 100% 87.52%, 0% 84.55%);
 }
 
-/* ресепшионист сначала не видна — мягко проявляется после реплик мальчика (класс ставит js).
-   именно проявляется, а не выезжает: её низ обрезан по столу и не должен двигаться */
 .hotel .hotel__receptionist {
     opacity: 0;
     transition: opacity 0.8s ease;
@@ -1730,8 +1603,6 @@ body.is-street .game-header {
     opacity: 1;
 }
 
-/* вторая поза (говорит) — та же фигура, стоит точно поверх первой.
-   срез по стойке пересчитан под её рамку, чтобы линия совпадала */
 .hotel__receptionist--2 {
     top: 25.0272%;
     left: 73.5751%;
@@ -1743,7 +1614,6 @@ body.is-street .game-header {
     opacity: 0;
 }
 
-/* как только она начинает говорить — позы меняются сразу, без растворения */
 .hotel--receptionist-talking .hotel__receptionist--1 {
     opacity: 0;
     transition: none;
@@ -1755,9 +1625,6 @@ body.is-street .game-header {
 }
 
 
-/* ---------- выбор в отеле: где поужинать ---------- */
-
-/* отель полностью уходит в черноту — как перед первым выбором */
 .hotel__dim {
     position: absolute;
     top: 0;
@@ -1773,18 +1640,15 @@ body.is-street .game-header {
     opacity: 1;
 }
 
-/* под отелем ещё лежит улица — без этого правило «на улице выбор не ловит клики» выключило бы кнопки */
 body.is-street .choice--hotel.choice--visible {
     pointer-events: auto;
 }
 
-/* поверх выбора уже проявился номер — кнопки под ним больше не ловят клики */
 body.is-room .choice--hotel.choice--visible,
 body.is-cafe .choice--hotel.choice--visible {
     pointer-events: none;
 }
 
-/* шапка растворяется в черноту, звук поднимается в угол — как на первом выборе */
 html body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .game-header {
     opacity: 0;
     transition: opacity 0.8s ease;
@@ -1794,8 +1658,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     top: calc(2.0833 * var(--u));
 }
 
-/* столешница — ровно там же, где она на фоне; лежит поверх ресепшиониста.
-   затемнена до той же яркости, что фон под чёрным прямоугольником 40% (ровно по своей форме) */
 .hotel__table {
     position: absolute;
     top: 54.5432%;
@@ -1804,10 +1666,7 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     filter: brightness(0.6);
 }
 
-/* в отеле шапка снова видна (во время выбора и на улице её прятали; html — чтобы перебить те правила) */
-/* ---------- сцена 4б: кафе (после выбора кафе) ---------- */
 
-/* лежит поверх отеля и экрана выбора, проявляется плавно (класс ставит js) */
 .cafe {
     position: absolute;
     top: 0;
@@ -1827,7 +1686,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     visibility: visible;
 }
 
-/* сцена с пропорциями фона (1536 × 905, низ картинки обрезан) — заполняет экран, как object-fit: cover */
 .cafe__stage {
     position: absolute;
     top: 50%;
@@ -1845,7 +1703,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     height: 100%;
 }
 
-/* затемнение фона, как на остальных игровых экранах */
 .cafe__shade {
     position: absolute;
     top: 0;
@@ -1857,7 +1714,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
 }
 
 
-/* слои кафе по размеру экрана: в них мальчик, девочка и реплики — от центра экрана, как в аэропорту */
 .cafe__people,
 .cafe__talk {
     position: absolute;
@@ -1868,7 +1724,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     pointer-events: none;
 }
 
-/* мальчик в своей обычной позе, левее; тот же размер и та же линия пола, что в аэропорту */
 .cafe__boy {
     position: absolute;
     bottom: calc(2.0833 * var(--u));
@@ -1877,8 +1732,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     max-width: none;
 }
 
-/* девочка с пиццей: сильно правее, на той же линии пола и в том же масштабе.
-   сначала её нет — выезжает справа (класс ставит js) */
 .cafe__girl {
     position: absolute;
     bottom: calc(-1.3889 * var(--u));
@@ -1913,7 +1766,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     opacity: 0;
 }
 
-/* в темноте она в балахоне и прижалась к левому краю экрана — видно только фонариком */
 .cafe--dark .cafe__girl {
     left: calc(-6.9444 * var(--u));
     opacity: 1;
@@ -1929,12 +1781,10 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     opacity: 1;
 }
 
-/* с фонариком на неё можно нажать */
 .cafe--flashlight .cafe__girl {
     pointer-events: auto;
 }
 
-/* реплики мальчика — на той же высоте и на том же расстоянии от него, что в аэропорту */
 .cafe .speech--cafe-1,
 .cafe .speech--cafe-3,
 .cafe .speech--cafe-4,
@@ -1943,7 +1793,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     left: calc(50% - calc(29.8611 * var(--u)));
 }
 
-/* итог кафе: свой чёрный фон (под итогом после такси чёрной была сама улица) */
 .outcome--cafe,
 .outcome--room,
 .outcome--alley,
@@ -1952,7 +1801,6 @@ body.is-hotel.is-hotel-choosing:not(.is-room):not(.is-cafe) .sound {
     background-color: #000000;
 }
 
-/* на этом чёрном экране шапки нет — цифры показывает сам итог, звук поднимается в угол */
 html body.is-hotel.is-dinner-outcome .game-header {
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -1962,7 +1810,6 @@ body.is-hotel.is-dinner-outcome .sound {
     top: calc(2.0833 * var(--u));
 }
 
-/* реплики девочки — на той же высоте, что у мальчика, хвостик справа — к ней */
 .cafe .speech--cafe-2,
 .cafe .speech--cafe-6 {
     right: calc(50% - calc(30.2083 * var(--u)));
@@ -1982,18 +1829,12 @@ body.is-hotel.is-dinner-outcome .sound {
     padding: 0 calc(1.0417 * var(--u));
 }
 
-/* свет включили — реплики из темноты уходят */
 .cafe--lit .speech--cafe-4,
 .cafe--lit .speech--cafe-5 {
     opacity: 0;
 }
 
 
-
-
-/* ---------- сцена 4: номер (после выбора доставки) ---------- */
-
-/* лежит поверх отеля и экрана выбора, проявляется плавно (класс ставит js) */
 .room {
     position: absolute;
     top: 0;
@@ -2014,8 +1855,6 @@ body.is-hotel.is-dinner-outcome .sound {
     visibility: visible;
 }
 
-/* сцена с пропорциями фона (1536 × 998) — заполняет экран, как object-fit: cover */
-/* номер (фон, мальчик, реплики и все слои поверх) опущен чуть ниже центра */
 .room__stage {
     position: absolute;
     top: calc(50% + calc(2.7778 * var(--u)));
@@ -2033,7 +1872,6 @@ body.is-hotel.is-dinner-outcome .sound {
     height: 100%;
 }
 
-/* затемнение фона, как на остальных игровых экранах */
 .room__shade {
     position: absolute;
     top: 0;
@@ -2044,8 +1882,6 @@ body.is-hotel.is-dinner-outcome .sound {
     opacity: 0.4;
 }
 
-/* мальчик сидит прямо на краю кровати, примерно посередине экрана, ноги на полу.
-   размер — как у мальчика на остальных экранах */
 .room__boy {
     position: absolute;
     top: 22%;
@@ -2054,14 +1890,12 @@ body.is-hotel.is-dinner-outcome .sound {
     max-width: none;
 }
 
-/* реплики мальчика в номере — справа от головы, на том же расстоянии от него, что и на других экранах */
 .room .speech--room-1,
 .room .speech--room-2 {
     bottom: 62.55%;
     left: 58.1%;
 }
 
-/* реплика девочки — между головой мальчика и её капюшоном, чуть выше лица; хвостик справа к ней, но головы не касается */
 .room .speech--girl-1 {
     right: 19.5%;
     bottom: 72%;
@@ -2069,12 +1903,10 @@ body.is-hotel.is-dinner-outcome .sound {
     height: calc(8.6111 * var(--u));
 }
 
-/* плашка девочки меньше — и отступы у текста меньше, чтобы фраза влезла */
 .room .speech--girl-1 .speech__text {
     padding: 0 calc(1.0417 * var(--u));
 }
 
-/* слой реплик поверх черноты и пугалки */
 .room__stage--talk {
     pointer-events: none;
 }
@@ -2083,9 +1915,7 @@ body.is-hotel.is-dinner-outcome .sound {
     padding: 0 calc(3.125 * var(--u));
 }
 
-/* ---------- глава 3: прогулка ---------- */
 
-/* улица поверх номера и кафе; проявляется по прокрутке (--walk ставит js) */
 .walk {
     position: absolute;
     top: 0;
@@ -2098,7 +1928,6 @@ body.is-hotel.is-dinner-outcome .sound {
     pointer-events: none;
 }
 
-/* сцена с пропорциями фона (1536 × 952, белая полоса внизу картинки обрезана) — заполняет экран, как object-fit: cover */
 .walk__stage {
     position: absolute;
     top: 50%;
@@ -2116,7 +1945,6 @@ body.is-hotel.is-dinner-outcome .sound {
     height: 100%;
 }
 
-/* затемнение фона, как на остальных игровых экранах */
 .walk__shade {
     position: absolute;
     top: 0;
@@ -2127,7 +1955,6 @@ body.is-hotel.is-dinner-outcome .sound {
     opacity: 0.4;
 }
 
-/* слой по размеру экрана: мальчик и реплики — от центра экрана, как в кафе */
 .walk__people {
     position: absolute;
     top: 0;
@@ -2137,7 +1964,6 @@ body.is-hotel.is-dinner-outcome .sound {
     pointer-events: none;
 }
 
-/* мальчик в куртке и с рюкзаком: тот же размер и та же линия пола, что в кафе */
 .walk__boy {
     position: absolute;
     bottom: calc(2.0833 * var(--u));
@@ -2146,15 +1972,12 @@ body.is-hotel.is-dinner-outcome .sound {
     max-width: none;
 }
 
-/* реплики мальчика — на обычной высоте и на том же расстоянии от него, что в кафе */
 .walk .speech--walk-1,
 .walk .speech--walk-2 {
     bottom: calc(41.6667 * var(--u));
     left: calc(50% - calc(29.8611 * var(--u)));
 }
 
-/* дед: справа, на той же линии пола, что и мальчик, сутулый — чуть ниже его;
-   сначала за краем экрана — выходит по прокрутке (js) */
 .walk__grandpa {
     position: absolute;
     right: calc(50% - calc(41.6667 * var(--u)));
@@ -2167,7 +1990,6 @@ body.is-hotel.is-dinner-outcome .sound {
     will-change: transform;
 }
 
-/* на улице шапка снова видна (итог ужина под улицей её прятал), звук — на обычном месте */
 html body.is-hotel.is-dinner-outcome.is-walk .game-header {
     opacity: var(--game, 0);
 }
@@ -2177,9 +1999,6 @@ body.is-hotel.is-dinner-outcome.is-walk .sound {
 }
 
 
-/* ---------- глава 3: выбор пути ---------- */
-
-/* улица полностью уходит в черноту — как перед прошлыми выборами */
 .walk__dim {
     position: absolute;
     top: 0;
@@ -2195,18 +2014,15 @@ body.is-hotel.is-dinner-outcome.is-walk .sound {
     opacity: 1;
 }
 
-/* под улицей ещё лежит улица первой главы — без этого правило «на улице выбор не ловит клики» выключило бы кнопки */
 body.is-street .choice--alley.choice--visible {
     pointer-events: auto;
 }
 
-/* поверх выбора уже проявился переулок (или людная улица) — кнопки под ним больше не ловят клики */
 body.is-alley .choice--alley.choice--visible,
 body.is-crowd .choice--alley.choice--visible {
     pointer-events: none;
 }
 
-/* шапка растворяется в черноту, звук поднимается в угол — как на прошлых выборах */
 html body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .game-header {
     opacity: 0;
     transition: opacity 0.8s ease;
@@ -2216,8 +2032,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     top: calc(2.0833 * var(--u));
 }
 
-
-/* ---------- глава 3: тёмный переулок ---------- */
 
 .alley {
     position: absolute;
@@ -2239,8 +2053,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     visibility: visible;
 }
 
-/* сцена с пропорциями фона (1129 × 802) — заполняет экран, как object-fit: cover.
-   с каждым поворотом чуть приближается и уходит в сторону поворота (--alley-zoom и --alley-shift ставит js) */
 .alley__stage {
     position: absolute;
     top: 50%;
@@ -2259,7 +2071,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     height: 100%;
 }
 
-/* затемнение фона: чем глубже в переулок, тем темнее (--alley-shade ставит js) */
 .alley__shade {
     position: absolute;
     top: 0;
@@ -2271,7 +2082,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     transition: opacity 1.2s ease;
 }
 
-/* мальчик и реплики — от центра экрана, как на улице */
 .alley__people,
 .alley__talk {
     position: absolute;
@@ -2295,13 +2105,11 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     left: calc(50% - calc(29.8611 * var(--u)));
 }
 
-/* подсказка, как бежать назад, — плашка шире: вся последовательность влезает в одну строку */
 .alley .speech--alley-tip {
     width: calc(38.8889 * var(--u));
     height: calc(13.7807 * var(--u));
 }
 
-/* резкая темнота: экран почти чёрный, мальчика едва видно */
 .alley__dark {
     position: absolute;
     top: 0;
@@ -2317,7 +2125,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     opacity: 0.86;
 }
 
-/* красная пульсация по краям экрана — в такт сердцу (--beat — длина удара, ставит js) */
 .alley__pulse {
     position: absolute;
     top: 0;
@@ -2333,12 +2140,10 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     animation: heart-pulse var(--beat, 900ms) ease-out infinite;
 }
 
-/* весь экран чуть вздрагивает на каждом ударе */
 .alley--dark .alley__people {
     animation: heart-shake var(--beat, 900ms) ease-out infinite;
 }
 
-/* «тук-тук»: два удара подряд, потом пауза */
 @keyframes heart-pulse {
     0% {
         opacity: 0.25;
@@ -2391,14 +2196,11 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     }
 }
 
-/* убежали — сердце успокаивается */
 .alley--safe .alley__pulse,
 .alley--safe .alley__people {
     animation: none;
 }
 
-/* зубы преследователя: в темноте их почти не видно — только на мгновения проступают за мальчиком.
-   чем ближе погоня (--chase от 0 до 1 ставит js), тем они крупнее и ближе */
 .alley__stalker {
     position: absolute;
     top: calc(12.5000 * var(--u));
@@ -2416,12 +2218,10 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     animation: stalker-glimpse 3.1s linear infinite;
 }
 
-/* во время побега мелькают чаще */
 .alley--escape .alley__stalker {
     animation-duration: 1.7s;
 }
 
-/* схватили — скример: зубы выпрыгивают на весь экран и трясутся */
 .alley--caught .alley__stalker {
     top: 50%;
     right: auto;
@@ -2434,7 +2234,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     animation: teeth-scream 1.8s ease-out both, teeth-glitch 0.7s linear both;
 }
 
-/* схватили — мальчик исчезает с помехами */
 .alley--visible.alley--caught .alley__boy {
     animation: boy-glitch-out 0.45s linear both;
 }
@@ -2444,7 +2243,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     animation: none;
 }
 
-/* глитч: картинку рвёт на полосы, они дёргаются в стороны, по краям — красный и голубой сдвиг */
 @keyframes teeth-glitch {
     0% {
         translate: 0 0;
@@ -2495,7 +2293,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     }
 }
 
-/* мальчика рвёт на полосы — и он пропадает */
 @keyframes boy-glitch-out {
     0% {
         opacity: 1;
@@ -2564,7 +2361,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     }
 }
 
-/* скример: из точки — сразу огромные, дрожат, потом бледнеют, чтобы под ними было видно «ещё раз» */
 @keyframes teeth-scream {
     0% {
         opacity: 1;
@@ -2603,7 +2399,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     }
 }
 
-/* «тук» и сразу второй «тук» — по краям экрана, в такт сердцу */
 .alley__thumps {
     position: absolute;
     top: 0;
@@ -2670,7 +2465,6 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     }
 }
 
-/* время на поворот кончается — переулок трясёт */
 .alley--hurry .alley__stage {
     animation: hurry-shake 0.14s linear infinite;
 }
@@ -2697,12 +2491,10 @@ body.is-walk.is-walk-choosing:not(.is-alley):not(.is-crowd) .sound {
     }
 }
 
-/* итог переулка — поверх мини-игры */
 .outcome--alley {
     z-index: 4;
 }
 
-/* на итоге переулка и в тетради после него шапки нет — цифры показывает сам итог, звук поднимается в угол */
 html body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .game-header {
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -2712,24 +2504,19 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     top: calc(2.0833 * var(--u));
 }
 
-/* третья тетрадь — поверх переулка */
 .longread--3 {
     z-index: 7;
 }
 
-/* реплика в темноте — поверх черноты */
 .alley__talk {
     z-index: 2;
 }
 
-/* начался побег — реплики больше нет, на экране только игра */
 .alley--escape .alley__talk,
 .alley--escape .alley__people .speech {
     opacity: 0;
 }
 
-
-/* ---------- глава 3: людная улица и карманники ---------- */
 
 .crowd {
     position: absolute;
@@ -2751,7 +2538,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     visibility: visible;
 }
 
-/* сцена с пропорциями фона (1280 × 832) — чуть больше экрана и приподнята: видно больше улицы под ногами */
 .crowd__stage {
     position: absolute;
     top: 50%;
@@ -2788,7 +2574,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     pointer-events: none;
 }
 
-/* мальчик и бабушка — на тех же местах и того же размера, что в других сценах */
 .crowd__boy {
     position: absolute;
     bottom: calc(2.0833 * var(--u));
@@ -2799,7 +2584,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     transition: left 0.8s cubic-bezier(0.45, 0, 0.2, 1);
 }
 
-/* началась игра: мальчик отходит правее, к середине, бабушка исчезает */
 .crowd--game .crowd__boy {
     left: calc(50% - calc(8.4635 * var(--u)));
 }
@@ -2809,7 +2593,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     transition: opacity 0.6s ease;
 }
 
-/* незнакомец подходит справа (класс crowd--stranger ставит js), а когда вора спугнули — уходит */
 .crowd__stranger {
     position: absolute;
     right: calc(50% - calc(41.6667 * var(--u)));
@@ -2831,8 +2614,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     transition: transform 0.9s ease-in;
 }
 
-/* вор и прохожий: стоят посередине экрана, а где именно — двигает js (translateX).
-   пока игры нет — далеко за краем */
 .crowd__figure {
     position: absolute;
     bottom: calc(2.0833 * var(--u));
@@ -2846,7 +2627,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     transform: translateX(-200vw);
 }
 
-/* вор — того же роста, что таксист (это его рисунок в балаклаве) */
 .crowd__thief {
     width: calc(14.2083 * var(--u));
     margin-left: calc(-7.1042 * var(--u));
@@ -2858,7 +2638,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     max-width: none;
 }
 
-/* идёт вправо — развёрнут вправо (рисунки смотрят влево) */
 .crowd__figure--right .crowd__figure-img {
     transform: scaleX(-1);
 }
@@ -2867,7 +2646,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     pointer-events: auto;
 }
 
-/* вор дотянулся — наклоняется к рюкзаку */
 .crowd__thief.crowd__figure--reach .crowd__figure-img {
     rotate: -7deg;
     transform-origin: 50% 100%;
@@ -2877,8 +2655,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     rotate: 7deg;
 }
 
-/* реплики: мальчика — над ним, незнакомца — над ним */
-/* реплики — на той же высоте и на том же расстоянии от героев, что в других сценах */
 .crowd .speech--boy {
     bottom: calc(41.6667 * var(--u));
     left: calc(50% - calc(29.8611 * var(--u)));
@@ -2889,12 +2665,10 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     bottom: calc(41.6667 * var(--u));
 }
 
-/* мальчик отошёл к середине — его реплика после кражи над ним там же */
 .crowd--game .speech--boy {
     left: calc(50% + calc(8.2031 * var(--u)));
 }
 
-/* во время игры — темно и страшно: улица темнеет, по краям пульсирует красное, «тук-тук» */
 .crowd__night {
     position: absolute;
     top: 0;
@@ -2906,7 +2680,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     transition: opacity 1.2s ease;
 }
 
-/* во время игры улица темнеет так же сильно, как тёмный переулок (люди поверх — их видно) */
 .crowd--game .crowd__night {
     opacity: 0.86;
 }
@@ -2923,7 +2696,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     animation-delay: calc(var(--beat, 640ms) * 0.2);
 }
 
-/* игра кончилась — сердце успокаивается, но фонари ещё в темноте */
 .crowd--won .crowd__pulse,
 .crowd--lost .crowd__pulse,
 .crowd--won .alley__thump,
@@ -2931,7 +2703,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     animation: none;
 }
 
-/* подсказка сверху, сразу под шапкой — не касается мальчика: что делать и сколько осталось времени */
 .crowd__alert {
     position: absolute;
     top: calc(2.0833 * var(--u));
@@ -2947,7 +2718,6 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     pointer-events: none;
 }
 
-/* пока вор лезет, на экране только подсказка — реплики не мешают */
 .crowd--alert .crowd__people .speech {
     opacity: 0;
 }
@@ -2973,13 +2743,11 @@ body.is-hotel.is-walk.is-alley.is-alley-outcome:not(.is-finale) .sound {
     text-shadow: 0 0 calc(0.6944 * var(--u)) rgba(224, 74, 74, 0.9);
 }
 
-/* пока вор лезет, шапка уходит — на её месте подсказка, подальше от мальчика */
 html body.is-hotel.is-walk.is-crowd:has(.crowd--alert) .game-header {
     opacity: 0;
     transition: opacity 0.4s ease;
 }
 
-/* на итоге людной улицы шапки нет — цифры показывает сам итог */
 html body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .game-header {
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -2989,13 +2757,10 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     top: calc(2.0833 * var(--u));
 }
 
-/* деньги не тронули — их на итоге не показываем */
 .outcome--no-money .outcome__stat--money {
     display: none;
 }
 
-
-/* ---------- финал: сообщение от мамы и «играть снова» ---------- */
 
 .finale {
     position: absolute;
@@ -3017,7 +2782,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     visibility: visible;
 }
 
-/* та же людная улица, что в игре с карманниками */
 .finale__stage {
     position: absolute;
     top: 50%;
@@ -3055,7 +2819,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     transition: opacity 0.6s ease;
 }
 
-/* мальчик и реплика — на обычных местах */
 .finale__boy {
     position: absolute;
     bottom: calc(2.0833 * var(--u));
@@ -3069,7 +2832,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     left: calc(50% - calc(29.8611 * var(--u)));
 }
 
-/* затемнение до 70% — поверх улицы; мальчика на экране больше нет */
 .finale__dark {
     position: absolute;
     top: 0;
@@ -3089,7 +2851,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     opacity: 0;
 }
 
-/* руки с телефоном: очень крупно, низ рук за краем экрана, поднимаются снизу */
 .finale__phone {
     position: absolute;
     top: 8svh;
@@ -3100,12 +2861,10 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     transition: transform 1.3s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
-/* сам телефон на картинке левее середины (его центр — на 42,9% ширины) — сдвигаем так, чтобы он встал ровно по центру экрана */
 .finale--phone .finale__phone {
     transform: translate(-42.9%, 0);
 }
 
-/* на экране с кнопкой телефон чуть поднимается — кнопка под пальцем оказывается выше */
 .finale--end .finale__phone {
     transform: translate(-42.9%, -10svh);
 }
@@ -3118,7 +2877,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     max-width: none;
 }
 
-/* экран с кнопкой — проступает поверх переписки, когда все сообщения прочитаны */
 .finale__screen--end {
     opacity: 0;
     transition: opacity 0.8s ease;
@@ -3128,7 +2886,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     opacity: 1;
 }
 
-/* «пустой экран» поверх каждого сообщения (координаты — в процентах картинки 1413 × 1751) */
 .finale__cover {
     position: absolute;
     background-color: #FFFFFF;
@@ -3167,7 +2924,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     opacity: 0;
 }
 
-/* кнопка «играть снова»: опущена так, что её правый край под большим пальцем; дышит — чуть больше и обратно */
 .finale__again {
     position: absolute;
     top: 43.69%;
@@ -3192,7 +2948,6 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     animation: again-pulse 1.4s ease-in-out infinite;
 }
 
-/* большой палец правой руки — поверх кнопки */
 .finale__thumb {
     opacity: 0;
     pointer-events: none;
@@ -3217,14 +2972,11 @@ body.is-hotel.is-walk.is-crowd.is-crowd-outcome:not(.is-finale) .sound {
     }
 }
 
-/* на улице шапка снова видна (итог главы 3 её больше не прячет), а когда достали телефон — уходит в черноту */
 html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     opacity: 0;
     transition: opacity 0.6s ease;
 }
 
-
-/* ---------- мини-игра: побег ---------- */
 
 .escape {
     position: absolute;
@@ -3270,7 +3022,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     text-align: center;
 }
 
-/* сколько поворотов уже пробежали: кружок на каждый */
 .escape__steps {
     display: flex;
     gap: calc(1.0417 * var(--u));
@@ -3289,7 +3040,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     opacity: 1;
 }
 
-/* сколько осталось времени на этот поворот */
 .escape__timer {
     width: calc(34.7222 * var(--u));
     height: calc(0.6944 * var(--u));
@@ -3305,12 +3055,10 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     transform-origin: 0% 50%;
 }
 
-/* последние мгновения — полоска краснеет */
 .escape__timer--hurry .escape__timer-fill {
     background-color: #E04A4A;
 }
 
-/* кнопки разбросаны по экрану случайно (left и top ставит js) и сжимаются, пока тает время (scale ставит js) */
 .escape__buttons {
     position: absolute;
     top: 0;
@@ -3332,7 +3080,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     line-height: calc(1.9444 * var(--u));
 }
 
-/* кнопка — рукописный белый кружок с текстом внутри */
 .escape__button {
     position: relative;
     width: calc(13.8889 * var(--u));
@@ -3376,7 +3123,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     color: #545353;
 }
 
-/* верно — кнопка вспыхивает, неверно — трясётся красным */
 .escape__button--right {
     animation: escape-right 0.25s ease;
 }
@@ -3421,7 +3167,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     }
 }
 
-/* итог побега: вместо кнопок — текст (и «ещё раз», если схватили) */
 .escape__result {
     display: none;
     flex-direction: column;
@@ -3453,15 +3198,11 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     display: none;
 }
 
-/* схватили — вспышка красным */
 .escape--caught {
     background-color: rgba(120, 0, 0, 0.35);
 }
 
 
-/* ---------- в номере гаснет свет ---------- */
-
-/* чернота поверх всего номера; резко «моргает» и гаснет (класс ставит js) */
 .room__blackout,
 .cafe__blackout {
     position: absolute;
@@ -3506,7 +3247,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     }
 }
 
-/* фонарик: в черноте прорезан мягкий круг вокруг курсора — под ним виден номер */
 .room--flashlight .room__blackout,
 .cafe--flashlight .cafe__blackout {
     -webkit-mask-image: radial-gradient(
@@ -3525,10 +3265,7 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     );
 }
 
-/* ---------- глаза в темноте ---------- */
 
-/* такие же глаза, как на первом экране, только маленькие; прячутся в черноте —
-   их видно только в круге фонарика, а зрачки следят за ним */
 .eye.room__eyes {
     width: 5.2%;
     height: auto;
@@ -3548,7 +3285,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     aspect-ratio: 18.4028 / 10.4861;
 }
 
-/* зрачки — в долях глаза, а не в единицах экрана (глаз здесь другого размера) */
 .room__eyes .eye__pupil--a {
     top: 41.3678%;
     left: 32.5104%;
@@ -3570,8 +3306,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     height: 32.4504%;
 }
 
-/* глаза появляются только с фонариком (не во время моргания света),
-   а при включённом свете исчезают сразу, без растворения */
 .room--flashlight .eye.room__eyes {
     opacity: 1;
 }
@@ -3580,12 +3314,10 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     transition: none;
 }
 
-/* на глаз посветили — он широко распахивается... */
 .room--dark .eye.room__eyes--seen {
     scale: 1.25;
 }
 
-/* ...и тут же зажмуривается и пропадает */
 .room--dark .eye.room__eyes--gone {
     opacity: 0;
     scale: 1.25 0.05;
@@ -3631,9 +3363,7 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     left: 53%;
 }
 
-/* ---------- пугалка: дверь и незнакомец ---------- */
 
-/* слой с пропорциями номера поверх черноты; перспектива — чтобы дверь открывалась в объёме */
 .room__stage--scare {
     pointer-events: none;
     perspective: calc(83.3333 * var(--u));
@@ -3645,8 +3375,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
 }
 
 
-
-/* проём двери — чёрная пустота в тёмно-серой раме */
 .room__doorway {
     position: absolute;
     top: 18.6373%;
@@ -3657,7 +3385,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     outline: calc(0.2778 * var(--u)) solid #3A393A;
 }
 
-/* дверь тёмно-серая, петли справа: открывается к нам */
 .room__door {
     position: absolute;
     top: 18.6373%;
@@ -3675,7 +3402,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     transform: rotateY(-78deg);
 }
 
-/* человек в балахоне: плавно проступает перед дверью, ростом почти с неё, лицо — чёрная пустота */
 .room__stranger {
     position: absolute;
     bottom: 26.5%;
@@ -3694,18 +3420,15 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     filter: brightness(0.42);
 }
 
-/* проступает из темноты перед дверью */
 .room--stranger .room__stranger {
     opacity: 1;
 }
 
-/* и очень медленно идёт к мальчику, пока ищем выключатель: останавливается справа от него посреди комнаты */
 .room--walk .room__stranger {
     z-index: 3;
     animation: stranger-walk 9s cubic-bezier(0.3, 0, 0.6, 1) forwards;
 }
 
-/* шаги: на ходу фигура чуть покачивается, дошла — стоит */
 .room--walk .room__stranger-body {
     animation: stranger-step 0.9s ease-in-out infinite alternate;
 }
@@ -3724,7 +3447,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     }
 }
 
-/* девочка — та же фигура, только уже при свете */
 .room__girl {
     position: absolute;
     top: 0;
@@ -3734,8 +3456,6 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     opacity: 0;
 }
 
-/* свет включили: двери в темноте больше нет, а вместо человека в балахоне — девочка с пиццей,
-   на том месте, куда он шёл (даже если не успел дойти) */
 .room--lit .room__stage--scare {
     opacity: 1;
 }
@@ -3773,13 +3493,11 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     }
 }
 
-/* когда появился фонарик или включили свет — мысль уходит */
 .room--flashlight .speech--room-2,
 .room--lit .speech--room-2 {
     opacity: 0;
 }
 
-/* сам фонарик рисуем у курсора: его стекло — в центре светового круга */
 .room__flashlight,
 .cafe__flashlight {
     position: absolute;
@@ -3798,18 +3516,15 @@ html body.is-hotel.is-walk.is-finale.is-finale-phone .game-header {
     opacity: 1;
 }
 
-/* вместо курсора — фонарик */
 body.is-flashlight,
 body.is-flashlight * {
     cursor: none;
 }
 
-/* верхний слой с пропорциями номера — только для кнопки выключателя */
 .room__stage--top {
     pointer-events: none;
 }
 
-/* выключатель: прозрачная кнопка поверх нарисованного выключателя (с запасом по краям) */
 .room__switch {
     position: absolute;
     top: 40.2%;
@@ -3826,12 +3541,10 @@ body.is-flashlight * {
     pointer-events: auto;
 }
 
-/* свет погас — значок звука поднимается в угол, как на других чёрных экранах */
 body.is-hotel.is-lights-out .sound {
     top: calc(2.0833 * var(--u));
 }
 
-/* свет погас — шапка тоже в черноте */
 html body.is-hotel.is-lights-out .game-header {
     opacity: 0;
     transition: none;
@@ -3842,13 +3555,10 @@ html body.is-hotel .game-header {
     visibility: visible;
 }
 
-/* и звук возвращается под шапку */
 body.is-hotel .sound {
     top: calc(7.2917 * var(--u));
 }
 
-
-/* ---------- шапка игры (общая для всех игровых экранов) ---------- */
 
 .game-header {
     position: fixed;
@@ -3861,7 +3571,6 @@ body.is-hotel .sound {
     pointer-events: none;
 }
 
-/* во время выбора шапка растворяется в черноту — так верхние глаза видны поверх неё */
 body.is-choosing .game-header {
     opacity: 0;
     transition: opacity 0.8s ease;
@@ -3875,7 +3584,6 @@ body.is-choosing .game-header {
     height: 100%;
 }
 
-/* слева: деньги и безопасность */
 .game-header__stats {
     position: absolute;
     top: 0;
@@ -3892,7 +3600,6 @@ body.is-choosing .game-header {
     gap: calc(0.8333 * var(--u));
 }
 
-/* все тексты шапки одного размера — 38px на десктопе */
 .game-header__text {
     font-family: "Kom Post", sans-serif;
     font-size: calc(2.6389 * var(--u));
@@ -3902,7 +3609,6 @@ body.is-choosing .game-header {
     white-space: nowrap;
 }
 
-/* сняли деньги — цифра коротко краснеет и вздрагивает */
 .game-header__money--hit {
     animation: money-hit 0.9s ease;
 }
@@ -3935,7 +3641,6 @@ body.is-choosing .game-header {
     }
 }
 
-/* значки вместо подписей «на счету» и «уровень безопасности» */
 .game-header__icon {
     display: block;
     flex-shrink: 0;
@@ -3951,7 +3656,6 @@ body.is-choosing .game-header {
     height: calc(3.4722 * var(--u));
 }
 
-/* шкала безопасности: пустые ячейки + залитые, обрезанные по --level */
 .game-header__scale {
     position: relative;
     width: calc(16.2500 * var(--u));
@@ -3977,7 +3681,6 @@ body.is-choosing .game-header {
     transition: clip-path 0.6s ease;
 }
 
-/* справа: глава */
 .game-header__chapter {
     position: absolute;
     top: 0;
@@ -3989,9 +3692,6 @@ body.is-choosing .game-header {
 }
 
 
-/* ---------- бургер и меню глав ---------- */
-
-/* шапка сама по себе не ловит клики — включаем их только у кнопки и меню, и только когда шапка видна */
 .game-header__burger {
     position: relative;
     width: calc(3.4722 * var(--u));
@@ -4013,8 +3713,6 @@ body.is-header-active .game-header__burger {
     transform: rotate(-4deg) scale(1.08);
 }
 
-/* три полоски и крестик лежат друг на друге: при открытии меню полоски
-   поворачиваются, сжимаются и тают, а на их месте раскручивается крестик (и обратно) */
 .game-header__burger-icon {
     position: absolute;
     top: 0;
@@ -4048,7 +3746,6 @@ body.is-header-active .game-header__burger {
     transform: translateX(-50%) rotate(0deg) scale(1);
 }
 
-/* само меню: рукописная белая плашка посреди экрана; выпрыгивает с пружинкой */
 .chapters-menu {
     position: fixed;
     top: 50%;
@@ -4070,7 +3767,6 @@ body.is-header-active .game-header__burger {
     transform: translate(-50%, -50%) scale(1) rotate(0deg);
 }
 
-/* пункты меню выезжают по очереди */
 .chapters-menu__item {
     opacity: 0;
     transform: translateY(calc(1.3889 * var(--u)));
@@ -4098,7 +3794,6 @@ body.is-header-active .game-header__burger {
     transition-delay: 0.2s;
 }
 
-/* пока меню открыто, всё под шапкой темнеет (шапка остаётся яркой) */
 .chapters-backdrop {
     position: fixed;
     top: 0;
@@ -4127,7 +3822,6 @@ body.is-menu-open .chapters-backdrop {
     height: 100%;
 }
 
-/* текущая глава и звук в меню — только на телефоне (там их нет в шапке) */
 .chapters-menu__current,
 .chapters-menu__sound {
     display: none;
@@ -4161,7 +3855,6 @@ body.is-menu-open .chapters-backdrop {
     transform: translateX(calc(0.6944 * var(--u)));
 }
 
-/* текущая глава — подчёркнута от руки (той же шкалой, что в шапке) */
 .chapters-menu__link--current {
     background-image: url("../img/scale-fill.svg");
     background-repeat: no-repeat;
@@ -4169,7 +3862,6 @@ body.is-menu-open .chapters-backdrop {
     background-size: calc(12.5000 * var(--u)) calc(0.4167 * var(--u));
 }
 
-/* главы, которых ещё нет */
 .chapters-menu__link:disabled {
     color: #3E3E3E;
     opacity: 0.4;
@@ -4182,11 +3874,6 @@ body.is-menu-open .chapters-backdrop {
 }
 
 
-/* ---------- динамика: персонажи «дышат» ---------- */
-
-/* едва заметное дыхание: фигура чуть вытягивается и опускается.
-   через свойство scale — оно не мешает transform, которым js двигает персонажей */
-/* только на сцене, которая сейчас на экране, — скрытые не тратят силы */
 .game__character,
 body.is-walk .walk__boy,
 body.is-walk .walk__grandpa,
@@ -4198,7 +3885,6 @@ body.is-walk .walk__grandpa,
     animation: idle-breathe 3.6s ease-in-out infinite;
 }
 
-/* у соседей дыхание не в такт — живее */
 .game__character--taxi,
 body.is-walk .walk__grandpa,
 .hotel__receptionist {
@@ -4206,7 +3892,6 @@ body.is-walk .walk__grandpa,
     animation-duration: 4.2s;
 }
 
-/* --char-scale — во сколько раз персонажи крупнее (на телефоне, см. mobile.css); дыхание поверх него */
 @keyframes idle-breathe {
     0% {
         scale: var(--char-scale, 1) var(--char-scale, 1);
@@ -4221,9 +3906,6 @@ body.is-walk .walk__grandpa,
     }
 }
 
-/* ---------- живые локации: свет фонарей и ламп ----------
-   пятно тёплого света поверх фона (координаты — в процентах картинки сцены).
-   анимация — только прозрачность маленьких пятен, и только на сцене, которая на экране */
 .lamp-glow {
     position: absolute;
     border-radius: 50%;
@@ -4234,25 +3916,21 @@ body.is-walk .walk__grandpa,
     pointer-events: none;
 }
 
-/* фонарь на улице: большое пятно под колпаком */
 .lamp-glow--street {
     width: 14%;
     height: 21.5385%;
 }
 
-/* шар-фонарь у тротуара */
 .lamp-glow--globe {
     width: 13%;
     height: 21%;
 }
 
-/* маленький фонарь у лестницы */
 .lamp-glow--small {
     width: 7%;
     height: 11.3%;
 }
 
-/* подвесная лампа в кафе: свет льётся вниз */
 .lamp-glow--pendant {
     width: 12%;
     height: 22%;
@@ -4261,7 +3939,6 @@ body.is-walk .walk__grandpa,
     transform-origin: 50% 0%;
 }
 
-/* вывеска «кафе»: розоватое неоновое свечение */
 .lamp-glow--neon {
     width: 13%;
     height: 9%;
@@ -4275,7 +3952,6 @@ body.is-walk .walk .lamp-glow,
     animation: lamp-breathe 3.4s ease-in-out infinite alternate;
 }
 
-/* у соседних фонарей свой ритм */
 .crowd__lamp--2,
 .walk__lamp--3,
 .cafe__lamp--2 {
@@ -4287,13 +3963,11 @@ body.is-walk .walk .lamp-glow,
     animation-delay: -2.2s !important;
 }
 
-/* барахлящий фонарь — иногда резко мигает */
 .crowd--visible .lamp-glow--flicker,
 body.is-walk .walk .lamp-glow--flicker {
     animation: lamp-flicker 6s linear infinite;
 }
 
-/* лампы в кафе: светятся и чуть покачиваются */
 .cafe--visible .lamp-glow--pendant {
     animation: lamp-breathe 3.4s ease-in-out infinite alternate, lamp-sway 5s ease-in-out infinite alternate;
 }
@@ -4302,7 +3976,6 @@ body.is-walk .walk .lamp-glow--flicker {
     animation: neon-flicker 4.5s linear infinite;
 }
 
-/* в тёмном кафе свет погас — и лампы тоже */
 .cafe--dark .lamp-glow {
     animation: none;
     opacity: 0;
@@ -4442,7 +4115,6 @@ body.is-walk .walk .lamp-glow--flicker {
     }
 }
 
-/* переулок: лампы на стенах барахлят — свет на мгновение проседает (пока не стемнело) */
 .alley__flicker {
     position: absolute;
     top: 0;
@@ -4488,7 +4160,6 @@ body.is-walk .walk .lamp-glow--flicker {
     }
 }
 
-/* плашка с репликой, пока висит, чуть покачивается */
 .speech--visible {
     animation: bubble-float 2.8s ease-in-out 0.5s infinite alternate;
 }
@@ -4503,7 +4174,6 @@ body.is-walk .walk .lamp-glow--flicker {
     }
 }
 
-/* иконки денег и безопасности на итогах слегка подпрыгивают (только на видимом итоге) */
 .outcome--visible:not(.outcome--behind) .outcome__icon {
     animation: icon-bob 2.2s ease-in-out infinite alternate;
 }
@@ -4524,7 +4194,6 @@ body.is-walk .walk .lamp-glow--flicker {
     }
 }
 
-/* варианты выбора, когда прилетели, едва заметно покачиваются — каждый в свою сторону */
 .choice--ready:not(.choice--made) .choice__option {
     animation: option-float 2.6s ease-in-out infinite alternate;
 }
@@ -4543,7 +4212,6 @@ body.is-walk .walk .lamp-glow--flicker {
     }
 }
 
-/* кто не любит движение на экране — фоновые покачивания выключены */
 @media (prefers-reduced-motion: reduce) {
     .speech--visible,
     .outcome__icon,
@@ -4559,7 +4227,6 @@ body.is-walk .walk .lamp-glow--flicker {
     }
 }
 
-/* заголовок выбора качнётся, когда появляется */
 .choice--visible .choice__title {
     animation: title-drop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
 }
@@ -4577,8 +4244,6 @@ body.is-walk .walk .lamp-glow--flicker {
 }
 
 
-/* ---------- глаз: общее ---------- */
-
 .eye {
     position: absolute;
     z-index: 1;
@@ -4588,7 +4253,6 @@ body.is-walk .walk .lamp-glow--flicker {
     transform: scaleX(-1);
 }
 
-/* --close от 0 (открыт) до 1 (закрыт) задаёт js по скроллу: открытый глаз плавно перетекает в закрытый */
 .eye__open {
     position: absolute;
     top: 0;
@@ -4635,8 +4299,6 @@ body.is-walk .walk .lamp-glow--flicker {
 }
 
 
-/* ---------- глаз a (eye1) ---------- */
-
 .eye--a {
     width: calc(25.9028 * var(--u));
     height: calc(16.3889 * var(--u));
@@ -4665,7 +4327,6 @@ body.is-walk .walk .lamp-glow--flicker {
     );
 }
 
-/* закрытый глаз a: веко по ширине и положению совпадает с разрезом открытого */
 .eye__closed--a {
     top: calc(3.8542 * var(--u));
     left: calc(1.6667 * var(--u));
@@ -4680,8 +4341,6 @@ body.is-walk .walk .lamp-glow--flicker {
     height: calc(4.7917 * var(--u));
 }
 
-
-/* ---------- глаз b (eye2) ---------- */
 
 .eye--b {
     width: calc(22.0833 * var(--u));
@@ -4708,7 +4367,6 @@ body.is-walk .walk .lamp-glow--flicker {
     );
 }
 
-/* закрытый глаз b повёрнут, чтобы повторять наклон открытого */
 .eye__closed--b {
     top: calc(3.2639 * var(--u));
     left: calc(0.9028 * var(--u));
@@ -4725,8 +4383,6 @@ body.is-walk .walk .lamp-glow--flicker {
     height: calc(7.0139 * var(--u));
 }
 
-
-/* ---------- глаз c (eye3) ---------- */
 
 .eye--c {
     width: calc(18.4028 * var(--u));
@@ -4752,7 +4408,6 @@ body.is-walk .walk .lamp-glow--flicker {
     );
 }
 
-/* закрытый верхний глаз повёрнут, чтобы повторять наклон открытого */
 .eye__closed--c {
     top: calc(-0.6597 * var(--u));
     left: calc(0.2153 * var(--u));
@@ -4769,10 +4424,6 @@ body.is-walk .walk .lamp-glow--flicker {
     height: calc(3.4028 * var(--u));
 }
 
-
-/* ---------- расстановка глаз на первом экране ---------- */
-/* по горизонтали — от центра экрана, чтобы на широких мониторах глаза оставались вокруг текста */
-/* верхние глаза — от верха экрана, средние — от центра экрана, нижний — от низа экрана */
 
 .hero__eye--1 {
     top: calc(4.8611 * var(--u));

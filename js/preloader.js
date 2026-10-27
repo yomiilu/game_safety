@@ -1,11 +1,6 @@
-// ---------- прелоадер ----------
-// полоса из нескольких шкал заполняется, пока грузятся картинки, шрифт и звук.
-// когда всё готово — появляется кнопка «начать». клик по ней разрешает звук и запускает сайт.
 
-// прелоадер показывается минимум столько (мс), чтобы полоса не мелькнула за долю секунды
 const preloaderMinDuration = 1500;
 
-// если звук долго не грузится — не ждём его дольше этого (мс)
 const audioWaitLimit = 5000;
 
 const preloader = {
@@ -27,7 +22,6 @@ function setupPreloader(onStart) {
     preloader.percent = document.querySelector(".preloader__percent");
     preloader.startButton = document.querySelector(".preloader__start");
 
-    // пока прелоадер на экране, страницу не листаем
     document.body.classList.add("is-loading");
 
     trackImages();
@@ -45,8 +39,6 @@ function setupPreloader(onStart) {
     requestAnimationFrame(updatePreloader);
 }
 
-
-// ---------- что ждём ----------
 
 function addTask() {
     preloader.total = preloader.total + 1;
@@ -69,7 +61,6 @@ function trackImages() {
             return;
         }
 
-        // ошибка загрузки тоже считается — иначе полоса застрянет
         image.addEventListener("load", finishTask, { once: true });
         image.addEventListener("error", finishTask, { once: true });
     });
@@ -107,15 +98,12 @@ function trackAudio() {
 }
 
 
-// ---------- полоса ----------
-
 function updatePreloader(now) {
     const delta = now - preloader.lastTime;
     preloader.lastTime = now;
 
     const actual = preloader.total > 0 ? preloader.loaded / preloader.total : 1;
 
-    // полоса догоняет реальную загрузку, но не быстрее, чем за preloaderMinDuration
     const maxStep = delta / preloaderMinDuration;
     preloader.shown = preloader.shown + Math.min(actual - preloader.shown, maxStep);
 
@@ -130,7 +118,6 @@ function updatePreloader(now) {
 }
 
 
-// каждая шкала заполняется своей частью: сначала первая, потом вторая и так далее
 function setPreloaderProgress(progress) {
     const count = preloader.fills.length;
 

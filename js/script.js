@@ -1,9 +1,4 @@
-// ---------- глаза следят за курсором ----------
 
-// все числа — в пикселях макета (как в svg-файлах глаза)
-// width — ширина глаза
-// centerX, centerY — центр зрачка в спокойном положении
-// rangeX, rangeY — насколько далеко зрачок может уйти от центра
 const eyeTypes = {
     a: {
         width: 373,
@@ -28,13 +23,10 @@ const eyeTypes = {
     }
 };
 
-// расстояние от глаза до курсора (в px экрана), на котором зрачок уходит до упора
 const fullLookDistance = 300;
 
-// плавность: чем меньше число, тем медленнее догоняет
 const smoothness = 0.12;
 
-// мелкое дрожание зрачков (в пикселях макета) и как часто оно меняется (мс)
 const tremorSize = 1.2;
 const tremorInterval = 120;
 
@@ -44,8 +36,6 @@ let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
 
 
-// «один vw макета» в пикселях — то же, что --u в css: min(1vw, 1.6vh)
-// --u в пикселях — так же, как в css (на телефоне единица крупнее: min(3vw, 1.4vh), см. mobile.css)
 function getDesignUnit() {
     if (mobileQuery.matches) {
         return Math.min(window.innerWidth * 3, window.innerHeight * 1.4) / 100;
@@ -66,9 +56,7 @@ function setupEyes() {
             pupil: eyeElement.querySelector(".eye__pupil"),
             type: type,
             isMirror: eyeElement.classList.contains("eye--mirror"),
-            // глаза на экране выбора всегда открыты — по скроллу не закрываются
             isAlwaysOpen: eyeElement.classList.contains("eye--always-open"),
-            // глаза в номере стоят на месте — только следят зрачками
             isStill: eyeElement.classList.contains("eye--still"),
             currentX: 0,
             currentY: 0,
@@ -87,7 +75,6 @@ function updatePupil(eye, now) {
     const rect = eye.element.getBoundingClientRect();
     const scale = rect.width / eye.type.width;
 
-    // центр зрачка на экране (у отражённого глаза центр тоже отражается)
     let centerX = eye.type.centerX * scale;
 
     if (eye.isMirror) {
@@ -104,16 +91,13 @@ function updatePupil(eye, now) {
     const angle = Math.atan2(dy, dx);
     const strength = Math.min(distance / fullLookDistance, 1);
 
-    // зрачок двигается по эллипсу, поэтому не выходит за свои границы
     let targetX = Math.cos(angle) * eye.type.rangeX * strength * scale;
     let targetY = Math.sin(angle) * eye.type.rangeY * strength * scale;
 
-    // внутри отражённого глаза ось x перевёрнута
     if (eye.isMirror) {
         targetX = -targetX;
     }
 
-    // нервное дрожание: время от времени зрачок чуть-чуть сдвигается
     if (now - eye.lastTremor > tremorInterval) {
         eye.tremorX = (Math.random() * 2 - 1) * tremorSize;
         eye.tremorY = (Math.random() * 2 - 1) * tremorSize * 0.5;
@@ -130,17 +114,12 @@ function updatePupil(eye, now) {
 }
 
 
-// ---------- глаз убегает от курсора ----------
-
-// запас вокруг глаза (в «vw макета», как --u в css), ближе которого курсор подойти не может
 const fleeMargin = 2;
 
-// как резко глаз отскакивает и как медленно возвращается на место
 const fleeSpeed = 0.6;
 const returnSpeed = 0.03;
 
 
-// курсор внутри овала вокруг глаза? возвращает «расстояние» (меньше 1 — внутри)
 function getOvalDistance(dx, dy, radiusX, radiusY) {
     const nx = dx / radiusX;
     const ny = dy / radiusY;
@@ -156,7 +135,6 @@ function updateFlee(eye) {
     const radiusX = rect.width / 2 + margin;
     const radiusY = rect.height / 2 + margin;
 
-    // где центр глаза сейчас и где его родное место
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const homeX = centerX - eye.fleeX;
@@ -167,11 +145,9 @@ function updateFlee(eye) {
     const distance = getOvalDistance(dx, dy, radiusX, radiusY);
 
     if (distance < 1) {
-        // курсор слишком близко — отталкиваем глаз от него на край овала
         let pushX = dx;
         let pushY = dy;
 
-        // если курсор прямо в центре — убегаем в случайную сторону
         if (distance < 0.01) {
             pushX = Math.random() - 0.5;
             pushY = Math.random() - 0.5;
@@ -184,7 +160,6 @@ function updateFlee(eye) {
         eye.fleeX = eye.fleeX + (targetX - centerX) * fleeSpeed;
         eye.fleeY = eye.fleeY + (targetY - centerY) * fleeSpeed;
     } else {
-        // курсор далеко — потихоньку возвращаемся, но только если дома курсора нет
         const homeDistance = getOvalDistance(homeX - mouseX, homeY - mouseY, radiusX, radiusY);
 
         if (homeDistance > 1) {
@@ -193,7 +168,6 @@ function updateFlee(eye) {
         }
     }
 
-    // глаз не уезжает за края экрана
     const minX = rect.width / 2 - homeX;
     const maxX = window.innerWidth - rect.width / 2 - homeX;
     const minY = rect.height / 2 - homeY;
@@ -206,24 +180,16 @@ function updateFlee(eye) {
 }
 
 
-// ---------- глаза закрываются по скроллу ----------
-
-// ВСЕ отметки прокрутки дальше — в «экранах»: 1 = прокрутили на одну высоту окна
-
-// на каком отрезке прокрутки глаза закрываются
 const closeStart = 0.16;
 const closeEnd = 0.44;
 
-// каждый следующий глаз закрывается чуть позже предыдущего
 const closeStagger = 0.03;
 
-// плавность закрывания
 const closeSmoothness = 0.2;
 
 let hero = null;
 
 
-// сколько экранов прокрутили внутри первой секции
 function getScrollProgress() {
     const rect = hero.getBoundingClientRect();
     const scrollLength = hero.offsetHeight - window.innerHeight;
@@ -233,8 +199,6 @@ function getScrollProgress() {
 }
 
 
-// css-переменная, которую обновляем каждый кадр: пишем, только если значение изменилось.
-// иначе браузер каждый кадр пересчитывает стили всего, что внутри элемента (на телефоне это и тормозит)
 function setStyleVar(element, name, value) {
     if (!element.styleVars) {
         element.styleVars = {};
@@ -249,7 +213,6 @@ function setStyleVar(element, name, value) {
 }
 
 
-// плавный переход от 0 к 1 между from и to
 function smoothStep(from, to, value) {
     const t = Math.min(Math.max((value - from) / (to - from), 0), 1);
 
@@ -268,15 +231,12 @@ function updateEyeClose(eye, index, progress) {
 }
 
 
-// ---------- пятно света за курсором ----------
-
 const light = {
     element: null,
     currentX: mouseX,
     currentY: mouseY
 };
 
-// свет тянется за курсором медленнее, чем зрачки — так жутче
 const lightSmoothness = 0.04;
 
 
@@ -295,14 +255,10 @@ function updateLight() {
 }
 
 
-// ---------- моргание лампы ----------
-
-// пауза между морганиями — случайная, от 1.2 до 4 секунд
 const flickerMinDelay = 1200;
 const flickerMaxDelay = 4000;
 const flickerDuration = 450;
 
-// шанс, что вместе с морганием текст ещё и дёрнется цветным двоением
 const glitchChance = 0.3;
 
 
@@ -327,24 +283,16 @@ function scheduleFlicker() {
 }
 
 
-// ---------- текст печатается как на печатной машинке ----------
-
-// задержка перед началом печати
 const typingStartDelay = 500;
 
-// скорость: случайная пауза между буквами, от и до (мс)
 const typingMinDelay = 25;
 const typingMaxDelay = 65;
 
-// дополнительная пауза после пробела и в конце строки
 const typingSpacePause = 40;
 const typingLinePause = 250;
 
-// скорость стирания (мс на букву)
 const erasingDelay = 15;
 
-// первое предложение стирается вместе с закрытием глаз (сколько глаза закрылись — столько букв стёрто),
-// глаза закрылись — печатается второе. назад, выше начала закрытия, — снова первое
 
 const typewriter = {
     isTyping: false,
@@ -354,14 +302,12 @@ const typewriter = {
     chars: [],
     shownSentence: -1,
     runId: 0,
-    // сейчас первое предложение стирается по прокрутке; typedCount — сколько букв было напечатано к началу стирания
     isErasing: false,
     typedCount: 0,
     visibleCount: -1
 };
 
 
-// текст из html: строки разделены <br>
 function readLines(html) {
     return html.split("<br>").map(function (line) {
         return line.trim();
@@ -369,8 +315,6 @@ function readLines(html) {
 }
 
 
-// раскладываем предложение на отдельные буквы, пока невидимые
-// место под весь текст занято сразу, поэтому строчки не прыгают
 function buildChars(lines) {
     const title = typewriter.title;
 
@@ -416,7 +360,6 @@ function setupTypewriter() {
 }
 
 
-// стираем то, что напечатано, и печатаем нужное предложение
 function showSentence(sentenceIndex) {
     if (typewriter.shownSentence === sentenceIndex) {
         return;
@@ -424,7 +367,6 @@ function showSentence(sentenceIndex) {
 
     typewriter.shownSentence = sentenceIndex;
 
-    // если предыдущая печать ещё идёт — она остановится, увидев новый номер
     typewriter.runId = typewriter.runId + 1;
 
     const runId = typewriter.runId;
@@ -476,7 +418,6 @@ function showSentence(sentenceIndex) {
 
         char.element.classList.add("hero__char--visible");
 
-        // курсор встаёт сразу после напечатанной буквы
         char.element.after(cursor);
 
         let delay = typingMinDelay + Math.random() * (typingMaxDelay - typingMinDelay);
@@ -498,14 +439,12 @@ function showSentence(sentenceIndex) {
 }
 
 
-// заголовок первого экрана виден, пока экран не начал уходить в черноту
 function isTitleOnScreen() {
     return getScrollProgress() < darkStart;
 }
 
 
 function updateText(progress) {
-    // звук печати заголовка — только пока заголовок на экране
     if (typewriter.isTyping) {
         const isOnScreen = progress < darkStart;
 
@@ -524,9 +463,7 @@ function updateText(progress) {
 
     const closed = getEyesClosed();
 
-    // глаза ещё открыты — на экране первое предложение
     if (progress < closeStart) {
-        // вернулись, когда первое предложение было уже частично стёрто, — печатаем его заново
         if (typewriter.isErasing) {
             typewriter.isErasing = false;
             typewriter.shownSentence = -2;
@@ -536,21 +473,18 @@ function updateText(progress) {
         return;
     }
 
-    // глаза закрылись — второе предложение
     if (closed >= 0.98) {
         typewriter.isErasing = false;
         showSentence(1);
         return;
     }
 
-    // глаза закрываются — первое предложение стирается в такт с ними
     if (typewriter.shownSentence === 0) {
         eraseWithEyes(closed);
     }
 }
 
 
-// насколько закрыты глаза первого экрана (среднее, от 0 до 1)
 function getEyesClosed() {
     let sum = 0;
     let count = 0;
@@ -566,9 +500,7 @@ function getEyesClosed() {
 }
 
 
-// оставляем видимой только часть первого предложения: чем сильнее закрыты глаза, тем меньше букв
 function eraseWithEyes(closed) {
-    // начало стирания: печать (если ещё шла) останавливаем
     if (!typewriter.isErasing) {
         typewriter.isErasing = true;
         typewriter.runId = typewriter.runId + 1;
@@ -594,7 +526,6 @@ function eraseWithEyes(closed) {
         char.element.classList.toggle("hero__char--visible", index < visibleCount);
     });
 
-    // курсор стоит сразу за последней оставшейся буквой
     if (visibleCount > 0) {
         typewriter.chars[visibleCount - 1].element.after(typewriter.cursor);
     } else if (typewriter.chars.length > 0) {
@@ -603,8 +534,6 @@ function eraseWithEyes(closed) {
 }
 
 
-// ---------- старт печати ----------
-
 function startIntroText() {
     setTimeout(function () {
         showSentence(0);
@@ -612,17 +541,12 @@ function startIntroText() {
 }
 
 
-// ---------- экран уходит в черноту ----------
-
-// на каком отрезке прокрутки экран темнеет полностью
 const darkStart = 1.6;
 const darkEnd = 2.4;
 
-// на каком отрезке из темноты проявляется игровой экран с шапкой
 const gameStart = 2.72;
 const gameEnd = 3.4;
 
-// как часто стучит сердце на первых чёрных экранах (мс на удар) — спокойнее, чем в переулке
 const introHeartbeat = 1000;
 
 
@@ -632,13 +556,10 @@ function updateDarkness(progress) {
 
     setStyleVar(light.element, "--dark", dark.toFixed(3));
 
-    // шапка стоит вне первого экрана, поэтому --game ставим на всю страницу
     setStyleVar(document.body, "--game", game.toFixed(3));
 
     updateCursorLight(dark * (1 - game));
 
-    // первые чёрные экраны (заставка, темнота, первый выбор): тихо стучит сердце, по краям краснеет.
-    // только после «начать» — до него звук всё равно не включится
     const isIntroDark = game < 0.5 || (choice.isShown && !document.body.classList.contains("is-street"));
     const isIntroHeart = isIntroDark && !document.body.classList.contains("is-loading");
 
@@ -652,7 +573,6 @@ function updateDarkness(progress) {
         }
     }
 
-    // шапка «активна» (по ней можно кликать), когда она полностью видна
     const isLightsOut = document.body.classList.contains("is-lights-out");
     const isHeaderActive = ((game > 0.9 && !document.body.classList.contains("is-choosing")) || document.body.classList.contains("is-hotel")) && !isLightsOut;
 
@@ -663,9 +583,6 @@ function updateDarkness(progress) {
     }
 }
 
-
-// ---------- переход к главе из меню ----------
-// предисловие — первый экран с глазами, глава 1 — начало игры в аэропорту
 
 function goToChapter(chapter) {
     if (chapter === "2") {
@@ -688,10 +605,7 @@ function goToChapter(chapter) {
 }
 
 
-// глава 2 начинается в отеле. если игрок ещё не выбирал такси — выбор делается за него
-// («поехать с мужчиной»)
 function goToHotel() {
-    // реплики аэропорта считаем прочитанными — иначе реплики отеля будут их ждать
     lines.forEach(function (line) {
         if (line.scene === "airport") {
             line.isFinished = true;
@@ -709,7 +623,6 @@ function goToHotel() {
         selectChoice(driverOption, true);
     }
 
-    // удар по цифрам после поездки считаем уже случившимся
     const ride = getRideOutcome();
 
     if (!ride.isStatsDone) {
@@ -724,7 +637,6 @@ function goToHotel() {
         });
     }
 
-    // поездка уже позади — машина не едет и не шумит
     drive.current = 1;
 
     const base = getHotelBase();
@@ -733,8 +645,6 @@ function goToHotel() {
 }
 
 
-// свет от курсора виден на любом чёрном экране:
-// первая темнота перед аэропортом, экран выбора и чёрный экран после поездки
 function updateCursorLight(firstDarkness) {
     let level = firstDarkness;
 
@@ -748,15 +658,12 @@ function updateCursorLight(firstDarkness) {
         level = Math.max(level, drive.blackout);
     }
 
-    // отель уже не чёрный экран — свет гаснет вместе с его появлением
     level = level * (1 - hotel.level);
 
-    // выбор в отеле — снова чёрный экран (пока поверх не проявился номер или кафе)
     if (hotelChoice.isShown && !room.isShown && !cafe.isShown) {
         level = 1;
     }
 
-    // в номере погас свет: пока нет фонарика — обычный свет от курсора, с фонариком — только он
     if (room.isDark) {
         level = room.isFlashlight ? 0 : 1;
     }
@@ -765,25 +672,20 @@ function updateCursorLight(firstDarkness) {
         level = cafe.isFlashlight ? 0 : 1;
     }
 
-    // чёрный экран итога кафе или доставки
     if (cafeOutcome.isShown || roomOutcome.isShown) {
         level = 1;
     }
 
-    // улица уже не чёрный экран — свет гаснет вместе с её появлением
     level = level * (1 - walk.level);
 
-    // выбор пути — снова чёрный экран (пока поверх не проявился переулок)
     if (walkChoice.isShown && !alley.isShown) {
         level = 1;
     }
 
-    // в переулке резко стемнело, потом — чёрный экран итога
     if (alley.isDark || alleyOutcome.isShown || crowdOutcome.isShown) {
         level = 1;
     }
 
-    // финал: светлая улица, потом руки с телефоном — свет от курсора не нужен
     if (finale.isShown) {
         level = 0;
     }
@@ -792,14 +694,6 @@ function updateCursorLight(firstDarkness) {
 }
 
 
-// ---------- персонажи выходят из-за края экрана ----------
-
-// selector — какой персонаж
-// start, end — на каком отрезке прокрутки он выходит
-// side — из-за какого края экрана выходит: "left" или "right"
-// scene: "hotel" — start/end считаются от момента, когда отель полностью проявился (необязательно)
-// scene: "walk" — от момента, когда полностью проявилась улица (необязательно)
-// waitForLine — не выходит, пока эта реплика не допечатана (необязательно)
 const characterSettings = [
     {
         selector: ".game__character--boy",
@@ -831,11 +725,9 @@ const characterSettings = [
     }
 ];
 
-// сколько шагов делает персонаж, пока выходит, и насколько подпрыгивает на каждом (в % своей высоты)
 const walkSteps = 6;
 const walkBounce = 1.2;
 
-// плавность ходьбы: если персонаж ждал и его «отпустили», он не прыгает, а доходит
 const walkSmoothness = 0.08;
 
 const characters = [];
@@ -868,7 +760,6 @@ function updateCharacter(character, progress) {
     let start = character.start;
     let end = character.end;
 
-    // в отеле (на улице) отметки считаются от момента, когда отель (улица) полностью проявился
     if (character.scene === "hotel" || character.scene === "walk") {
         const base = character.scene === "hotel" ? getHotelBase() : getWalkBase();
 
@@ -887,7 +778,6 @@ function updateCharacter(character, progress) {
         target = 0;
     }
 
-    // ждём, пока допечатается чужая реплика
     if (character.waitForLine) {
         const line = findLine(character.waitForLine);
 
@@ -904,10 +794,8 @@ function updateCharacter(character, progress) {
 
     const raw = character.walk;
 
-    // в конце пути — мягкое торможение
     const walk = 1 - (1 - raw) * (1 - raw);
 
-    // откуда выходит: ровно из-за края экрана (на любом мониторе), с небольшим запасом
     const element = character.element;
     const screenWidth = element.parentElement.offsetWidth;
     const reserve = element.offsetWidth * 0.2;
@@ -920,7 +808,6 @@ function updateCharacter(character, progress) {
 
     const x = startX * (1 - walk);
 
-    // подпрыгивание и лёгкое покачивание на каждом шаге, к концу затихает
     const step = Math.sin(raw * Math.PI * walkSteps);
     const fade = 1 - raw;
     const y = -Math.abs(step) * walkBounce * fade;
@@ -930,31 +817,13 @@ function updateCharacter(character, progress) {
 }
 
 
-// ---------- диалог: реплики в плашках по очереди ----------
-
-// реплики идут строго по порядку: следующая появляется, только когда
-// докрутили до её отметки И предыдущая уже допечатана. на экране всегда одна плашка.
-//
-// selector — какая плашка
-// from — с какой отметки прокрутки она может появиться
-// speed — скорость печати (2 — в два раза быстрее обычной)
-// waitForCharacter — ещё и ждёт, пока этот персонаж дойдёт до места (необязательно)
-// pose — какую позу принимает мальчик на этой реплике (необязательно)
-// waitFor — функция: реплика ждёт, пока она не вернёт true (необязательно)
-// scene: "hotel" — from считается от момента, когда отель полностью проявился (необязательно)
-// scene: "room" — from считается от выбора в отеле (номер появляется сразу после него)
-
-// когда в номере гаснет свет (в экранах прокрутки от выбора в отеле)
 const roomDarkFrom = 1;
 
-// в кафе: когда выезжает девочка с пиццей и когда гаснет свет (в экранах прокрутки от выбора в отеле)
 const cafeGirlFrom = 1;
 const cafeDarkFrom = 2.2;
 
-// в переулке: когда резко темнеет (в экранах прокрутки от выбора пути)
 const alleyDarkFrom = 2.9;
 
-// на людной улице: когда подходит бабушка и когда вор лезет в рюкзак (в экранах прокрутки от выбора пути)
 const crowdStrangerFrom = 0.8;
 const crowdTheftFrom = 1.9;
 
@@ -1029,7 +898,6 @@ const dialogue = [
         scene: "cafe",
         from: cafeGirlFrom,
         speed: 1,
-        // девочка заговорит, когда доедет до своего места
         waitFor: function () {
             return cafe.isGirlReady;
         }
@@ -1045,7 +913,6 @@ const dialogue = [
         scene: "cafe",
         from: cafeDarkFrom,
         speed: 1,
-        // в темноте (и после неё — когда свет уже снова включили)
         waitFor: function () {
             return cafe.isDark || cafe.isLit;
         }
@@ -1061,7 +928,6 @@ const dialogue = [
         scene: "cafe",
         from: cafeDarkFrom,
         speed: 1,
-        // после того как «преступника» нашли — свет снова есть
         waitFor: function () {
             return cafe.isLit;
         }
@@ -1071,12 +937,10 @@ const dialogue = [
         scene: "room",
         from: roomDarkFrom,
         speed: 1,
-        // девочка заговорит, только когда включили свет
         waitFor: function () {
             return room.isLit;
         }
     },
-    // глава 3: улица (отсчёт — от момента, когда улица полностью проявилась)
     {
         selector: ".speech--walk-1",
         scene: "walk",
@@ -1096,7 +960,6 @@ const dialogue = [
         speed: 1,
         waitForCharacter: ".walk__grandpa"
     },
-    // переулок: мальчик проговаривает повороты (отсчёт — от выбора пути)
     {
         selector: ".speech--alley-1",
         scene: "alley",
@@ -1121,14 +984,12 @@ const dialogue = [
         from: 1.8,
         speed: 1
     },
-    // мальчик сам себе объясняет, как бежать обратно
     {
         selector: ".speech--alley-tip",
         scene: "alley",
         from: 2.3,
         speed: 1
     },
-    // людная улица: бабушка отвлекает, вор лезет в рюкзак (отсчёт — от выбора пути)
     {
         selector: ".speech--crowd-1",
         scene: "crowd",
@@ -1155,7 +1016,6 @@ const dialogue = [
         scene: "crowd",
         from: crowdTheftFrom,
         speed: 1.5,
-        // после кражи: заметил вора или нет
         waitFor: function () {
             return crowd.phase === "won" || crowd.phase === "lost";
         }
@@ -1165,13 +1025,10 @@ const dialogue = [
         scene: "alley",
         from: alleyDarkFrom,
         speed: 1.5,
-        // в темноте, когда заколотилось сердце
         waitFor: function () {
             return alley.isDark;
         }
     },
-    // финал: мальчик выдыхает, потом ему пишут (отсчёт — от конца тетради главы 3).
-    // реплики финала — последние в списке: иначе реплика переулка, которая после побега остаётся «разрешённой», перебивала бы их
     {
         selector: ".speech--finale-0",
         scene: "finale",
@@ -1186,21 +1043,17 @@ const dialogue = [
     }
 ];
 
-// пауза между появлением плашки и началом печати (мс)
 const speechTypingDelay = 400;
 
-// запас (в экранах), чтобы реплика не мигала, если остановиться ровно на отметке
 const speechGap = 0.07;
 
 const lines = [];
 
-// какая реплика сейчас на экране (-1 — никакая)
 let currentLine = -1;
 
 let boyPoses = null;
 
 
-// раскладываем каждую фразу на невидимые буквы — место под текст занято сразу
 function setupDialogue() {
     dialogue.forEach(function (settings) {
         const element = document.querySelector(settings.selector);
@@ -1227,7 +1080,6 @@ function setupDialogue() {
 }
 
 
-// раскладываем текст реплики на невидимые буквы (и заново — если текст поменяли)
 function buildLineChars(line) {
     const textElement = line.element.querySelector(".speech__inner");
     const text = readSpeechText(textElement);
@@ -1236,7 +1088,6 @@ function buildLineChars(line) {
     line.chars = [];
 
     for (let i = 0; i < text.length; i++) {
-        // перенос строки, заданный в html через <br>
         if (text[i].isBreak) {
             textElement.appendChild(document.createElement("br"));
             continue;
@@ -1247,7 +1098,6 @@ function buildLineChars(line) {
         char.className = "speech__char";
         char.textContent = text[i].char;
 
-        // самое важное в реплике — чёрным
         if (text[i].isKey) {
             char.classList.add("speech__char--key");
         }
@@ -1262,14 +1112,12 @@ function buildLineChars(line) {
 }
 
 
-// новый текст реплики (html с <b class="speech__key">); пока она ещё не показана
 function setLineText(line, html) {
     line.element.querySelector(".speech__inner").innerHTML = html;
     buildLineChars(line);
 }
 
 
-// текст реплики по буквам: у каждой буквы помечено, важная ли она (в html — внутри <b class="speech__key">)
 function readSpeechText(textElement) {
     const letters = [];
 
@@ -1283,7 +1131,6 @@ function readSpeechText(textElement) {
         }
 
         const isKey = node.nodeType === 1 && node.classList.contains("speech__key");
-        // неразрывные пробелы (&nbsp;) оставляем — они держат слова в одной строке
         const part = node.textContent.replace(/[ \t\n\r]+/g, " ");
 
         for (let i = 0; i < part.length; i++) {
@@ -1294,7 +1141,6 @@ function readSpeechText(textElement) {
         }
     });
 
-    // пробелы рядом с <br> не нужны
     for (let i = letters.length - 1; i >= 0; i--) {
         const isNearBreak = (letters[i - 1] && letters[i - 1].isBreak) || (letters[i + 1] && letters[i + 1].isBreak);
 
@@ -1303,7 +1149,6 @@ function readSpeechText(textElement) {
         }
     }
 
-    // пробелы по краям (от переносов строк в html) не нужны
     while (letters.length && letters[0].char === " ") {
         letters.shift();
     }
@@ -1330,16 +1175,12 @@ function setLineCharsVisible(line, isVisible) {
 }
 
 
-// кто сейчас говорит: на телефоне камера отъезжает на этого персонажа
-// (метка остаётся, пока не заговорит кто-то другой; на компьютере ничего не меняет)
 function setSpeaker(isBoy) {
     document.body.classList.toggle("is-speaker-boy", isBoy);
     document.body.classList.toggle("is-speaker-other", !isBoy);
 }
 
 
-// на телефоне все реплики — на одной высоте: сразу под шапкой, с одинаковым отступом.
-// плашки лежат в разных сценах (у номера и отеля своя высота), поэтому место считаем от того, где сцена на экране
 const speechTopGap = 2.0833;
 
 function placeSpeech(line) {
@@ -1375,7 +1216,6 @@ function showLine(line) {
 
     setSpeaker(line.element.classList.contains("speech--boy"));
 
-    // реплика уже была допечатана (её просто ненадолго прятали) — показываем целиком
     if (line.isFinished) {
         setLineCharsVisible(line, true);
         return;
@@ -1420,7 +1260,6 @@ function showLine(line) {
 }
 
 
-// повернули телефон или сменился размер окна — реплику на экране ставим заново
 window.addEventListener("resize", function () {
     if (currentLine >= 0) {
         placeSpeech(lines[currentLine]);
@@ -1429,7 +1268,6 @@ window.addEventListener("resize", function () {
 
 
 function hideLine(line) {
-    // если реплику прервали посреди печати — потом начнём её заново
     if (!line.isFinished) {
         setLineCharsVisible(line, false);
         stopTypewriterSound(line.selector);
@@ -1440,8 +1278,6 @@ function hideLine(line) {
 }
 
 
-// может ли реплика с этим номером быть на экране
-// с какой отметки прокрутки реплика может появиться
 function getLineFrom(line) {
     if (line.scene === "hotel") {
         const base = getHotelBase();
@@ -1489,7 +1325,6 @@ function getLineFrom(line) {
 }
 
 
-// у номера и кафе — свои ветки реплик: реплика ждёт предыдущую только из общей части или своей ветки
 function getLineBranch(line) {
     if (line.scene === "room" || line.scene === "cafe" || line.scene === "alley" || line.scene === "crowd" || line.scene === "finale") {
         return line.scene;
@@ -1540,19 +1375,16 @@ function canShowLine(index, progress) {
 
 
 function updateDialogue(progress) {
-    // если прокрутили назад, выше отметки реплики — забываем, что она была допечатана
     lines.forEach(function (line) {
         if (progress < getLineFrom(line) - speechGap) {
             line.isFinished = false;
         }
     });
 
-    // идём по порядку, пока реплики разрешены — последняя разрешённая и будет на экране
     let target = -1;
 
     for (let i = 0; i < lines.length; i++) {
         if (!canShowLine(i, progress)) {
-            // реплики сцены, которой сейчас нет (другая ветка выбора), просто пропускаем
             if (getLineFrom(lines[i]) === Infinity) {
                 continue;
             }
@@ -1563,12 +1395,10 @@ function updateDialogue(progress) {
         target = i;
     }
 
-    // чтобы не мигало на отметке: назад уходим, только когда отъехали от неё с запасом
     if (target < currentLine && currentLine >= 0 && progress >= getLineFrom(lines[currentLine]) - speechGap) {
         target = currentLine;
     }
 
-    // во время выбора и на улице плашек аэропорта на экране нет (реплики в отеле и номере — можно)
     if (choice.isShown && (target < 0 || lines[target].scene === "airport")) {
         target = -1;
     }
@@ -1585,7 +1415,6 @@ function updateDialogue(progress) {
         currentLine = target;
     }
 
-    // поза мальчика зависит от того, какая реплика на экране (во время выбора — задумчивая)
     let pose = currentLine >= 0 ? lines[currentLine].pose : 1;
 
     if (choice.isShown) {
@@ -1596,10 +1425,6 @@ function updateDialogue(progress) {
 }
 
 
-// ---------- ВРЕМЕННО: пропуск текста по клику ----------
-// клик в любом месте (кроме кнопок, ползунка и экрана выбора) сразу допечатывает
-// то, что сейчас печатается: заголовок первого экрана, реплику или текст на чёрном экране.
-// чтобы убрать — поставь false
 const allowClickSkip = true;
 
 
@@ -1614,7 +1439,6 @@ function skipCurrentLine() {
         return;
     }
 
-    // останавливаем печать и показываем фразу целиком
     line.runId = line.runId + 1;
     line.isFinished = true;
 
@@ -1623,8 +1447,6 @@ function skipCurrentLine() {
 }
 
 
-// заголовок первого экрана: сразу показываем нужное предложение целиком
-// (даже если старое ещё стиралось)
 function skipTitle() {
     if (!typewriter.isTyping) {
         return;
@@ -1646,7 +1468,6 @@ function skipTitle() {
 }
 
 
-// текст на чёрных экранах-итогах (после такси, после кафе)
 function skipOutcomeText() {
     [outcome, driverOutcome, cafeOutcome, roomOutcome, alleyOutcome, crowdOutcome].forEach(function (o) {
         if (!o.isShown || o.isTextFinished) {
@@ -1682,15 +1503,10 @@ function setupClickSkip() {
 }
 
 
-// ---------- выбор игрока ----------
-
-// с какой отметки прокрутки появляется выбор (и только когда последняя реплика допечатана)
 const choiceFrom = 8.4;
 
-// через сколько (мс) варианты успевают выехать
 const choiceReadyDelay = 1400;
 
-// через сколько (мс) после выбора появляется следующая сцена
 const streetDelay = 900;
 
 const choice = {
@@ -1698,7 +1514,6 @@ const choice = {
     game: null,
     options: [],
     isShown: false,
-    // что выбрал игрок: "driver" — частник, "official" — официальное такси, null — ещё не выбрал
     selected: null
 };
 
@@ -1718,7 +1533,6 @@ function setupChoice() {
 }
 
 
-// isInstant — улица появляется сразу, без паузы (переход по меню глав)
 function selectChoice(option, isInstant) {
     choice.selected = option.dataset.choice;
 
@@ -1729,7 +1543,6 @@ function selectChoice(option, isInstant) {
     choice.element.classList.add("choice--ready");
     choice.element.classList.add("choice--made");
 
-    // сообщаем остальному коду, что выбор сделан (пригодится для следующих сцен)
     document.dispatchEvent(new CustomEvent("player-choice", {
         detail: {
             choice: choice.selected
@@ -1745,15 +1558,12 @@ function selectChoice(option, isInstant) {
     }
 
     setTimeout(function () {
-        // за это время игрок мог прокрутить назад и передумать
         if (choice.isShown && choice.selected === selected) {
             showStreet(selected);
         }
     }, streetDelay);
 }
 
-
-// ---------- сцена 2: улица ----------
 
 let street = null;
 
@@ -1765,7 +1575,6 @@ function showStreet(selected) {
 
     document.body.classList.add("is-street");
 
-    // поездка начинается с того места, где сделан выбор; дальше можно листать
     drive.start = getScrollProgress();
     drive.isActive = true;
 
@@ -1789,18 +1598,11 @@ function hideStreet() {
 }
 
 
-// ---------- поездка по улице ----------
-// машина медленно едет к нам, деревья уезжают вдаль к точке схода дороги, снизу выплывают новые.
-// все координаты — в % от сцены улицы (она повторяет пропорции фона)
-
-// точка схода дороги на фоне
 const vanishX = 15.75;
 const vanishY = 33.7;
 
-// пропорции сцены (ширина / высота фона) — нужны, чтобы пересчитать высоту картинок в %
 const stageRatio = 1556 / 898;
 
-// тротуары: где стоит основание дерева «на макете» (глубина 1) и какой оно там высоты
 const treeLanes = {
     "left": {
         baseX: 7.125,
@@ -1819,7 +1621,6 @@ const treeLanes = {
     }
 };
 
-// виды деревьев: картинка и её пропорции (высота / ширина)
 const treeTypes = [
     {
         src: "img/tree1.svg",
@@ -1835,35 +1636,26 @@ const treeTypes = [
     }
 ];
 
-// длина поездки в экранах прокрутки и насколько за это время деревья уезжают вдаль
 const driveLength = 4;
 const driveDistance = 3.3;
 
-// плавность: поездка догоняет скролл, а не дёргается вместе с колесом мыши
 const driveSmoothness = 0.06;
 
-// насколько машина «подъезжает» к нам за всю поездку (1.28 — вырастает на 28%)
 const carApproach = 1.28;
 
-// тряска машины: насколько подпрыгивает (в % своей высоты) и как часто (раз в секунду)
 const carBounce = 0.35;
 const carBounceSpeed = 9;
 
-// когда дерево растворяется вдали: при каком размере начинает и при каком исчезает совсем
 const treeFadeFrom = 0.55;
 const treeFadeTo = 0.3;
 
-// когда дерево выплывает снизу: при каком размере оно ещё полупрозрачное и с какой прозрачностью
 const treeAppearFrom = 2.2;
 const treeAppearTo = 1.3;
 const treeAppearOpacity = 0.4;
 
-// деревья идут по кругу: на какой глубине дерево уже полностью растворилось
-// и на сколько его отодвинуть назад (3 дерева на тротуаре × расстояние 1.2 между ними)
 const treeRespawnDepth = 1 / treeFadeTo;
 const treeCyclePeriod = 3.6;
 
-// после поездки улица уходит в черноту (в экранах прокрутки)
 const blackoutDelay = 0.2;
 const blackoutLength = 0.8;
 
@@ -1871,12 +1663,10 @@ let streetBlackout = null;
 
 const drive = {
     isActive: false,
-    // насколько улица уже ушла в черноту после поездки (0–1)
     blackout: 0,
     isSoundOn: false,
     start: 0,
     current: 0,
-    // куда смотрит камера на телефоне (последнее записанное --drive)
     camera: "",
     trees: [],
     cars: []
@@ -1884,15 +1674,12 @@ const drive = {
 
 
 function setupDrive() {
-    // какое дерево последним встало на каждый тротуар — следующее будет другим
     const lastTypeOnLane = {};
 
     document.querySelectorAll(".street__tree").forEach(function (element) {
         const depth = Number(element.dataset.depth);
         const laneName = element.dataset.lane;
 
-        // деревья с макета (глубина 1) остаются как есть, остальные — случайного вида,
-        // но не такого же, как предыдущее дерево на этом тротуаре
         let type = treeTypes.find(function (treeType) {
             return element.getAttribute("src") === treeType.src;
         });
@@ -1913,12 +1700,10 @@ function setupDrive() {
             lane: treeLanes[element.dataset.lane],
             type: type,
             depth: depth,
-            // сколько раз дерево уже уехало вдаль и вернулось снизу
             cycle: 0
         });
     });
 
-    // запоминаем, какое дерево последним выплывет на каждом тротуаре
     Object.keys(treeLanes).forEach(function (laneName) {
         treeLanes[laneName].lastSpawned = lastTypeOnLane[laneName];
     });
@@ -1926,13 +1711,10 @@ function setupDrive() {
     drive.cars = document.querySelectorAll(".street__car");
     streetBlackout = document.querySelector(".street__blackout");
 
-    // расставляем деревья, как на макете, ещё до поездки
     updateTrees(0);
 }
 
 
-// дерево на глубине depth: чем дальше, тем меньше и ближе к точке схода
-// дерево уехало вдаль и растворилось — возвращаем его вниз другим видом
 function respawnTree(tree) {
     const lane = tree.lane;
 
@@ -1951,7 +1733,6 @@ function placeTree(tree, distance) {
     let depth = tree.depth + distance;
     let cycle = 0;
 
-    // деревья идут по кругу: растворилось вдали — снова выплывает снизу
     while (depth > treeRespawnDepth) {
         depth = depth - treeCyclePeriod;
         cycle = cycle + 1;
@@ -1962,7 +1743,6 @@ function placeTree(tree, distance) {
         respawnTree(tree);
     }
 
-    // ещё не выехало снизу экрана
     if (depth <= 0.25) {
         tree.element.style.opacity = 0;
         return;
@@ -1971,7 +1751,6 @@ function placeTree(tree, distance) {
     const scale = 1 / depth;
     const lane = tree.lane;
 
-    // все деревья на одном тротуаре одного роста, ширина — по пропорциям картинки
     const height = lane.height * scale;
     const width = height / (tree.type.ratio * stageRatio);
     const baseX = vanishX + (lane.baseX - vanishX) * scale;
@@ -1981,10 +1760,8 @@ function placeTree(tree, distance) {
     tree.element.style.left = (baseX - width / 2) + "%";
     tree.element.style.top = (baseY - height) + "%";
 
-    // ближние деревья — поверх дальних
     tree.element.style.zIndex = Math.round(scale * 100);
 
-    // вдали — растворяется до нуля, у нижнего края — мягко проявляется (не с нуля)
     const fadeOut = smoothStep(treeFadeTo, treeFadeFrom, scale);
     const fadeIn = 1 - smoothStep(treeAppearTo, treeAppearFrom, scale) * (1 - treeAppearOpacity);
 
@@ -2004,7 +1781,6 @@ function updateTrees(progress) {
 function updateCars(progress, now) {
     const scale = 1 + (carApproach - 1) * progress;
 
-    // тряска: два наложенных колебания, чтобы было похоже на неровную дорогу
     const time = now / 1000;
     const bounce = Math.abs(Math.sin(time * carBounceSpeed)) * carBounce + Math.sin(time * carBounceSpeed * 2.3) * carBounce * 0.3;
     const tilt = Math.sin(time * carBounceSpeed * 0.7) * 0.25;
@@ -2015,7 +1791,6 @@ function updateCars(progress, now) {
 }
 
 
-// звук машины: играет, пока она едет; доехала — быстро затихает, отмотали назад — снова едет
 const carSoundOffAt = 0.97;
 
 
@@ -2043,7 +1818,6 @@ function updateDrive(progress, now) {
 
     drive.current = drive.current + (target - drive.current) * driveSmoothness;
 
-    // улица уже ушла в черноту и машина доехала — деревья и машину больше не двигаем (их не видно)
     const isHidden = drive.blackout >= 0.999 && Math.abs(target - drive.current) < 0.001;
 
     if (!isHidden) {
@@ -2051,8 +1825,6 @@ function updateDrive(progress, now) {
         updateCars(drive.current, now);
     }
 
-    // на телефоне камера по ходу поездки переезжает с машины на деревья у дороги (на компьютере не используется).
-    // пишем, только когда значение изменилось, — иначе стиль улицы пересчитывается каждый кадр
     const camera = smoothStep(0.15, 0.65, drive.current).toFixed(3);
 
     if (camera !== drive.camera) {
@@ -2060,7 +1832,6 @@ function updateDrive(progress, now) {
         street.style.setProperty("--drive", camera);
     }
 
-    // доехали — экран уходит в черноту
     const blackoutStart = drive.start + driveLength + blackoutDelay;
     const blackout = smoothStep(blackoutStart, blackoutStart + blackoutLength, progress);
 
@@ -2071,7 +1842,6 @@ function updateDrive(progress, now) {
 }
 
 
-// прокрутили назад к диалогу — выбор сбрасывается, можно выбрать заново
 function resetChoice() {
     choice.selected = null;
     choice.element.classList.remove("choice--made");
@@ -2090,12 +1860,9 @@ function showChoice() {
     choice.game.classList.add("game--choice");
     document.body.classList.add("is-choosing");
 
-    // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал —
-    // так после выбора всегда останется место для поездки
     window.scrollTo(0, hero.offsetTop + (choiceFrom + 0.02) * window.innerHeight);
     document.body.classList.add("is-choice-locked");
 
-    // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
     setTimeout(function () {
         if (choice.isShown) {
             choice.element.classList.add("choice--ready");
@@ -2105,14 +1872,12 @@ function showChoice() {
 
 
 function updateChoice(progress) {
-    // выбор появляется после «х-ммм, дай мне подумать» (реплики отеля идут уже после выбора)
     const lineBeforeChoice = findLine(".speech--boy-2");
 
     if (!choice.isShown && progress >= choiceFrom && lineBeforeChoice.isFinished) {
         showChoice();
     }
 
-    // прокрутили назад — выбор прячется, снова видна последняя реплика
     if (choice.isShown && progress < choiceFrom - speechGap) {
         choice.isShown = false;
         choice.element.classList.remove("choice--visible");
@@ -2126,25 +1891,17 @@ function updateChoice(progress) {
 }
 
 
-// ---------- последствия выбора «официальное такси» ----------
-// на чёрном экране после поездки печатается текст, потом — удар по деньгам и безопасности
-
-// когда появляется текст и когда — цифры (в экранах прокрутки от начала поездки)
 const outcomeTextFrom = 5.1;
 const outcomeStatsFrom = 5.7;
 
-// что было и что стало
 const outcomeMoneyFrom = 320;
 const outcomeMoneyTo = 260;
 const outcomeSafetyFrom = 97;
 const outcomeSafetyTo = 87;
 
-// длительность падения каждой цифры и пауза между ними (мс)
 const outcomeCountDuration = 1300;
 const outcomePause = 500;
 
-// один экран-итог: текст печатается, потом удар по деньгам и безопасности.
-// таких экранов несколько (после такси, после кафе), поэтому всё хранится в объекте экрана
 function createOutcome(selector, soundOwner) {
     return {
         selector: selector,
@@ -2155,13 +1912,11 @@ function createOutcome(selector, soundOwner) {
         money: null,
         safety: null,
         chars: [],
-        // что было и что стало: { money, safety }
         from: null,
         to: null,
         isShown: false,
         isTextFinished: false,
         isStatsPlayed: false,
-        // удар по цифрам доигран до конца
         isStatsDone: false,
         runId: 0
     };
@@ -2171,7 +1926,6 @@ const outcome = createOutcome(".outcome--taxi", "outcome");
 outcome.from = { money: outcomeMoneyFrom, safety: outcomeSafetyFrom };
 outcome.to = { money: outcomeMoneyTo, safety: outcomeSafetyTo };
 
-// ветка «поехать с мужчиной»: чуть не попали в аварию, но цену он не поднял
 const driverMoneyLoss = 30;
 const driverSafetyLoss = 27;
 
@@ -2180,7 +1934,6 @@ driverOutcome.from = { money: outcomeMoneyFrom, safety: outcomeSafetyFrom };
 driverOutcome.to = { money: outcomeMoneyFrom - driverMoneyLoss, safety: outcomeSafetyFrom - driverSafetyLoss };
 
 
-// итог поездки для выбранной ветки (null — ещё ничего не выбрали)
 function getRideOutcome() {
     if (choice.selected === "official") {
         return outcome;
@@ -2210,8 +1963,6 @@ function setupOutcome(o) {
         fill: o.element.querySelector(".outcome__scale-fill")
     };
 
-    // текст раскладываем на невидимые буквы — место под него занято сразу.
-    // строки в html разделены <br>, их сохраняем
     const textElement = o.element.querySelector(".outcome__inner");
     const textLines = readLines(textElement.innerHTML);
 
@@ -2264,7 +2015,6 @@ function resetOutcomeStats(o) {
 }
 
 
-// «−60$» и «−10%» под цифрами — всегда ровно разница между «было» и «стало» (по любой ветке)
 function setOutcomeDeltas(o) {
     o.money.stat.querySelector(".outcome__delta").textContent = "−" + (o.from.money - o.to.money) + "$";
     o.safety.stat.querySelector(".outcome__delta").textContent = "−" + (o.from.safety - o.to.safety) + "%";
@@ -2337,7 +2087,6 @@ function hideOutcome(o) {
 }
 
 
-// плавно «отщёлкиваем» число от from до to; onStep получает текущее значение
 function countDown(o, from, to, onStep, onDone, runId) {
     const startTime = performance.now();
 
@@ -2348,7 +2097,6 @@ function countDown(o, from, to, onStep, onDone, runId) {
 
         const t = Math.min((now - startTime) / outcomeCountDuration, 1);
 
-        // сначала быстро, к концу замедляется
         const eased = 1 - Math.pow(1 - t, 3);
 
         onStep(from + (to - from) * eased);
@@ -2364,7 +2112,6 @@ function countDown(o, from, to, onStep, onDone, runId) {
 }
 
 
-// удар по одной цифре: краснеет, трясётся, вспышка по краям, сверху падает «минус»
 function hitStat(o, item, from, to, onStep, onDone, runId) {
     item.stat.classList.add("outcome__stat--hit");
     item.stat.classList.add("outcome__stat--dropped");
@@ -2403,7 +2150,6 @@ function playOutcomeStats(o) {
                     o.safety.number.textContent = Math.round(value);
                     o.safety.fill.style.setProperty("--level", value.toFixed(1) + "%");
                 }, function () {
-                    // дальше игра идёт уже с новыми цифрами
                     setGameHeader({
                         money: o.to.money,
                         safety: o.to.safety
@@ -2420,7 +2166,6 @@ function playOutcomeStats(o) {
 function updateOutcome(progress) {
     const current = drive.isActive ? getRideOutcome() : null;
 
-    // итог другой ветки (или вообще без поездки) — прячем
     [outcome, driverOutcome].forEach(function (o) {
         if (o !== current && o.isShown) {
             hideOutcome(o);
@@ -2438,7 +2183,6 @@ function updateOutcome(progress) {
         showOutcomeText(current);
     }
 
-    // прокрутили назад — всё прячется, цифры возвращаются
     if (current.isShown && progress < textFrom - speechGap) {
         hideOutcome(current);
         return;
@@ -2450,24 +2194,15 @@ function updateOutcome(progress) {
 }
 
 
-// ---------- обучения: тетрадь ----------
-// после итога каждой главы на чёрном экране открывается тетрадь, и по частям проявляется разбор.
-// во втором обучении тетрадь сначала открыта на главе 1, потом лист переворачивается — и там глава 2
-
-// первое обучение: когда начинается (в экранах прокрутки от начала поездки) и сколько экранов длится
 const longreadFrom = 6.6;
 const longreadLength = 4;
 
-// второе обучение (после ужина): сколько экранов длится и когда переворачивается лист (от его начала)
 const dinnerLongreadLength = 5.6;
 const dinnerLongreadFlipAt = 0.9;
 
-// за сколько экранов тетрадь проявляется в начале и уходит в черноту в конце
 const longreadFadeIn = 0.4;
 const longreadFadeOut = 0.6;
 
-// selector — какая тетрадь, length — сколько экранов, flipAt — когда перевернуть лист (null — не переворачивать),
-// getBase — отметка прокрутки, когда она начинается (null — ещё рано), getOutcomes — итоги, которые она закрывает
 function createLongread(selector, length, flipAt, getBase, getOutcomes) {
     return {
         selector: selector,
@@ -2477,7 +2212,6 @@ function createLongread(selector, length, flipAt, getBase, getOutcomes) {
         getOutcomes: getOutcomes,
         element: null,
         steps: [],
-        // с какой отметки начинаются советы на правой странице (на телефоне тогда показываем её)
         tipsAt: Infinity,
         isFlipped: false,
         flipTimer: null
@@ -2497,13 +2231,10 @@ const longreads = [
     })
 ];
 
-// после последней тетради дальше пока ничего нет — уходит только тетрадь, чёрный фон остаётся
-// (иначе из-под неё снова проступает экран побега)
 longreads[2].keepBlack = true;
 
 
 function setupLongread() {
-    // страницы прошлых глав в следующих тетрадях — копии из первой: уже исписаны целиком
     document.querySelectorAll("[data-copy-from]").forEach(function (target) {
         const source = document.querySelector(target.dataset.copyFrom);
 
@@ -2533,13 +2264,11 @@ function setupLongread() {
 }
 
 
-// отметка прокрутки, когда первое обучение начинается; null — ещё рано
 function getLongreadBase() {
     if (!drive.isActive) {
         return null;
     }
 
-    // ждём, пока доиграет удар по цифрам
     if (!getRideOutcome().isStatsDone) {
         return null;
     }
@@ -2548,7 +2277,6 @@ function getLongreadBase() {
 }
 
 
-// лист переворачивается (или обратно, если прокрутили назад); пока он в воздухе — на нём тень
 function setLongreadFlipped(item, isFlipped, isAudible) {
     if (item.isFlipped === isFlipped) {
         return;
@@ -2558,7 +2286,6 @@ function setLongreadFlipped(item, isFlipped, isAudible) {
     item.element.classList.toggle("longread--flipped", isFlipped);
     item.element.classList.add("longread--flipping");
 
-    // шелест — только если тетрадь на экране (а не при прыжке через неё по меню глав)
     if (isAudible) {
         playPageFlipSound();
     }
@@ -2586,9 +2313,6 @@ function updateLongread(progress) {
             setStyleVar(item.element, "--longread", (fadeIn * fadeOut).toFixed(3));
         }
 
-        // тетрадь полностью закрыла экран — итог с деньгами под ней больше не нужен,
-        // иначе он проступит, когда тетрадь будет уходить (при прокрутке назад вернётся)
-        // а пока тетрадь проявляется, итог растворяется вместе с ней — чтобы не просвечивал сквозь страницы
         item.getOutcomes().forEach(function (o) {
             o.element.classList.toggle("outcome--behind", local >= longreadFadeIn);
             const opacity = local > 0 && local < longreadFadeIn ? (1 - fadeIn).toFixed(3) : "";
@@ -2602,16 +2326,12 @@ function updateLongread(progress) {
             setLongreadFlipped(item, local >= item.flipAt, local > 0 && local < item.length);
         }
 
-        // на телефоне тетрадь видна по одной странице: справа — лист до переворота и советы,
-        // слева — текст главы (на компьютере эти метки ничего не меняют)
         const isBeforeFlip = item.flipAt !== null && local < item.flipAt;
         const isRight = isBeforeFlip || local >= item.tipsAt - 0.1;
 
         item.element.classList.toggle("longread--view-right", isRight);
         item.element.classList.toggle("longread--view-left", !isRight);
 
-        // каждый кусок текста появляется, когда до него докрутили, и прячется, если прокрутили назад
-        // новый кусок начал писаться (и тетрадь на экране) — шуршит карандаш
         const isOnScreen = local > 0 && local < item.length;
 
         item.steps.forEach(function (step) {
@@ -2627,38 +2347,27 @@ function updateLongread(progress) {
 }
 
 
-// ---------- сцена 3: отель ----------
-// проявляется из черноты после поездки — только после удара по цифрам
-
-// когда начинает проявляться (в экранах прокрутки от начала поездки) и за сколько экранов
 const hotelFrom = longreadFrom + longreadLength;
 const hotelFadeLength = 0.6;
 
-// когда (от момента полного появления отеля) за стойкой проявляется ресепшионист
 const receptionistFrom = 2.5;
 
 const hotel = {
     level: 0,
     element: null,
-    // шапка уже показывает вторую главу
     isChapterTwo: false,
-    // 50$ за отель уже сняты
     isPaid: false
 };
 
 
-// отметка прокрутки, когда отель полностью проявился; null — отеля ещё нет
-// за отель ресепшионист берёт 50$ («с вас 50$») — с этой суммы дальше считаются итоги ужина
 const hotelPrice = 50;
 
 
-// сколько денег у игрока после оплаты отеля
 function getHotelMoney() {
     return getRideOutcome().to.money - hotelPrice;
 }
 
 
-// «с вас 50$» договорено — деньги в шапке уменьшаются; прокрутили назад, до этой реплики, — возвращаются
 function updateHotelPayment() {
     const ride = getRideOutcome();
 
@@ -2683,7 +2392,6 @@ function updateHotelPayment() {
 }
 
 
-// цифра денег в шапке коротко вспыхивает красным — деньги сняли
 function hitHeaderMoney() {
     const money = document.querySelector(".game-header__money");
 
@@ -2698,7 +2406,6 @@ function getHotelBase() {
         return null;
     }
 
-    // отель ждёт, пока доиграет удар по цифрам
     if (!getRideOutcome().isStatsDone) {
         return null;
     }
@@ -2717,13 +2424,11 @@ function updateHotel(progress) {
     if (drive.isActive) {
         const from = drive.start + hotelFrom;
 
-        // ждём, пока доиграет удар по деньгам и безопасности
         if (getRideOutcome().isStatsDone) {
             target = smoothStep(from, from + hotelFadeLength, progress);
         }
     }
 
-    // плавно догоняем, чтобы появление не дёргалось, если ждали удар по цифрам
     hotel.level = hotel.level + (target - hotel.level) * 0.08;
 
     if (Math.abs(target - hotel.level) < 0.001) {
@@ -2736,20 +2441,17 @@ function updateHotel(progress) {
 
     document.body.classList.toggle("is-hotel", isHotel);
 
-    // в отеле начинается вторая глава — меняем шапку и меню, только когда сцена сменилась
     if (isHotel !== hotel.isChapterTwo) {
         hotel.isChapterTwo = isHotel;
         setCurrentChapter(isHotel ? 2 : 1);
     }
 
-    // ресепшионист: только после второй реплики мальчика
     const base = getHotelBase();
     const lastBoyLine = findLine(".speech--boy-4");
     const isReceptionistShown = base !== null && lastBoyLine.isFinished && progress >= base + receptionistFrom;
 
     hotel.element.classList.toggle("hotel--receptionist", isReceptionistShown);
 
-    // вторая поза — с первой её реплики и дальше
     const firstReceptionistLine = lines.indexOf(findLine(".speech--receptionist-1"));
     const isReceptionistTalking = isReceptionistShown && currentLine >= firstReceptionistLine;
 
@@ -2757,18 +2459,12 @@ function updateHotel(progress) {
 }
 
 
-// ---------- выбор в отеле: где поужинать ----------
-// после реплик ресепшиониста отель уходит в черноту и появляются два варианта — как на первом выборе
-
-// когда появляется выбор (в экранах прокрутки от полного появления отеля),
-// и только когда последняя реплика ресепшиониста допечатана
 const hotelChoiceFrom = 4.6;
 
 const hotelChoice = {
     element: null,
     options: [],
     isShown: false,
-    // что выбрал игрок: "delivery" — доставка в номер, "cafe" — местное кафе, null — ещё не выбрал
     selected: null
 };
 
@@ -2802,13 +2498,11 @@ function selectHotelChoice(option) {
         }
     }));
 
-    // выбор сделан — дальше можно листать
     document.body.classList.remove("is-choice-locked");
 
     const selected = hotelChoice.selected;
 
     setTimeout(function () {
-        // за это время игрок мог прокрутить назад и передумать
         if (!hotelChoice.isShown || hotelChoice.selected !== selected) {
             return;
         }
@@ -2842,11 +2536,9 @@ function showHotelChoice(mark) {
     hotel.element.classList.add("hotel--choice");
     document.body.classList.add("is-hotel-choosing");
 
-    // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал
     window.scrollTo(0, hero.offsetTop + (mark + 0.02) * window.innerHeight);
     document.body.classList.add("is-choice-locked");
 
-    // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
     setTimeout(function () {
         if (hotelChoice.isShown) {
             hotelChoice.element.classList.add("choice--ready");
@@ -2876,61 +2568,41 @@ function updateHotelChoice(progress) {
         showHotelChoice(mark);
     }
 
-    // прокрутили назад — выбор прячется, снова виден отель
     if (hotelChoice.isShown && (mark === null || progress < mark - speechGap)) {
         hideHotelChoice();
     }
 }
 
 
-// ---------- сцена 4: номер ----------
-// если выбрали доставку — после выбора проявляется номер, мальчик сидит на кровати
-
-// через сколько (мс) после мысли в темноте появляется фонарик
 const flashlightDelay = 900;
 
 const room = {
     element: null,
     switchButton: null,
     isShown: false,
-    // свет погас
     isDark: false,
-    // в руке фонарик, ищем выключатель
     isFlashlight: false,
-    // выключатель нашли и нажали
     isLit: false,
-    // дверь уже открывалась (человек в балахоне вышел)
     isScareStarted: false,
     stranger: null,
-    // номер «запуска» пугалки: если свет включили обратно, старые таймеры ничего не делают
     scareRunId: 0,
     eyes: []
 };
 
-// пугалка: через сколько (мс) от её начала открывается дверь,
-// когда в проёме появляется человек в балахоне и когда он начинает медленно идти к мальчику.
-// идёт он, пока игрок ищет выключатель, и останавливается рядом с мальчиком.
-// включили свет — это девочка-курьер с пиццей
 const scareTimeline = [
     { at: 0, className: "room--door" },
     { at: 1000, className: "room--stranger" },
-    // идти начинает, только когда полностью проступила
     { at: 2600, className: "room--walk" },
-    // на телефоне после этого камера уезжает к выключателю — можно искать свет
     { at: 5100, className: "room--search" }
 ];
 
-// дверь открывается через столько (мс) после того, как в руке появился фонарик
 const scareDelay = 1500;
 
-// глаз в темноте: сколько (мс) он смотрит на фонарик, прежде чем зажмуриться и пропасть
 const eyesStareTime = 450;
 
-// итог доставки: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора в отеле)
 const roomOutcomeFrom = 2;
 const roomOutcomeStatsFrom = 2.6;
 
-// сколько отдали за ужин и сколько безопасности потеряли, впустив незнакомца
 const roomMoneyLoss = 20;
 const roomSafetyLoss = 33;
 
@@ -2950,13 +2622,10 @@ function setupRoom() {
         });
     });
 
-    // кнопка ловит клики только когда в руке фонарик, а курсор и есть фонарик —
-    // значит, нажать можно, только посветив на выключатель
     room.switchButton.addEventListener("click", turnLightsOn);
 }
 
 
-// отметка прокрутки, от которой считаются события номера; null — номера нет
 function getRoomBase() {
     if (!room.isShown) {
         return null;
@@ -2967,7 +2636,6 @@ function getRoomBase() {
 
 
 function showRoom() {
-    // новая сцена начинается с мальчика
     setSpeaker(true);
     room.isShown = true;
     room.element.classList.add("room--visible");
@@ -2992,13 +2660,11 @@ function turnLightsOut(base) {
     document.body.classList.add("is-lights-out");
     startDarkSound();
 
-    // запираем прокрутку, пока выключатель не найден
     window.scrollTo(0, hero.offsetTop + (base + roomDarkFrom + 0.02) * window.innerHeight);
     document.body.classList.add("is-choice-locked");
 }
 
 
-// дверь открывается, выходит незнакомец и бросается на нас — по таймеру, шаг за шагом
 function playScare() {
     room.scareRunId = room.scareRunId + 1;
 
@@ -3009,7 +2675,6 @@ function playScare() {
             if (runId === room.scareRunId && room.isDark) {
                 room.element.classList.add(step.className);
 
-                // дверь открывается — скрип
                 if (step.className === "room--door") {
                     playDoorSound();
                 }
@@ -3019,7 +2684,6 @@ function playScare() {
 }
 
 
-// человек в балахоне дошёл до своего места рядом с мальчиком — останавливается
 function onStrangerArrived(event) {
     if (event.animationName === "stranger-walk") {
         room.element.classList.add("room--arrived");
@@ -3027,7 +2691,6 @@ function onStrangerArrived(event) {
 }
 
 
-// глаза в темноте: попали в круг фонарика — распахиваются, потом зажмуриваются и пропадают
 function updateDarkEyes(now) {
     if (!room.isFlashlight) {
         return;
@@ -3072,7 +2735,6 @@ function turnLightsOn() {
     document.body.classList.remove("is-lights-out", "is-flashlight", "is-choice-locked");
     stopDarkSound();
 
-    // свет включили: пугалка дальше не идёт, а человек в балахоне оказывается девочкой с пиццей
     room.scareRunId = room.scareRunId + 1;
 }
 
@@ -3112,12 +2774,10 @@ function updateRoom(progress) {
     const lineBefore = findLine(".speech--room-1");
     const darkFrom = base + roomDarkFrom;
 
-    // после реплики про пиццу — по прокрутке резко гаснет свет
     if (!room.isDark && !room.isLit && progress >= darkFrom && lineBefore.isFinished) {
         turnLightsOut(base);
     }
 
-    // мысль в темноте допечатана — через мгновение в руке фонарик
     const darkText = findLine(".speech--room-2");
 
     if (room.isDark && darkText.isFinished && !room.isFlashlight && !room.flashlightTimer) {
@@ -3130,8 +2790,6 @@ function updateRoom(progress) {
         }, flashlightDelay);
     }
 
-    // фонарик в руке — чуть погодя открывается дверь, и к нам медленно идёт человек в балахоне,
-    // пока игрок ищет выключатель
     if (room.isFlashlight && !room.isScareStarted) {
         room.isScareStarted = true;
 
@@ -3144,7 +2802,6 @@ function updateRoom(progress) {
         }, scareDelay);
     }
 
-    // свет уже включили и прокрутили назад, выше отметки — всё как было до темноты
     if (room.isLit && progress < darkFrom - speechGap) {
         resetLights();
     }
@@ -3153,13 +2810,11 @@ function updateRoom(progress) {
 }
 
 
-// после «ваш ужин, сэр! с вас 20$» по прокрутке — чёрный экран: минус деньги за ужин и безопасность
 function updateRoomOutcome(progress, base) {
     const lastLine = findLine(".speech--girl-1");
     const textFrom = base + roomOutcomeFrom;
 
     if (!roomOutcome.isShown && room.isLit && lastLine.isFinished && progress >= textFrom) {
-        // считаем от того, что было у игрока до доставки (после поездки)
         const ride = getRideOutcome();
         const money = getHotelMoney();
         const safety = ride.to.safety;
@@ -3172,7 +2827,6 @@ function updateRoomOutcome(progress, base) {
         document.body.classList.add("is-dinner-outcome");
     }
 
-    // прокрутили назад — итог прячется, цифры возвращаются
     if (roomOutcome.isShown && progress < textFrom - speechGap) {
         hideRoomOutcome();
         return;
@@ -3194,18 +2848,11 @@ function hideRoomOutcome() {
 }
 
 
-// ---------- сцена 4б: кафе ----------
-// если выбрали кафе: мальчик заказывает пиццу, справа выезжает девочка с пиццей.
-// потом гаснет свет: в руке фонарик, а девочка в балахоне прячется у левого края — её надо найти и нажать
-
-// за сколько (мс) девочка доезжает до своего места
 const cafeGirlRideTime = 1200;
 
-// итог кафе: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора в отеле)
 const cafeOutcomeFrom = 3;
 const cafeOutcomeStatsFrom = 3.6;
 
-// сколько украли
 const cafeMoneyLoss = 150;
 const cafeSafetyLoss = 25;
 
@@ -3228,12 +2875,10 @@ function setupCafe() {
     cafe.element = document.querySelector(".cafe");
     cafe.girl = document.querySelector(".cafe__girl");
 
-    // кнопка ловит клики только в темноте с фонариком — значит, нажать можно, только найдя её
     cafe.girl.addEventListener("click", cafeLightsOn);
 }
 
 
-// отметка прокрутки, от которой считаются события кафе; null — кафе нет
 function getCafeBase() {
     if (!cafe.isShown) {
         return null;
@@ -3289,11 +2934,9 @@ function cafeLightsOut(base) {
     cafe.element.classList.add("cafe--dark");
     document.body.classList.add("is-lights-out");
 
-    // запираем прокрутку, пока девочку не нашли
     window.scrollTo(0, hero.offsetTop + (base + cafeDarkFrom + 0.02) * window.innerHeight);
     document.body.classList.add("is-choice-locked");
 
-    // фонарик — сразу, как только свет догорел и погас
     const runId = cafe.runId;
 
     setTimeout(function () {
@@ -3338,7 +2981,6 @@ function updateCafe(progress) {
         return;
     }
 
-    // после «закажу маргариту» по прокрутке справа выезжает девочка с пиццей
     const orderLine = findLine(".speech--cafe-1");
 
     if (!cafe.isGirlShown && progress >= base + cafeGirlFrom && orderLine.isFinished) {
@@ -3349,7 +2991,6 @@ function updateCafe(progress) {
         hideCafeGirl();
     }
 
-    // после «спасибо!» по прокрутке гаснет свет
     const thanksLine = findLine(".speech--cafe-3");
     const darkFrom = base + cafeDarkFrom;
 
@@ -3357,7 +2998,6 @@ function updateCafe(progress) {
         cafeLightsOut(base);
     }
 
-    // свет уже включили и прокрутили назад, выше отметки — всё как было до темноты
     if (cafe.isLit && progress < darkFrom - speechGap) {
         resetCafeLights();
     }
@@ -3366,13 +3006,11 @@ function updateCafe(progress) {
 }
 
 
-// после «приходите завтра» по прокрутке — чёрный экран: обокрали, минус деньги и безопасность
 function updateCafeOutcome(progress, base) {
     const lastLine = findLine(".speech--cafe-6");
     const textFrom = base + cafeOutcomeFrom;
 
     if (!cafeOutcome.isShown && cafe.isLit && lastLine.isFinished && progress >= textFrom) {
-        // считаем от того, что было у игрока до кафе (после поездки)
         const ride = getRideOutcome();
         const money = getHotelMoney();
         const safety = ride.to.safety;
@@ -3385,7 +3023,6 @@ function updateCafeOutcome(progress, base) {
         document.body.classList.add("is-dinner-outcome");
     }
 
-    // прокрутили назад — итог прячется, цифры возвращаются
     if (cafeOutcome.isShown && progress < textFrom - speechGap) {
         hideCafeOutcome();
         return;
@@ -3407,17 +3044,12 @@ function hideCafeOutcome() {
 }
 
 
-// ---------- глава 3: прогулка ----------
-// после итога ужина (доставка или кафе) по прокрутке из черноты проявляется улица
-
-// через сколько экранов после удара по цифрам ужина открывается тетрадь (а за ней — улица) и за сколько экранов
 const walkAfterOutcome = 1;
 const walkFadeLength = 0.6;
 
 const walk = {
     element: null,
     level: 0,
-    // шапка уже показывает третью главу
     isChapterThree: false
 };
 
@@ -3427,7 +3059,6 @@ function setupWalk() {
 }
 
 
-// итог ужина для выбранной ветки (null — ещё не ужинали)
 function getDinnerOutcome() {
     if (room.isShown) {
         return roomOutcome;
@@ -3441,11 +3072,9 @@ function getDinnerOutcome() {
 }
 
 
-// отметка прокрутки, когда начинается второе обучение (тетрадь после ужина); null — ещё рано
 function getDinnerLongreadBase() {
     const dinnerOutcome = getDinnerOutcome();
 
-    // ждём, пока доиграет удар по цифрам ужина
     if (dinnerOutcome === null || !dinnerOutcome.isStatsDone) {
         return null;
     }
@@ -3456,7 +3085,6 @@ function getDinnerLongreadBase() {
 }
 
 
-// отметка прокрутки, когда улица начинает проявляться — сразу после второго обучения; null — ещё рано
 function getWalkFrom() {
     const base = getDinnerLongreadBase();
 
@@ -3468,7 +3096,6 @@ function getWalkFrom() {
 }
 
 
-// отметка прокрутки, когда улица полностью проявилась; null — улицы ещё нет
 function getWalkBase() {
     const from = getWalkFrom();
 
@@ -3488,7 +3115,6 @@ function updateWalk(progress) {
         target = smoothStep(from, from + walkFadeLength, progress);
     }
 
-    // плавно догоняем, чтобы появление не дёргалось, если ждали удар по цифрам
     walk.level = walk.level + (target - walk.level) * 0.08;
 
     if (Math.abs(target - walk.level) < 0.001) {
@@ -3501,7 +3127,6 @@ function updateWalk(progress) {
 
     document.body.classList.toggle("is-walk", isWalk);
 
-    // в шапке — третья глава, пока на экране улица
     if (isWalk !== walk.isChapterThree) {
         walk.isChapterThree = isWalk;
 
@@ -3514,12 +3139,9 @@ function updateWalk(progress) {
 }
 
 
-// глава 3 начинается на улице. всё, что было до неё, считаем пройденным:
-// если игрок ещё не выбирал ужин — выбор делается за него («заказать доставку»)
 function goToWalk() {
     goToHotel();
 
-    // реплики отеля считаем прочитанными — иначе выбор ужина будет их ждать
     lines.forEach(function (line) {
         if (line.scene === "hotel") {
             line.isFinished = true;
@@ -3540,7 +3162,6 @@ function goToWalk() {
         showRoom();
     }
 
-    // ужин уже позади: реплики прочитаны, свет снова включён
     const dinnerScene = room.isShown ? "room" : "cafe";
 
     lines.forEach(function (line) {
@@ -3565,7 +3186,6 @@ function goToWalk() {
         }
     }
 
-    // и удар по цифрам после ужина тоже уже случился
     const dinnerOutcome = getDinnerOutcome();
 
     if (!dinnerOutcome.isStatsDone) {
@@ -3585,7 +3205,6 @@ function goToWalk() {
 }
 
 
-// экран-итог сразу в конечном виде: текст напечатан, цифры уже упали
 function finishOutcome(o) {
     o.runId = o.runId + 1;
     o.isShown = true;
@@ -3616,17 +3235,12 @@ function finishOutcome(o) {
 }
 
 
-// ---------- глава 3: выбор пути ----------
-// после слов деда улица уходит в черноту: срезать по тёмному переулку или идти по людной улице
-
-// когда появляется выбор (в экранах прокрутки от момента, когда улица полностью проявилась)
 const walkChoiceFrom = 3.6;
 
 const walkChoice = {
     element: null,
     options: null,
     isShown: false,
-    // что выбрал игрок: "alley" — переулок, "street" — людная улица, null — ещё не выбрал
     selected: null
 };
 
@@ -3654,13 +3268,11 @@ function selectWalkChoice(option) {
     walkChoice.element.classList.add("choice--ready");
     walkChoice.element.classList.add("choice--made");
 
-    // выбор сделан — дальше можно листать
     document.body.classList.remove("is-choice-locked");
 
     const selected = walkChoice.selected;
 
     setTimeout(function () {
-        // за это время игрок мог прокрутить назад и передумать
         if (!walkChoice.isShown || walkChoice.selected !== selected) {
             return;
         }
@@ -3694,11 +3306,9 @@ function showWalkChoice(mark) {
     walk.element.classList.add("walk--choice");
     document.body.classList.add("is-walk-choosing");
 
-    // ставим прокрутку ровно на выбор и запираем её, пока игрок не выбрал
     window.scrollTo(0, hero.offsetTop + (mark + 0.02) * window.innerHeight);
     document.body.classList.add("is-choice-locked");
 
-    // когда варианты выехали — убираем задержки, чтобы наведение срабатывало сразу
     setTimeout(function () {
         if (walkChoice.isShown) {
             walkChoice.element.classList.add("choice--ready");
@@ -3719,7 +3329,6 @@ function hideWalkChoice() {
 }
 
 
-// отметка прокрутки, где появляется выбор пути; null — улицы ещё нет
 function getWalkChoiceMark() {
     const base = getWalkBase();
 
@@ -3735,18 +3344,12 @@ function updateWalkChoice(progress) {
         showWalkChoice(mark);
     }
 
-    // прокрутили назад — выбор прячется, снова видна улица
     if (walkChoice.isShown && (mark === null || progress < mark - speechGap)) {
         hideWalkChoice();
     }
 }
 
 
-// ---------- глава 3: тёмный переулок ----------
-// мальчик идёт по переулку и проговаривает повороты. потом резко темнеет, колотится сердце —
-// на него нападают, и надо бежать назад тем же путём (мини-игра «побег»)
-
-// сколько поворотов и какие — выбираем случайно при загрузке страницы
 const alleyTurns = 4;
 const alleyRoute = [];
 
@@ -3755,7 +3358,6 @@ const turnWords = {
     right: "направо"
 };
 
-// что мальчик говорит на каждом повороте
 const turnPhrases = [
     "так, по карте сначала {turn}",
     "теперь {turn}",
@@ -3763,20 +3365,16 @@ const turnPhrases = [
     "последний поворот {turn}. что-то тут совсем темно…"
 ];
 
-// сердце: с какой скоростью бьётся в темноте и во время побега (мс на один «тук-тук»)
 const heartbeatCalm = 900;
 const heartbeatRun = 640;
 const heartbeatFastest = 380;
 
-// итог переулка: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора пути)
 const alleyOutcomeFrom = alleyDarkFrom + 0.6;
 const alleyOutcomeStatsFrom = alleyDarkFrom + 1.2;
 
-// что потерял: кошелёк выпал, пока убегал (на счету остаётся 20$, как после кражи), и сильно испугался
 const alleyMoneyLeft = 20;
 const alleySafetyLoss = 30;
 
-// через сколько экранов после удара по цифрам открывается тетрадь главы 3
 const alleyLongreadAfterOutcome = 1;
 
 const alleyOutcome = createOutcome(".outcome--alley", "alley-outcome");
@@ -3785,17 +3383,13 @@ const alley = {
     element: null,
     isShown: false,
     isDark: false,
-    // сколько поворотов мальчик уже проговорил
     turnsSaid: 0,
-    // когда допечаталась подсказка «бежать назад вот так» (0 — ещё нет)
     tipReadAt: 0
 };
 
-// сколько подсказка с последовательностью точно висит на экране, прежде чем погаснет свет (мс) — чтобы успеть прочитать
 const alleyTipHold = 4500;
 
 
-// случайные повороты; хотя бы один в каждую сторону — иначе слишком просто
 function setupAlleyRoute() {
     do {
         alleyRoute.length = 0;
@@ -3807,26 +3401,21 @@ function setupAlleyRoute() {
         return turn === alleyRoute[0];
     }));
 
-    // вписываем повороты в реплики — до того, как реплики разложатся на буквы
     turnPhrases.forEach(function (phrase, index) {
         const inner = document.querySelector(".speech--alley-" + (index + 1) + " .speech__inner");
 
         inner.innerHTML = phrase.replace("{turn}", '<b class="speech__key">' + turnWords[alleyRoute[index]] + "</b>");
     });
 
-    // и сразу проговаривает, как бежать обратно: те же повороты с конца и в другую сторону —
-    // ровно эти кнопки и надо будет нажать
     const way = getEscapeAnswer().map(function (turn) {
         return turnWords[turn];
     }).join("\u00a0→\u00a0");
 
-    // вся последовательность — одной строкой (неразрывные пробелы), под словами «бежать назад вот так:»
     document.querySelector(".speech--alley-tip .speech__inner").innerHTML =
         'бежать назад вот так:<br><b class="speech__key">' + way + "</b>";
 }
 
 
-// обратный путь: последний поворот — первым, и в другую сторону
 function getEscapeAnswer() {
     return alleyRoute.slice().reverse().map(function (turn) {
         return mirrorTurn[turn];
@@ -3837,14 +3426,11 @@ function getEscapeAnswer() {
 function setupAlley() {
     alley.element = document.querySelector(".alley");
 
-    // зубы заранее готовим к показу — иначе при первом появлении телефон рисует их по частям
     alley.element.querySelector(".alley__stalker").decode().catch(function () {
-        // не вышло — покажем как есть
     });
 }
 
 
-// отметка прокрутки, от которой считаются события переулка; null — переулка нет
 function getAlleyBase() {
     if (!alley.isShown) {
         return null;
@@ -3872,7 +3458,6 @@ function hideAlley() {
 }
 
 
-// с каждым проговорённым поворотом переулок приближается, темнеет и уходит в сторону поворота
 function setAlleyTurns(count) {
     if (count === alley.turnsSaid) {
         return;
@@ -3883,7 +3468,6 @@ function setAlleyTurns(count) {
     let shift = 0;
 
     if (count > 0) {
-        // повернули налево — картинка уезжает вправо, и наоборот
         shift = alleyRoute[count - 1] === "left" ? 4 : -4;
     }
 
@@ -3893,7 +3477,6 @@ function setAlleyTurns(count) {
 }
 
 
-// резко темнеет: колотится сердце, прокрутка заперта до конца побега
 function alleyLightsOut(base) {
     alley.isDark = true;
     alley.element.classList.add("alley--dark");
@@ -3920,7 +3503,6 @@ function updateAlley(progress) {
         return;
     }
 
-    // сколько поворотов уже проговорено
     let count = 0;
 
     for (let i = 1; i <= alleyTurns; i++) {
@@ -3931,11 +3513,9 @@ function updateAlley(progress) {
 
     setAlleyTurns(count);
 
-    // после последнего поворота и подсказки, как бежать обратно, по прокрутке резко темнеет
     const tipLine = findLine(".speech--alley-tip");
     const darkFrom = base + alleyDarkFrom;
 
-    // подсказка допечатана — запоминаем когда; свет гаснет не раньше, чем она провисит alleyTipHold
     if (!tipLine.isFinished) {
         alley.tipReadAt = 0;
     } else if (alley.tipReadAt === 0) {
@@ -3948,7 +3528,6 @@ function updateAlley(progress) {
         alleyLightsOut(base);
     }
 
-    // «надо бежать назад!» допечатано — начинается побег
     const runLine = findLine(".speech--alley-5");
 
     if (alley.isDark && runLine.isFinished && !escapeGame.isStarted) {
@@ -3963,7 +3542,6 @@ function updateAlley(progress) {
         }, escapeStartDelay);
     }
 
-    // убежали и прокрутили назад, выше темноты — всё как было
     if (alley.isDark && escapeGame.isWon && progress < darkFrom - speechGap) {
         resetAlleyDark();
     }
@@ -3972,12 +3550,10 @@ function updateAlley(progress) {
 }
 
 
-// убежали — по прокрутке чёрный экран: выронил кошелёк, минус деньги и безопасность
 function updateAlleyOutcome(progress, base) {
     const textFrom = base + alleyOutcomeFrom;
 
     if (!alleyOutcome.isShown && escapeGame.isWon && progress >= textFrom) {
-        // считаем от того, что было у игрока после ужина
         const dinner = getDinnerOutcome().to;
 
         alleyOutcome.from = { money: dinner.money, safety: dinner.safety };
@@ -3988,7 +3564,6 @@ function updateAlleyOutcome(progress, base) {
         document.body.classList.add("is-alley-outcome");
     }
 
-    // прокрутили назад — итог прячется, цифры возвращаются
     if (alleyOutcome.isShown && progress < textFrom - speechGap) {
         hideAlleyOutcome();
         return;
@@ -4010,7 +3585,6 @@ function hideAlleyOutcome() {
 }
 
 
-// отметка прокрутки, когда начинается тетрадь главы 3 (после переулка или людной улицы); null — ещё рано
 function getAlleyLongreadBase() {
     const alleyBase = getAlleyBase();
 
@@ -4028,26 +3602,17 @@ function getAlleyLongreadBase() {
 }
 
 
-// ---------- мини-игра «побег» ----------
-// бежим назад тем же путём: повороты в обратном порядке и в другую сторону.
-// на каждый поворот — всё меньше времени, кнопки каждый раз перемешиваются. «назад» — сразу схватили
-
-// через сколько (мс) после «надо бежать назад!» начинается побег
 const escapeStartDelay = 600;
 
-// время на первый поворот и на сколько меньше на каждый следующий (мс), но не меньше минимума
 const escapeFirstStepTime = 3000;
 const escapeStepFaster = 300;
 const escapeMinStepTime = 1800;
 
-// кнопки на каждом повороте появляются в полный размер и сжимаются, пока тает время: до какой доли размера
 const escapeButtonEndScale = 0.35;
 
-// где можно раскидывать кнопки: ниже заголовка и полоски времени (доля высоты экрана) и с отступом от краёв (в --u)
 const escapeFieldTop = 0.4;
 const escapeFieldMargin = 3.4722;
 
-// с какой доли времени полоска краснеет
 const escapeHurryAt = 0.65;
 
 const mirrorTurn = {
@@ -4064,7 +3629,6 @@ const escapeGame = {
     timer: null,
     timerFill: null,
     resultText: null,
-    // правильные нажатия по порядку
     answer: [],
     index: 0,
     isStarted: false,
@@ -4091,13 +3655,11 @@ function setupEscape() {
             onEscapeMove(button);
         });
 
-        // анимацию «верно / неверно» снимаем, когда доиграла — чтобы сработала и в следующий раз
         button.addEventListener("animationend", function () {
             button.classList.remove("escape__button--right", "escape__button--wrong");
         });
     });
 
-    // «ещё раз» — снова в начало переулка: мальчик заново проговаривает повороты
     escapeGame.element.querySelector(".escape__button--retry").addEventListener("click", function () {
         playChoiceSound();
         retryAlley();
@@ -4115,7 +3677,6 @@ function startEscape() {
 
     escapeGame.answer = getEscapeAnswer();
 
-    // кружок на каждый поворот
     escapeGame.stepsBox.innerHTML = "";
     escapeGame.steps = [];
 
@@ -4143,7 +3704,6 @@ function getEscapeStepTime(index) {
 }
 
 
-// сердце бьётся в такт: и звук, и пульсация по краям
 function setEscapeBeat(interval) {
     alley.element.style.setProperty("--beat", interval + "ms");
     setHeartbeatRate(interval);
@@ -4153,10 +3713,8 @@ function setEscapeBeat(interval) {
 function nextEscapeStep() {
     clearEscapeTimers();
 
-    // кнопки каждый раз в новых местах и всё мельче — надо искать глазами и успевать
     placeEscapeButtons();
 
-    // полоска времени: сразу полная, потом равномерно тает
     const time = getEscapeStepTime(escapeGame.index);
 
     escapeGame.timer.classList.remove("escape__timer--hurry");
@@ -4167,7 +3725,6 @@ function nextEscapeStep() {
     escapeGame.timerFill.style.transition = "transform " + time + "ms linear";
     escapeGame.timerFill.style.transform = "scaleX(0)";
 
-    // кнопки сжимаются вместе с тающим временем: чем дольше думаешь, тем труднее попасть
     escapeGame.buttons.forEach(function (button) {
         button.style.transition = "none";
         button.style.scale = "1";
@@ -4182,7 +3739,6 @@ function nextEscapeStep() {
 
     escapeGame.hurryId = setTimeout(function () {
         escapeGame.timer.classList.add("escape__timer--hurry");
-        // время кончается — переулок трясёт
         alley.element.classList.add("alley--hurry");
     }, time * escapeHurryAt);
 
@@ -4192,22 +3748,18 @@ function nextEscapeStep() {
 }
 
 
-// раскидываем кнопки по экрану случайно, чтобы они не налезали друг на друга
 function placeEscapeButtons() {
     const unit = getDesignUnit();
     const width = escapeGame.element.offsetWidth;
     const height = escapeGame.element.offsetHeight;
     const margin = escapeFieldMargin * unit;
 
-    // кнопки — только ниже полоски времени (на телефоне подсказка длиннее, и полоска опускается)
     const timerBottom = escapeGame.timer.getBoundingClientRect().bottom - escapeGame.element.getBoundingClientRect().top;
     const fieldLeft = margin;
     const fieldTop = Math.max(height * escapeFieldTop, timerBottom + margin);
     const fieldWidth = width - margin * 2;
     const fieldHeight = height - margin - fieldTop;
 
-    // поле делим на клетки чуть больше кнопки и сажаем каждую кнопку в свою клетку со случайным сдвигом:
-    // так кнопки никогда не заходят друг на друга. если клеток не хватает (узкий телефон) — кнопки мельче
     let size = 13.8889 * unit;
     let gap = 0;
     let columns = 1;
@@ -4228,7 +3780,6 @@ function placeEscapeButtons() {
     const cellWidth = (fieldWidth + gap) / columns;
     const cellHeight = (fieldHeight + gap) / rows;
 
-    // клетки в случайном порядке — каждый раз новая раскладка
     const cells = [];
 
     for (let row = 0; row < rows; row++) {
@@ -4258,8 +3809,6 @@ function placeEscapeButtons() {
 }
 
 
-// «ещё раз»: всё как до темноты, прокрутка — к реплике «последний поворот…»:
-// первые повороты уже проговорены, заново печатается только она и всё, что после неё
 function retryAlley() {
     resetAlleyDark();
     setAlleyTurns(0);
@@ -4303,7 +3852,6 @@ function onEscapeMove(button) {
         return;
     }
 
-    // чем ближе к выходу, тем чаще бьётся сердце и тем ближе силуэт сзади
     const progress = escapeGame.index / escapeGame.answer.length;
 
     alley.element.style.setProperty("--chase", progress.toFixed(2));
@@ -4319,7 +3867,6 @@ function caughtEscape(reason) {
 
     escapeGame.resultText.textContent = "тебя схватили! " + reason + ". попробуй ещё раз и запоминай повороты";
 
-    // силуэт — прямо перед глазами
     alley.element.classList.remove("alley--hurry");
     alley.element.classList.add("alley--caught");
     alley.element.style.setProperty("--chase", "1");
@@ -4335,7 +3882,6 @@ function winEscape() {
     escapeGame.resultText.textContent = "фух! ты выбежал обратно на людную улицу. больше не срезай по тёмным переулкам";
     escapeGame.element.classList.add("escape--done", "escape--won");
 
-    // сердце успокаивается, прокрутка снова свободна
     alley.element.classList.remove("alley--hurry");
     alley.element.classList.add("alley--safe");
     stopHeartbeat();
@@ -4361,35 +3907,23 @@ function resetEscape() {
 }
 
 
-// ---------- глава 3: людная улица и карманники ----------
-// длинная дорога по освещённой улице. подходит бабушка и просит показать дорогу —
-// пока мальчик смотрит в карту, второй подкрадывается сзади к рюкзаку. надо успеть на него нажать
-
-// за сколько (мс) бабушка подходит и сколько есть времени, чтобы заметить вора
 const crowdStrangerRideTime = 1200;
 
-// игра «следи за рюкзаком»: вор подходит то слева, то справа и тянется к рюкзаку — успей на него нажать.
-// time — за сколько (мс) вор дотягивается до рюкзака (с каждым разом быстрее)
 const crowdWaves = [
     { side: -1, time: 1900 },
     { side: 1, time: 1500 },
     { side: -1, time: 1150 }
 ];
 
-// на сколько (в --u) от мальчика останавливается вор — вытянутой рукой у самого рюкзака
 const crowdReachGap = 10;
 
-// за сколько (мс) мальчик отходит к середине перед игрой
 const crowdBoyMoveTime = 900;
 
 
-// итог: когда чёрный экран с текстом и когда удар по цифрам (в экранах прокрутки от выбора пути)
 const crowdOutcomeFrom = crowdTheftFrom + 0.8;
 const crowdOutcomeStatsFrom = crowdTheftFrom + 1.4;
 
-// что теряем: заметил — только испуг; не заметил — кошелёк
 const crowdWonSafetyLoss = 5;
-// вытащили кошелёк — на счету остаётся 20$, сколько бы ни было до этого
 const crowdLostMoneyLeft = 20;
 const crowdLostSafetyLoss = 15;
 
@@ -4402,14 +3936,12 @@ const crowd = {
     stepsBox: null,
     steps: [],
     timerFill: null,
-    // какая сейчас волна и сколько воров отогнали
     wave: -1,
     caught: 0,
     waveTimer: null,
     isShown: false,
     isStrangerShown: false,
     isStrangerReady: false,
-    // null — ещё не лезли, "theft" — лезет прямо сейчас, "won" — успел заметить, "lost" — не успел
     phase: null,
     timeoutId: null,
     runId: 0
@@ -4427,7 +3959,6 @@ function setupCrowd() {
 }
 
 
-// отметка прокрутки, от которой считаются события людной улицы; null — её нет
 function getCrowdBase() {
     if (!crowd.isShown) {
         return null;
@@ -4478,7 +4009,6 @@ function hideCrowdStranger() {
 }
 
 
-// игра началась: прокрутка заперта, сверху подсказка, кружки (сколько воров отогнать) и полоска времени
 function startTheft(base) {
     crowd.phase = "theft";
     crowd.wave = -1;
@@ -4499,17 +4029,14 @@ function startTheft(base) {
     window.scrollTo(0, hero.offsetTop + (base + crowdTheftFrom + 0.02) * window.innerHeight);
     document.body.classList.add("is-choice-locked");
 
-    // темнеет, стучит сердце, гнетущий гул
     crowd.element.style.setProperty("--beat", heartbeatRun + "ms");
     startHeartbeat(heartbeatRun);
     startDarkSound();
 
-    // бабушка исчезает, мальчик отходит к середине — и только потом подходит первый вор
     crowd.waveTimer = setTimeout(nextCrowdWave, crowdBoyMoveTime);
 }
 
 
-// где по горизонтали (px от середины слоя) стоит мальчик — от него считаем, куда идут фигуры
 function getCrowdBoyX() {
     const layer = crowd.boy.parentElement;
 
@@ -4517,14 +4044,11 @@ function getCrowdBoyX() {
 }
 
 
-// насколько от мальчика уйти, чтобы фигура точно была за краем экрана
-// (мальчик стоит не по центру — берём полэкрана с запасом и ширину фигуры)
 function getCrowdEdge(figure) {
     return window.innerWidth / 2 + 20 * getDesignUnit() + figure.offsetWidth;
 }
 
 
-// ставим фигуру сразу (без анимации) или плавно ведём её за time мс
 function moveCrowdFigure(figure, x, time) {
     if (!time) {
         figure.style.transition = "none";
@@ -4555,13 +4079,11 @@ function nextCrowdWave() {
     figure.classList.remove("crowd__figure--reach");
     moveCrowdFigure(figure, boyX + wave.side * getCrowdEdge(figure), 0);
 
-    // с каждым вором сердце бьётся чаще
     const beat = Math.round(heartbeatRun - (heartbeatRun - heartbeatFastest) * crowd.wave / (crowdWaves.length - 1));
 
     crowd.element.style.setProperty("--beat", beat + "ms");
     setHeartbeatRate(beat);
 
-    // вор подходит к рюкзаку; не успел нажать — дотянулся
     const time = wave.time;
     const reachX = boyX + wave.side * crowdReachGap * getDesignUnit();
 
@@ -4584,7 +4106,6 @@ function startCrowdTimer(time) {
 }
 
 
-// успел — вор отскакивает обратно за край, кружок закрашивается, дальше следующая волна
 function onThiefClick() {
     if (crowd.phase !== "theft") {
         return;
@@ -4603,7 +4124,6 @@ function onThiefClick() {
 }
 
 
-// isCaught — отогнал всех воров; иначе — один дотянулся и вытащил кошелёк
 function finishTheft(isCaught) {
     clearTimeout(crowd.waveTimer);
 
@@ -4613,7 +4133,6 @@ function finishTheft(isCaught) {
     stopDarkSound();
     crowd.element.classList.add(isCaught ? "crowd--won" : "crowd--lost");
 
-    // не успел — вор с кошельком убегает туда, откуда пришёл
     if (!isCaught) {
         const wave = crowdWaves[crowd.wave];
 
@@ -4641,7 +4160,6 @@ function resetTheft() {
     crowd.phase = null;
     crowd.element.classList.remove("crowd--alert", "crowd--game", "crowd--won", "crowd--lost");
 
-    // вор — далеко за край
     crowd.thief.style.transition = "none";
     crowd.thief.style.transform = "";
     crowd.thief.classList.remove("crowd__figure--reach");
@@ -4655,7 +4173,6 @@ function updateCrowd(progress) {
         return;
     }
 
-    // после первой реплики подходит незнакомец
     const firstLine = findLine(".speech--crowd-1");
 
     if (!crowd.isStrangerShown && progress >= base + crowdStrangerFrom && firstLine.isFinished) {
@@ -4666,14 +4183,12 @@ function updateCrowd(progress) {
         hideCrowdStranger();
     }
 
-    // мальчик полез в карту — сзади подкрадывается вор
     const mapLine = findLine(".speech--crowd-3");
 
     if (crowd.phase === null && progress >= base + crowdTheftFrom && mapLine.isFinished) {
         startTheft(base);
     }
 
-    // кража позади и прокрутили назад — всё как было
     if ((crowd.phase === "won" || crowd.phase === "lost") && progress < base + crowdTheftFrom - speechGap) {
         resetTheft();
     }
@@ -4682,7 +4197,6 @@ function updateCrowd(progress) {
 }
 
 
-// после кражи — чёрный экран: что случилось, удар по цифрам
 function updateCrowdOutcome(progress, base) {
     const textFrom = base + crowdOutcomeFrom;
     const resultLine = findLine(".speech--crowd-4");
@@ -4696,7 +4210,6 @@ function updateCrowdOutcome(progress, base) {
         crowdOutcome.from = { money: dinner.money, safety: dinner.safety };
         crowdOutcome.to = { money: dinner.money - moneyLoss, safety: Math.max(dinner.safety - safetyLoss, 0) };
 
-        // текст и «минусы» — под то, что случилось; деньги целы — их не показываем
         crowdOutcome.element.classList.toggle("outcome--no-money", isWon);
         setOutcomeLines(crowdOutcome, isWon
             ? ["Пока актёр, переодетый в бабушку, отвлекал,", "его напарник лез в рюкзак.", "Ты вовремя заметил, и деньги целы"]
@@ -4728,7 +4241,6 @@ function hideCrowdOutcome() {
 }
 
 
-// новый текст экрана-итога (строками); раскладываем его на невидимые буквы заново
 function setOutcomeLines(o, textLines) {
     const textElement = o.element.querySelector(".outcome__inner");
 
@@ -4757,19 +4269,11 @@ function setOutcomeLines(o, textLines) {
 }
 
 
-// ---------- финал: сообщение от мамы и «играть снова» ----------
-// после тетради главы 3 мальчик снова на людной улице: «мне кто-то писал». экран темнеет до 70%,
-// снизу поднимаются руки с телефоном, сообщения по прокрутке приходят по одному (со звуком), потом — экран с кнопкой «играть снова»
-
-// когда (от начала финала, в экранах прокрутки) достаём телефон
 const finalePhoneFrom = 2.0;
 
-// сообщения появляются по прокрутке: первое — когда руки поднялись, дальше — через каждые полэкрана с небольшим
 const finaleFirstMessageAfter = 0.5;
 const finaleMessageStep = 0.6;
 
-// экран с кнопкой «играть снова» — не по прокрутке, а через время после последнего сообщения (мс):
-// чтобы его нельзя было пролистать не читая
 const finaleEndDelay = 2500;
 
 const finale = {
@@ -4777,7 +4281,6 @@ const finale = {
     covers: [],
     isShown: false,
     isPhone: false,
-    // сколько сообщений уже на экране
     messageCount: 0,
     endTimer: null
 };
@@ -4797,7 +4300,6 @@ function setupFinale() {
         });
     });
 
-    // «играть снова» — с самого начала
     document.querySelector(".finale__again").addEventListener("click", function () {
         window.scrollTo(0, 0);
         location.reload();
@@ -4805,7 +4307,6 @@ function setupFinale() {
 }
 
 
-// отметка прокрутки, когда начинается финал (сразу после тетради главы 3); null — ещё рано
 function getFinaleBase() {
     const notebookBase = getAlleyLongreadBase();
 
@@ -4813,8 +4314,6 @@ function getFinaleBase() {
 }
 
 
-// на экране телефона — первые count сообщений
-// «фух… я хотя бы выжил» — и сколько осталось денег и безопасности после главы 3 (переулок или людная улица)
 function setFinaleSummary() {
     const result = alleyOutcome.isStatsDone ? alleyOutcome.to : crowdOutcome.to;
 
@@ -4865,7 +4364,6 @@ function updateFinale(progress) {
         document.body.classList.add("is-finale");
     }
 
-    // прокрутили назад — финала нет
     if (finale.isShown && (base === null || progress < base - speechGap)) {
         hideFinale();
         return;
@@ -4875,7 +4373,6 @@ function updateFinale(progress) {
         return;
     }
 
-    // «надо проверить сообщение» — и по прокрутке достаём телефон (назад — убираем)
     const phoneFrom = base + finalePhoneFrom;
 
     if (!finale.isPhone && progress >= phoneFrom && findLine(".speech--finale-1").isFinished) {
@@ -4886,7 +4383,6 @@ function updateFinale(progress) {
         setFinalePhone(false);
     }
 
-    // сколько сообщений должно быть на экране при этой прокрутке
     let count = 0;
 
     if (finale.isPhone) {
@@ -4895,7 +4391,6 @@ function updateFinale(progress) {
         count = Math.min(Math.max(Math.floor(passed) + 1, 0), finale.covers.length);
     }
 
-    // новое сообщение пришло — звук уведомления (назад листаем молча)
     if (count > finale.messageCount) {
         playMessageSound();
     }
@@ -4904,7 +4399,6 @@ function updateFinale(progress) {
         setFinaleMessages(count);
     }
 
-    // все сообщения на экране — через время экран с кнопкой «играть снова»; прокрутили назад — отменяем
     const isAllRead = finale.isPhone && count === finale.covers.length;
 
     if (isAllRead && finale.endTimer === null && !finale.element.classList.contains("finale--end")) {
@@ -4921,10 +4415,7 @@ function updateFinale(progress) {
 }
 
 
-// ---------- главный цикл ----------
-
 function animate(now) {
-    // следующий кадр планируем сразу — даже если в этом что-то пойдёт не так, анимации не остановятся
     requestAnimationFrame(animate);
 
     const progress = getScrollProgress();
@@ -4978,10 +4469,8 @@ document.addEventListener("touchmove", function (event) {
 
 document.addEventListener("DOMContentLoaded", function () {
     hero = document.querySelector(".hero");
-    // координаты света ставим на весь экран — их берут оба пятна света (обычное и в темноте)
     light.element = document.querySelector(".hero__screen");
 
-    // после перезагрузки начинаем с самого верха
     if ("scrollRestoration" in history) {
         history.scrollRestoration = "manual";
     }
@@ -5016,7 +4505,6 @@ document.addEventListener("DOMContentLoaded", function () {
     setupOutcome(crowdOutcome);
     setupLongread();
     setupClickSkip();
-    // первый текст начинает печататься после клика по «начать» в прелоадере
     setupPreloader(startIntroText);
 
     scheduleFlicker();

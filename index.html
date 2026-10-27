@@ -9,16 +9,13 @@
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 
-    <!-- ?v=160 — номер версии: меняем его при каждом обновлении сайта,
-         чтобы браузер не брал старые стили и скрипты из кэша -->
-    <link rel="stylesheet" href="css/reset.css?v=160">
-    <link rel="stylesheet" href="css/fonts.css?v=160">
-    <link rel="stylesheet" href="css/style.css?v=160">
-    <link rel="stylesheet" href="css/mobile.css?v=160">
+    <link rel="stylesheet" href="css/reset.css?v=161">
+    <link rel="stylesheet" href="css/fonts.css?v=161">
+    <link rel="stylesheet" href="css/style.css?v=161">
+    <link rel="stylesheet" href="css/mobile.css?v=161">
 </head>
 
 <body>
-    <!-- прелоадер: шкалы заполняются по мере загрузки, потом кнопка «начать» -->
     <div class="preloader">
         <div class="preloader__loading">
             <div class="preloader__bar">
@@ -58,9 +55,8 @@
             <input class="sound__slider" type="range" min="0" max="100" step="1" value="60" aria-label="Громкость">
         </div>
 
-        <!-- шапка игры: одна на все игровые экраны, цифры и тексты меняет js (setGameHeader) -->
         <header class="game-header">
-            <img class="game-header__bg" src="img/header.svg?v=160" alt="">
+            <img class="game-header__bg" src="img/header.svg?v=161" alt="">
 
             <div class="game-header__stats">
                 <div class="game-header__stat">
@@ -94,11 +90,9 @@
                 </button>
             </div>
 
-            <!-- меню глав: открывается бургером -->
             <nav class="chapters-menu" aria-label="Главы">
                 <img class="chapters-menu__bg" src="img/info-plate.svg" alt="">
 
-                <!-- на телефоне: текущая глава живёт здесь, а не в шапке -->
                 <p class="chapters-menu__current">глава 1/4 “прибытие”</p>
 
                 <ul class="chapters-menu__list">
@@ -123,12 +117,10 @@
                     </li>
                 </ul>
 
-                <!-- на телефоне: звук переезжает сюда из угла экрана -->
                 <div class="chapters-menu__sound"></div>
             </nav>
         </header>
 
-        <!-- затемнение под открытым меню глав: темнеет всё, кроме шапки -->
         <div class="chapters-backdrop"></div>
 
         <section class="hero">
@@ -214,15 +206,12 @@
 
                 <div class="hero__dark-light"></div>
 
-                <!-- на первых чёрных экранах по краям чуть краснеет в такт сердцу -->
                 <div class="hero__pulse"></div>
 
-                <!-- игровой экран: проявляется из темноты в конце скролла -->
                 <div class="game">
                     <img class="game__bg" src="img/bg1.svg" alt="">
                     <div class="game__shade"></div>
 
-                    <!-- главный герой: две позы, между ними плавный переход -->
                     <div class="game__character game__character--boy">
                         <img class="game__pose game__pose--1" src="img/main-character.svg" alt="Главный герой">
                         <img class="game__pose game__pose--2" src="img/main-character-2.svg" alt="">
@@ -230,7 +219,6 @@
 
                     <img class="game__character game__character--taxi" src="img/taxi-driver.svg" alt="Таксист">
 
-                    <!-- реплики идут по очереди, порядок задан в js (dialogue) -->
                     <div class="speech speech--boy speech--boy-1">
                         <img class="speech__bg" src="img/speech.svg" alt="">
                         <p class="speech__text">
@@ -259,11 +247,9 @@
                         </p>
                     </div>
 
-                    <!-- выбор игрока: экран темнеет, появляются два варианта -->
                     <div class="game__dim"></div>
 
                     <div class="choice">
-                        <!-- глаза следят за курсором, пока игрок выбирает -->
                         <div class="choice__eyes">
                             <div class="eye eye--a eye--always-open choice__eye choice__eye--1" data-type="a">
                                 <div class="eye__open">
@@ -323,15 +309,11 @@
                     </div>
                 </div>
 
-                <!-- сцена 2: улица, проявляется после выбора. машина зависит от выбора -->
                 <div class="street">
-                    <!-- сцена с пропорциями фона: машина и деревья привязаны к картинке, а не к экрану -->
                     <div class="street__stage">
                         <img class="street__bg" src="img/bg2.svg" alt="">
                         <div class="street__shade"></div>
 
-                        <!-- деревья на тротуарах: при поездке уезжают вдаль, снизу выплывают новые.
-                             data-lane — по какому тротуару идёт, data-depth — насколько дерево далеко в начале (1 — как на макете) -->
                         <img class="street__tree" src="img/tree1.svg" alt="" data-lane="left" data-depth="1">
                         <img class="street__tree" src="img/tree1.svg" alt="" data-lane="left" data-depth="-0.2">
                         <img class="street__tree" src="img/tree1.svg" alt="" data-lane="left" data-depth="-1.4">
@@ -346,10 +328,8 @@
                         <img class="street__car street__car--driver" src="img/car-private.svg" alt="Машина частника">
                     </div>
 
-                    <!-- после поездки экран уходит в черноту (дальше — следующая сцена) -->
                     <div class="street__blackout"></div>
 
-                    <!-- последствия выбора «официальное такси»: текст на чёрном, потом удар по деньгам и безопасности -->
                     <div class="outcome outcome--taxi">
                         <div class="outcome__flash"></div>
 
@@ -393,7 +373,6 @@
                         </div>
                     </div>
 
-                    <!-- последствия выбора «поехать с мужчиной»: водитель гнал без правил, но цену не поднял -->
                     <div class="outcome outcome--driver">
                         <div class="outcome__flash"></div>
 
@@ -438,7 +417,6 @@
                     </div>
                 </div>
 
-                <!-- обучение после первой главы: разворот тетради, текст проявляется по частям при прокрутке -->
                 <section class="longread longread--1" aria-label="Такси в чужом городе">
                     <div class="notebook">
                         <img class="notebook__cover" src="img/notebook-cover.svg?v=2" alt="">
@@ -471,7 +449,6 @@
                                     <p class="longread__tips-note longread__step" data-step="2.90">А если водитель едет страшно, можно попросить ехать спокойнее или просто выйти в людном месте.</p>
                                 </div>
 
-                                <!-- рисунки под текстом: живая тетрадь (дорисовываются после советов) -->
                                 <img class="notebook__doodle notebook__doodle--route longread__step" data-step="2.75" src="img/doodles/route.svg?v=4" alt="">
                                 <img class="notebook__doodle notebook__doodle--sun longread__step" data-step="2.90" src="img/doodles/sun.svg?v=4" alt="">
                                 <img class="notebook__doodle notebook__doodle--ttt longread__step" data-step="3.05" src="img/doodles/ttt.svg?v=4" alt="">
@@ -483,14 +460,11 @@
                     </div>
                 </section>
 
-                <!-- сцена 3: отель. проявляется после чёрного экрана поездки -->
                 <div class="hotel">
-                    <!-- сцена с пропорциями фона: стол и ресепшионист привязаны к картинке, а не к экрану -->
                     <div class="hotel__stage">
                         <img class="hotel__bg" src="img/bg3.svg" alt="">
                         <div class="hotel__shade"></div>
 
-                        <!-- ресепшионист стоит за стойкой: низ фигуры спрятан под столешницей -->
                         <img class="hotel__receptionist hotel__receptionist--1" src="img/receptionist.svg?v=2" alt="Ресепшионист">
                         <img class="hotel__receptionist hotel__receptionist--2" src="img/receptionist2.svg" alt="">
                         <img class="hotel__table" src="img/reception-table.svg?v=2" alt="">
@@ -510,7 +484,6 @@
                         </div>
                     </div>
 
-                    <!-- мальчик приходит в отель слева, как в аэропорту -->
                     <div class="game__character game__character--boy hotel__boy">
                         <img class="game__pose game__pose--1" src="img/main-character.svg" alt="Главный герой">
                     </div>
@@ -529,11 +502,9 @@
                         </p>
                     </div>
 
-                    <!-- выбор: где поужинать. отель уходит в черноту, появляются два варианта -->
                     <div class="hotel__dim"></div>
 
                     <div class="choice choice--hotel">
-                        <!-- глаза следят за курсором, пока игрок выбирает -->
                         <div class="choice__eyes">
                             <div class="eye eye--a eye--always-open choice__eye choice__eye--1" data-type="a">
                                 <div class="eye__open">
@@ -593,14 +564,12 @@
                     </div>
                 </div>
 
-                <!-- сцена 4: номер. проявляется, если выбрали доставку -->
                 <div class="room">
                     <div class="room__stage">
                         <img class="room__bg" src="img/bg4.svg" alt="">
                         <div class="room__shade"></div>
                         <img class="room__boy" src="img/boy-sitting.svg?v=5" alt="Главный герой сидит на кровати">
 
-                        <!-- глаза в темноте (такие же, как на первом экране): видны, только если посветить фонариком -->
                         <div class="eye eye--a eye--always-open eye--still room__eyes room__eyes--1" data-type="a">
                             <div class="eye__open">
                                 <img class="eye__base" src="img/eye1.svg" alt="">
@@ -682,22 +651,18 @@
                         </div>
                     </div>
 
-                    <!-- свет гаснет: чернота на весь экран, потом в ней виден только круг от фонарика -->
                     <div class="room__blackout"></div>
 
-                    <!-- пугалка в темноте: открывается дверь, человек в балахоне медленно идёт к мальчику, пока ищем выключатель -->
                     <div class="room__stage room__stage--scare">
                         <div class="room__doorway"></div>
                         <div class="room__stranger">
                             <img class="room__stranger-body" src="img/hooded.svg" alt="">
-                            <!-- при свете оказывается: это девочка-курьер с пиццей -->
                             <img class="room__girl" src="img/girl-pizza.svg?v=4" alt="Девочка в капюшоне с пиццей">
                         </div>
                         <img class="room__door" src="img/door-dark.svg" alt="">
                     </div>
 
 
-                    <!-- реплики поверх черноты и пугалки: мальчик в темноте и девочка при свете -->
                     <div class="room__stage room__stage--talk">
                         <div class="speech speech--boy speech--room-2">
                             <img class="speech__bg" src="img/speech.svg" alt="">
@@ -714,15 +679,12 @@
                         </div>
                     </div>
 
-                    <!-- фонарик вместо курсора -->
                     <img class="room__flashlight" src="img/flashlight.svg" alt="">
 
-                    <!-- выключатель на стене: невидимая кнопка ровно поверх него на фоне -->
                     <div class="room__stage room__stage--top">
                         <button class="room__switch" type="button" aria-label="Выключатель"></button>
                     </div>
 
-                    <!-- итог доставки: чёрный экран — заплатили за ужин и впустили незнакомца в номер -->
                     <div class="outcome outcome--room">
                         <div class="outcome__flash"></div>
 
@@ -767,24 +729,19 @@
                     </div>
                 </div>
 
-                <!-- сцена 4б: кафе. проявляется, если выбрали пойти в местное кафе -->
                 <div class="cafe">
                     <div class="cafe__stage">
                         <img class="cafe__bg" src="img/bg5.svg?v=2" alt="">
                         <div class="cafe__shade"></div>
 
-                        <!-- лампы над стойкой чуть покачиваются, вывеска «кафе» мерцает -->
                         <div class="lamp-glow lamp-glow--pendant cafe__lamp cafe__lamp--1"></div>
                         <div class="lamp-glow lamp-glow--pendant cafe__lamp cafe__lamp--2"></div>
                         <div class="lamp-glow lamp-glow--neon cafe__sign"></div>
                     </div>
 
-                    <!-- мальчик, девочка и их реплики стоят от центра экрана, как в аэропорту -->
                     <div class="cafe__people">
                     <img class="cafe__boy" src="img/main-character-3.svg" alt="Главный герой">
 
-                    <!-- девочка с пиццей: в темноте становится фигурой в балахоне и прячется у левого края.
-                         найти её фонариком и нажать — свет включается -->
                     <button class="cafe__girl" type="button" aria-label="Девочка в капюшоне">
                         <img class="cafe__girl-normal" src="img/girl-pizza.svg?v=4" alt="">
                         <img class="cafe__girl-creepy" src="img/hooded.svg" alt="">
@@ -819,10 +776,8 @@
                     </div>
                     </div>
 
-                    <!-- свет гаснет: чернота, в ней виден только круг от фонарика -->
                     <div class="cafe__blackout"></div>
 
-                    <!-- реплики мальчика в темноте — поверх черноты, на том же месте, что и днём -->
                     <div class="cafe__talk">
                         <div class="speech speech--boy speech--cafe-4">
                             <img class="speech__bg" src="img/speech.svg" alt="">
@@ -839,10 +794,8 @@
                         </div>
                     </div>
 
-                    <!-- фонарик вместо курсора -->
                     <img class="cafe__flashlight" src="img/flashlight.svg" alt="">
 
-                    <!-- итог кафе: чёрный экран — в темноте обокрали, удар по деньгам и безопасности -->
                     <div class="outcome outcome--cafe">
                         <div class="outcome__flash"></div>
 
@@ -887,19 +840,15 @@
                     </div>
                 </div>
 
-                <!-- обучение после второй главы: та же тетрадь. сначала открыта на главе 1,
-                     потом правая страница переворачивается — и там уже глава 2 -->
                 <section class="longread longread--2" aria-label="Ужин в чужом городе">
                     <div class="notebook">
                         <img class="notebook__cover" src="img/notebook-cover.svg?v=2" alt="">
 
-                        <!-- левая страница главы 1 (текст копирует js из первого обучения) -->
                         <div class="notebook__page notebook__page--left">
                             <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--left" data-copy-from=".longread--1 .notebook__content--left"></div>
                         </div>
 
-                        <!-- правая страница главы 2: открывается, когда лист перевернули -->
                         <div class="notebook__page notebook__page--right">
                             <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--right">
@@ -915,7 +864,6 @@
                                     <p class="longread__tips-note longread__step" data-step="4.70">Если с заказом или счётом что-то не так, лучше сразу позвать администратора.</p>
                                 </div>
 
-                                <!-- рисунки под текстом: живая тетрадь (дорисовываются после советов) -->
                                 <img class="notebook__doodle notebook__doodle--cat longread__step" data-step="4.20" src="img/doodles/cat.svg?v=4" alt="">
                                 <img class="notebook__doodle notebook__doodle--pizza longread__step" data-step="4.40" src="img/doodles/pizza.svg?v=4" alt="">
                                 <img class="notebook__doodle notebook__doodle--smile longread__step" data-step="4.60" src="img/doodles/smile.svg?v=4" alt="">
@@ -923,7 +871,6 @@
                             </div>
                         </div>
 
-                        <!-- лист, который переворачивается: спереди правая страница главы 1, сзади левая страница главы 2 -->
                         <div class="notebook__leaf">
                             <div class="notebook__face notebook__face--front">
                                 <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
@@ -948,20 +895,17 @@
                     </div>
                 </section>
 
-                <!-- глава 3: прогулка. улица проявляется после итога ужина (доставка или кафе) -->
                 <div class="walk">
                     <div class="walk__stage">
                         <img class="walk__bg" src="img/bg6.svg?v=2" alt="">
                         <div class="walk__shade"></div>
 
-                        <!-- свет фонарей у тротуаров и у лестницы -->
                         <div class="lamp-glow lamp-glow--globe walk__lamp walk__lamp--1"></div>
                         <div class="lamp-glow lamp-glow--globe lamp-glow--flicker walk__lamp walk__lamp--2"></div>
                         <div class="lamp-glow lamp-glow--small walk__lamp walk__lamp--3"></div>
                         <div class="lamp-glow lamp-glow--small walk__lamp walk__lamp--4"></div>
                     </div>
 
-                    <!-- мальчик в куртке и с рюкзаком и его реплики — от центра экрана, как в кафе -->
                     <div class="walk__people">
                         <img class="walk__boy" src="img/main-character-walk.svg" alt="Главный герой в куртке и с рюкзаком">
 
@@ -979,7 +923,6 @@
                             </p>
                         </div>
 
-                        <!-- дед подходит справа после реплик мальчика -->
                         <img class="walk__grandpa" src="img/grandpa.svg?v=4" alt="Дед">
 
                         <div class="speech speech--taxi speech--walk-3">
@@ -990,11 +933,9 @@
                         </div>
                     </div>
 
-                    <!-- выбор пути: улица уходит в черноту, как перед прошлыми выборами -->
                     <div class="walk__dim"></div>
 
                     <div class="choice choice--alley">
-                        <!-- глаза следят за курсором, пока игрок выбирает -->
                         <div class="choice__eyes">
                             <div class="eye eye--a eye--always-open choice__eye choice__eye--1" data-type="a">
                                 <div class="eye__open">
@@ -1053,17 +994,14 @@
                     </div>
                 </div>
 
-                <!-- глава 3: тёмный переулок. проявляется, если выбрали срезать путь -->
                 <div class="alley">
                     <div class="alley__stage">
                         <img class="alley__bg" src="img/bg7.svg" alt="">
                         <div class="alley__shade"></div>
 
-                        <!-- свет в переулке иногда коротко моргает -->
                         <div class="alley__flicker"></div>
                     </div>
 
-                    <!-- мальчик проговаривает повороты (какие именно — js выбирает случайно при загрузке) -->
                     <div class="alley__people">
                         <img class="alley__boy" src="img/main-character-walk.svg" alt="Главный герой в куртке и с рюкзаком">
 
@@ -1103,16 +1041,12 @@
                         </div>
                     </div>
 
-                    <!-- резкая темнота и красная пульсация по краям — в такт сердцу -->
                     <div class="alley__dark"></div>
 
-                    <!-- в темноте на мгновения проступают зубы того, кто идёт следом, — с каждым поворотом ближе.
-                         схватили — выпрыгивают на весь экран -->
                     <img class="alley__stalker" src="img/teeth.svg?v=2" alt="">
 
                     <div class="alley__pulse"></div>
 
-                    <!-- «тук-тук» по краям экрана в такт сердцу -->
                     <div class="alley__thumps">
                         <span class="alley__thump alley__thump--1">тук</span>
                         <span class="alley__thump alley__thump--2">тук</span>
@@ -1127,7 +1061,6 @@
                         </div>
                     </div>
 
-                    <!-- итог переулка: убежал, но в панике выронил кошелёк -->
                     <div class="outcome outcome--alley">
                         <div class="outcome__flash"></div>
 
@@ -1171,7 +1104,6 @@
                         </div>
                     </div>
 
-                    <!-- мини-игра: бежать назад тем же путём, повороты — в обратном порядке и в другую сторону -->
                     <div class="escape">
                         <p class="escape__title">беги назад тем же путём!</p>
                         <p class="escape__hint">жми по очереди те повороты, которые он запомнил для обратного пути. «назад» не жми, а то схватят!</p>
@@ -1210,30 +1142,25 @@
                     </div>
                 </div>
 
-                <!-- глава 3: людная освещённая улица. проявляется, если выбрали идти длинной дорогой -->
                 <div class="crowd">
                     <div class="crowd__stage">
                         <img class="crowd__bg" src="img/bg10.jpg" alt="">
                         <div class="crowd__shade"></div>
 
-                        <!-- во время игры улица темнеет (фонари светят поверх темноты) -->
                         <div class="crowd__night"></div>
 
-                        <!-- свет фонарей: мягко дышит, один иногда мигает -->
                         <div class="lamp-glow lamp-glow--street crowd__lamp crowd__lamp--1"></div>
                         <div class="lamp-glow lamp-glow--street crowd__lamp crowd__lamp--2"></div>
                         <div class="lamp-glow lamp-glow--street lamp-glow--flicker crowd__lamp crowd__lamp--3"></div>
                     </div>
 
                     <div class="crowd__people">
-                        <!-- вор то слева, то справа тянется к рюкзаку — на него надо нажать -->
                         <button class="crowd__figure crowd__thief" type="button" aria-label="Вор">
                             <img class="crowd__figure-img" src="img/thief.svg?v=3" alt="">
                         </button>
 
                         <img class="crowd__boy" src="img/main-character-walk.svg" alt="Главный герой">
 
-                        <!-- бабушка, которая отвлекает разговором (сообщница вора) -->
                         <img class="crowd__stranger" src="img/grandma.svg?v=4" alt="Бабушка">
 
                         <div class="speech speech--boy speech--crowd-1">
@@ -1257,7 +1184,6 @@
                             </p>
                         </div>
 
-                        <!-- реплика после кражи: текст зависит от того, успел ли игрок (ставит js) -->
                         <div class="speech speech--boy speech--crowd-4">
                             <img class="speech__bg" src="img/speech.svg" alt="">
                             <p class="speech__text">
@@ -1266,7 +1192,6 @@
                         </div>
                     </div>
 
-                    <!-- красное по краям и «тук-тук» в такт сердцу — как в тёмном переулке -->
                     <div class="alley__pulse crowd__pulse"></div>
 
                     <div class="alley__thumps crowd__thumps">
@@ -1274,7 +1199,6 @@
                         <span class="alley__thump alley__thump--2">тук</span>
                     </div>
 
-                    <!-- подсказка, пока вор лезет в рюкзак -->
                     <div class="crowd__alert">
                         <p class="crowd__alert-text">следи за рюкзаком! жми на того, кто к нему тянется</p>
                         <div class="escape__steps crowd__steps"></div>
@@ -1283,7 +1207,6 @@
                         </div>
                     </div>
 
-                    <!-- итог людной улицы: заметил вора или нет (текст и цифры ставит js) -->
                     <div class="outcome outcome--crowd">
                         <div class="outcome__flash"></div>
 
@@ -1326,18 +1249,15 @@
                     </div>
                 </div>
 
-                <!-- обучение после третьей главы: тетрадь открыта на главе 2, потом лист переворачивается — глава 3 -->
                 <section class="longread longread--3" aria-label="Короткий путь в чужом городе">
                     <div class="notebook">
                         <img class="notebook__cover" src="img/notebook-cover.svg?v=2" alt="">
 
-                        <!-- левая страница главы 2 (текст копирует js из второго обучения) -->
                         <div class="notebook__page notebook__page--left">
                             <img class="notebook__paper" src="img/notebook-page-left.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--left" data-copy-from=".longread--2 .notebook__face--back .notebook__content"></div>
                         </div>
 
-                        <!-- правая страница главы 3: открывается, когда лист перевернули -->
                         <div class="notebook__page notebook__page--right">
                             <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
                             <div class="notebook__content notebook__content--right">
@@ -1353,7 +1273,6 @@
                                     <p class="longread__tips-note longread__step" data-step="4.70">Если кажется, что за тобой идут, зайди в магазин или кафе и попроси помощи.</p>
                                 </div>
 
-                                <!-- рисунки под текстом: живая тетрадь (дорисовываются после советов) -->
                                 <img class="notebook__doodle notebook__doodle--tree longread__step" data-step="4.20" src="img/doodles/tree.svg?v=4" alt="">
                                 <img class="notebook__doodle notebook__doodle--boy longread__step" data-step="4.40" src="img/doodles/boy.svg?v=4" alt="">
                                 <img class="notebook__doodle notebook__doodle--flower longread__step" data-step="4.60" src="img/doodles/flower.svg?v=4" alt="">
@@ -1361,7 +1280,6 @@
                             </div>
                         </div>
 
-                        <!-- лист, который переворачивается: спереди правая страница главы 2, сзади левая страница главы 3 -->
                         <div class="notebook__leaf">
                             <div class="notebook__face notebook__face--front">
                                 <img class="notebook__paper" src="img/notebook-page-right.svg?v=2" alt="">
@@ -1386,8 +1304,6 @@
                     </div>
                 </section>
 
-                <!-- финал: мальчик снова на людной улице, ему пишут — экран темнеет, снизу поднимаются руки с телефоном,
-                     сообщения появляются по одному, потом — экран телефона с кнопкой «играть снова» -->
                 <div class="finale">
                     <div class="finale__stage">
                         <img class="finale__bg" src="img/bg10.jpg" alt="">
@@ -1417,7 +1333,6 @@
                     <div class="finale__phone">
                         <img class="finale__screen finale__screen--chat" src="img/phone-chat.png?v=2" alt="Переписка с мамой">
 
-                        <!-- сообщения закрыты «пустым экраном» и проступают по одному, сверху вниз -->
                         <div class="finale__cover finale__cover--1"></div>
                         <div class="finale__cover finale__cover--2"></div>
                         <div class="finale__cover finale__cover--3"></div>
@@ -1425,7 +1340,6 @@
 
                         <img class="finale__screen finale__screen--end" src="img/phone-end.png?v=2" alt="Экран телефона">
 
-                        <!-- кнопка — отдельной картинкой, под большим пальцем: она и пульсирует, а палец лежит поверх -->
                         <button class="finale__again" type="button" aria-label="Играть снова"></button>
                         <img class="finale__screen finale__thumb" src="img/phone-thumb.png?v=2" alt="">
                     </div>
@@ -1439,10 +1353,10 @@
 
     </main>
 
-    <script src="js/sound.js?v=160"></script>
-    <script src="js/preloader.js?v=160"></script>
-    <script src="js/game-header.js?v=160"></script>
-    <script src="js/script.js?v=160"></script>
+    <script src="js/sound.js?v=161"></script>
+    <script src="js/preloader.js?v=161"></script>
+    <script src="js/game-header.js?v=161"></script>
+    <script src="js/script.js?v=161"></script>
 </body>
 
 </html>

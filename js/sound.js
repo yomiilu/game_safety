@@ -1,30 +1,19 @@
-// ---------- звуки ----------
-// правила: одновременно играет только один звук; звук играет, только пока его экран на месте;
-// выключается не резко, а быстрым плавным затуханием.
-// исключение — фоновые звуки (темнота, дверь): они звучат поверх остальных и их не глушат
 
 const sound = {
     volume: 0.6,
     isMuted: false,
 
-    // машинка сейчас должна печатать (даже если браузер пока не дал включить звук)
     isTyping: false,
-    // кто включил машинку: заголовок или конкретная реплика — выключить может только он
     typewriterOwner: null,
 
-    // каналы: у каждого свой звук и своя громкость внутри (для затухания)
     channels: {}
 };
 
-// в начале файла машинки секунда тишины — пропускаем её
 const typewriterStartTime = 1;
 
-// за сколько (мс) звук затихает
 const soundFadeDuration = 300;
 
 
-
-// громкость и «выключено» запоминаем в браузере, чтобы при перезаходе не сбрасывались
 function loadSoundSettings() {
     try {
         const savedVolume = localStorage.getItem("soundVolume");
@@ -38,7 +27,6 @@ function loadSoundSettings() {
             sound.isMuted = savedMuted === "true";
         }
     } catch (error) {
-        // если браузер не даёт сохранять — просто работаем с настройками по умолчанию
     }
 }
 
@@ -48,12 +36,10 @@ function saveSoundSettings() {
         localStorage.setItem("soundVolume", String(sound.volume));
         localStorage.setItem("soundMuted", String(sound.isMuted));
     } catch (error) {
-        // ничего страшного, просто не запомнится
     }
 }
 
 
-// isLoop — повторять по кругу; isLayer — фоновый звук: играет поверх остальных, другие его не глушат
 function createChannel(name, src, startTime, isLoop, isLayer) {
     const audio = new Audio(src);
 
@@ -87,8 +73,6 @@ function isChannelPlaying(name) {
 }
 
 
-// включаем канал; все остальные быстро затихают — звуки не накладываются
-// (фоновые звуки не глушат других и сами не глушатся)
 function playChannel(name, fromStart) {
     const channel = sound.channels[name];
 
@@ -105,23 +89,18 @@ function playChannel(name, fromStart) {
     channel.level = 1;
     applyVolume();
 
-    // некоторые браузеры (Safari) ругаются, если перематывать ещё не загруженный звук — тогда просто играем с начала
     if (fromStart) {
         try {
             channel.audio.currentTime = channel.startTime;
         } catch (error) {
-            // перемотать не вышло — не страшно
         }
     }
 
-    // до первого клика браузер звук не включит — тогда просто молчим, ошибки не будет
     channel.audio.play().catch(function () {
-        // звук ещё не разрешён
     });
 }
 
 
-// быстрое плавное затухание, потом пауза
 function fadeOutChannel(name) {
     const channel = sound.channels[name];
 
@@ -145,9 +124,6 @@ function fadeOutChannel(name) {
 }
 
 
-// ---------- печатная машинка ----------
-
-// owner — кто печатает: "title" (первый экран) или селектор реплики
 function startTypewriterSound(owner) {
     sound.isTyping = true;
     sound.typewriterOwner = owner;
@@ -156,7 +132,6 @@ function startTypewriterSound(owner) {
 }
 
 
-// выключить может только тот, кто включил (чтобы конец одной печати не оборвал другую)
 function stopTypewriterSound(owner) {
     if (owner !== sound.typewriterOwner) {
         return;
@@ -169,8 +144,6 @@ function stopTypewriterSound(owner) {
 }
 
 
-// ---------- машина ----------
-
 function startCarSound() {
     playChannel("car", true);
 }
@@ -181,9 +154,6 @@ function stopCarSound() {
 }
 
 
-// ---------- номер: темнота и дверь ----------
-
-// гул темноты, пока в номере выключен свет
 function startDarkSound() {
     if (isChannelPlaying("dark")) {
         return;
@@ -198,7 +168,6 @@ function stopDarkSound() {
 }
 
 
-// дверь открывается — один раз
 function playDoorSound() {
     playChannel("door", true);
 }
@@ -209,27 +178,21 @@ function stopDoorSound() {
 }
 
 
-// пришло новое сообщение — короткий «дзынь» с начала
 function playMessageSound() {
     playChannel("message", true);
 }
 
 
-// нажали вариант выбора — механический щелчок кнопки с начала
 function playChoiceSound() {
     playChannel("choice", true);
 }
 
 
-// лист тетради переворачивается — шелест страницы с начала
 function playPageFlipSound() {
     playChannel("flip", true);
 }
 
 
-// в тетради пишется текст — карандаш шуршит по кругу, пока идёт письмо.
-// каждый новый кусок текста продлевает звук на время своей анимации (1 с): листают быстро — звук быстро стихает,
-// листают медленно — звучит всё это время
 const pencilWriteTime = 1000;
 let pencilTimer = null;
 
@@ -250,14 +213,9 @@ function stopPencilSound() {
 }
 
 
-// ---------- сердцебиение (переулок) ----------
-// звук по кругу; когда сердце должно биться чаще — проигрываем его быстрее
-
-// во сколько раз быстрее можно ускорить звук (дальше звучит неестественно)
 const heartbeatMaxRate = 1.6;
 
 const heartbeat = {
-    // с какой частотой ударов звук звучит как есть (мс на удар) — от неё считаем ускорение
     baseInterval: 900,
     isOn: false
 };
@@ -272,7 +230,6 @@ function startHeartbeat(interval) {
 }
 
 
-// сердце бьётся чаще (или реже): чем короче удар, тем быстрее играет звук
 function setHeartbeatRate(interval) {
     const rate = Math.min(Math.max(heartbeat.baseInterval / interval, 0.5), heartbeatMaxRate);
 
@@ -286,7 +243,6 @@ function stopHeartbeat() {
 }
 
 
-// первый клик или клавиша разрешают звук: если машинка как раз печатает — включаем её
 function unlockSound() {
     if (sound.isTyping && sound.channels.typewriter.audio.paused) {
         playChannel("typewriter", false);
@@ -294,34 +250,25 @@ function unlockSound() {
 }
 
 
-// ---------- кнопка звука и ползунок громкости ----------
-
 function setupSound() {
     const button = document.querySelector(".sound__button");
     const slider = document.querySelector(".sound__slider");
 
     createChannel("typewriter", "sounds/typewriter.mp3", typewriterStartTime);
 
-    // звук машины во время поездки, повторяется по кругу
     createChannel("car", "sounds/car-ride.m4a", 0);
 
-    // темнота в номере (по кругу) и скрип двери (один раз) — звучат поверх реплик
     createChannel("dark", "sounds/darkness.mp3", 0, true, true);
     createChannel("door", "sounds/door.mp3", 0, false, true);
 
-    // сердцебиение в тёмном переулке (по кругу) — тоже поверх реплик
     createChannel("heart", "sounds/heartbeat.mp3", 0, true, true);
 
-    // уведомление о новом сообщении в финале (один раз на каждое) — тоже поверх
     createChannel("message", "sounds/message.m4a", 0, false, true);
 
-    // щелчок кнопки, когда выбираем вариант (один раз на каждое нажатие) — тоже поверх
     createChannel("choice", "sounds/choice.mp3", 0, false, true);
 
-    // шелест листа тетради (один раз на каждый переворот) — тоже поверх
     createChannel("flip", "sounds/page-flip.mp3", 0, false, true);
 
-    // карандаш по бумаге, пока в тетради пишется текст (по кругу) — тоже поверх
     createChannel("pencil", "sounds/pencil.mp3", 0, true, true);
 
     loadSoundSettings();
@@ -333,7 +280,6 @@ function setupSound() {
     button.addEventListener("click", function () {
         sound.isMuted = !sound.isMuted;
 
-        // если громкость была на нуле, при включении возвращаем её на середину
         if (!sound.isMuted && sound.volume === 0) {
             sound.volume = 0.6;
             slider.value = 60;
@@ -367,7 +313,6 @@ function updateSoundControls(button, slider) {
         button.setAttribute("aria-label", "Выключить звук");
     }
 
-    // закрашенная часть ползунка
     const filled = sound.isMuted ? 0 : slider.value;
     slider.style.setProperty("--filled", filled + "%");
 }
