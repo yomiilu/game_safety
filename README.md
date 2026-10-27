@@ -22,21 +22,4 @@ After each chapter a notebook opens with short, practical travel safety tips abo
 - Sound: typewriter, heartbeat, doors, pencil on paper, page flips and notifications, with a volume control
 - Works on desktop and mobile
 
-## Running locally
 
-It is a static site with no build step. Serve the folder with any static server, for example:
-
-```bash
-python3 -m http.server 5174
-```
-
-Then open http://localhost:5174.
-
-## Tech
-
-Plain HTML, CSS and JavaScript, with no frameworks.
-
-- `index.html`: markup for all scenes
-- `css/`: styles (`mobile.css` holds the phone layout)
-- `js/`: game logic, header, preloader and sound
-- `img/`, `sounds/`, `fonts/`: assets
