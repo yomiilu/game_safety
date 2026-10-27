@@ -215,6 +215,41 @@ function playMessageSound() {
 }
 
 
+// нажали вариант выбора — механический щелчок кнопки с начала
+function playChoiceSound() {
+    playChannel("choice", true);
+}
+
+
+// лист тетради переворачивается — шелест страницы с начала
+function playPageFlipSound() {
+    playChannel("flip", true);
+}
+
+
+// в тетради пишется текст — карандаш шуршит по кругу, пока идёт письмо.
+// каждый новый кусок текста продлевает звук на время своей анимации (1 с): листают быстро — звук быстро стихает,
+// листают медленно — звучит всё это время
+const pencilWriteTime = 1000;
+let pencilTimer = null;
+
+function playPencilSound() {
+    if (!isChannelPlaying("pencil")) {
+        playChannel("pencil", false);
+    }
+
+    clearTimeout(pencilTimer);
+    pencilTimer = setTimeout(stopPencilSound, pencilWriteTime);
+}
+
+
+function stopPencilSound() {
+    clearTimeout(pencilTimer);
+    pencilTimer = null;
+    fadeOutChannel("pencil");
+}
+
+
 // ---------- сердцебиение (переулок) ----------
 // звук по кругу; когда сердце должно биться чаще — проигрываем его быстрее
 
@@ -279,6 +314,15 @@ function setupSound() {
 
     // уведомление о новом сообщении в финале (один раз на каждое) — тоже поверх
     createChannel("message", "sounds/message.m4a", 0, false, true);
+
+    // щелчок кнопки, когда выбираем вариант (один раз на каждое нажатие) — тоже поверх
+    createChannel("choice", "sounds/choice.mp3", 0, false, true);
+
+    // шелест листа тетради (один раз на каждый переворот) — тоже поверх
+    createChannel("flip", "sounds/page-flip.mp3", 0, false, true);
+
+    // карандаш по бумаге, пока в тетради пишется текст (по кругу) — тоже поверх
+    createChannel("pencil", "sounds/pencil.mp3", 0, true, true);
 
     loadSoundSettings();
     applyVolume();

@@ -58,36 +58,47 @@
     }
 
     .hero__eye--1 {
-        top: 9%;
+        top: 5%;
         right: auto;
         bottom: auto;
         left: 4%;
     }
 
     .hero__eye--2 {
-        top: 18%;
+        top: 13%;
         right: auto;
         bottom: auto;
         left: 52%;
     }
 
     .hero__eye--3 {
-        top: 27%;
+        top: 21%;
         right: auto;
         bottom: auto;
         left: 10%;
     }
 
-    /* под текстом — один глаз, на таком же расстоянии от низа, как верхний от верха */
+    /* под текстом — два глаза: крупный правее, маленький левее и выше */
     .hero__eye--4 {
         top: auto;
         right: auto;
-        bottom: 9%;
-        left: 28%;
+        bottom: 7%;
+        left: 44%;
     }
 
     .hero__eye--5 {
-        display: none;
+        zoom: 0.34;
+        top: auto;
+        right: auto;
+        bottom: 23%;
+        left: 6%;
+    }
+
+
+    /* текст первого экрана: самая длинная строка («попробуй сохранить безопасность») с полями по краям */
+    .hero__title {
+        font-size: calc(2.1000 * var(--u));
+        line-height: calc(2.5200 * var(--u));
     }
 
 

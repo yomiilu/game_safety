@@ -1711,6 +1711,7 @@ function setupChoice() {
 
     choice.options.forEach(function (option) {
         option.addEventListener("click", function () {
+            playChoiceSound();
             selectChoice(option);
         });
     });
@@ -2548,7 +2549,7 @@ function getLongreadBase() {
 
 
 // лист переворачивается (или обратно, если прокрутили назад); пока он в воздухе — на нём тень
-function setLongreadFlipped(item, isFlipped) {
+function setLongreadFlipped(item, isFlipped, isAudible) {
     if (item.isFlipped === isFlipped) {
         return;
     }
@@ -2556,6 +2557,11 @@ function setLongreadFlipped(item, isFlipped) {
     item.isFlipped = isFlipped;
     item.element.classList.toggle("longread--flipped", isFlipped);
     item.element.classList.add("longread--flipping");
+
+    // шелест — только если тетрадь на экране (а не при прыжке через неё по меню глав)
+    if (isAudible) {
+        playPageFlipSound();
+    }
 
     clearTimeout(item.flipTimer);
 
@@ -2593,7 +2599,7 @@ function updateLongread(progress) {
         });
 
         if (item.flipAt !== null) {
-            setLongreadFlipped(item, local >= item.flipAt);
+            setLongreadFlipped(item, local >= item.flipAt, local > 0 && local < item.length);
         }
 
         // на телефоне тетрадь видна по одной странице: справа — лист до переворота и советы,
@@ -2605,8 +2611,17 @@ function updateLongread(progress) {
         item.element.classList.toggle("longread--view-left", !isRight);
 
         // каждый кусок текста появляется, когда до него докрутили, и прячется, если прокрутили назад
+        // новый кусок начал писаться (и тетрадь на экране) — шуршит карандаш
+        const isOnScreen = local > 0 && local < item.length;
+
         item.steps.forEach(function (step) {
-            step.element.classList.toggle("longread__step--visible", local >= step.at);
+            const isVisible = local >= step.at;
+
+            if (isVisible && isOnScreen && !step.element.classList.contains("longread__step--visible")) {
+                playPencilSound();
+            }
+
+            step.element.classList.toggle("longread__step--visible", isVisible);
         });
     });
 }
@@ -2764,6 +2779,7 @@ function setupHotelChoice() {
 
     hotelChoice.options.forEach(function (option) {
         option.addEventListener("click", function () {
+            playChoiceSound();
             selectHotelChoice(option);
         });
     });
@@ -3621,6 +3637,7 @@ function setupWalkChoice() {
 
     walkChoice.options.forEach(function (option) {
         option.addEventListener("click", function () {
+            playChoiceSound();
             selectWalkChoice(option);
         });
     });
@@ -3743,7 +3760,7 @@ const turnPhrases = [
     "так, по карте сначала {turn}",
     "теперь {turn}",
     "дальше {turn}",
-    "и последний поворот {turn}. что-то тут совсем темно…"
+    "последний поворот {turn}. что-то тут совсем темно…"
 ];
 
 // сердце: с какой скоростью бьётся в темноте и во время побега (мс на один «тук-тук»)
@@ -4070,6 +4087,7 @@ function setupEscape() {
 
     escapeGame.buttons.forEach(function (button) {
         button.addEventListener("click", function () {
+            playChoiceSound();
             onEscapeMove(button);
         });
 
@@ -4080,7 +4098,10 @@ function setupEscape() {
     });
 
     // «ещё раз» — снова в начало переулка: мальчик заново проговаривает повороты
-    escapeGame.element.querySelector(".escape__button--retry").addEventListener("click", retryAlley);
+    escapeGame.element.querySelector(".escape__button--retry").addEventListener("click", function () {
+        playChoiceSound();
+        retryAlley();
+    });
 }
 
 
@@ -4176,53 +4197,80 @@ function placeEscapeButtons() {
     const unit = getDesignUnit();
     const width = escapeGame.element.offsetWidth;
     const height = escapeGame.element.offsetHeight;
-    const size = 13.8889 * unit;
     const margin = escapeFieldMargin * unit;
 
-    const minX = margin;
-    const maxX = width - size - margin;
     // кнопки — только ниже полоски времени (на телефоне подсказка длиннее, и полоска опускается)
     const timerBottom = escapeGame.timer.getBoundingClientRect().bottom - escapeGame.element.getBoundingClientRect().top;
-    const minY = Math.max(height * escapeFieldTop, timerBottom + margin);
-    const maxY = height - size - margin;
+    const fieldLeft = margin;
+    const fieldTop = Math.max(height * escapeFieldTop, timerBottom + margin);
+    const fieldWidth = width - margin * 2;
+    const fieldHeight = height - margin - fieldTop;
 
-    const placed = [];
+    // поле делим на клетки чуть больше кнопки и сажаем каждую кнопку в свою клетку со случайным сдвигом:
+    // так кнопки никогда не заходят друг на друга. если клеток не хватает (узкий телефон) — кнопки мельче
+    let size = 13.8889 * unit;
+    let gap = 0;
+    let columns = 1;
+    let rows = 1;
 
-    escapeGame.buttons.forEach(function (button) {
-        let x = 0;
-        let y = 0;
+    for (let attempt = 0; attempt < 20; attempt++) {
+        gap = size * 0.15;
+        columns = Math.max(Math.floor((fieldWidth + gap) / (size + gap)), 1);
+        rows = Math.max(Math.floor((fieldHeight + gap) / (size + gap)), 1);
 
-        // пробуем случайные места, пока не найдём свободное (на всякий случай — не бесконечно)
-        for (let attempt = 0; attempt < 60; attempt++) {
-            x = minX + Math.random() * Math.max(maxX - minX, 0);
-            y = minY + Math.random() * Math.max(maxY - minY, 0);
-
-            const isFree = placed.every(function (other) {
-                return Math.hypot(other.x - x, other.y - y) > size * 1.25;
-            });
-
-            if (isFree) {
-                break;
-            }
+        if (columns * rows >= escapeGame.buttons.length) {
+            break;
         }
 
-        placed.push({ x: x, y: y });
+        size = size * 0.92;
+    }
+
+    const cellWidth = (fieldWidth + gap) / columns;
+    const cellHeight = (fieldHeight + gap) / rows;
+
+    // клетки в случайном порядке — каждый раз новая раскладка
+    const cells = [];
+
+    for (let row = 0; row < rows; row++) {
+        for (let column = 0; column < columns; column++) {
+            cells.push({ column: column, row: row });
+        }
+    }
+
+    for (let i = cells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const cell = cells[i];
+
+        cells[i] = cells[j];
+        cells[j] = cell;
+    }
+
+    escapeGame.buttons.forEach(function (button, index) {
+        const cell = cells[index % cells.length];
+        const x = fieldLeft + cell.column * cellWidth + Math.random() * Math.max(cellWidth - size - gap, 0);
+        const y = fieldTop + cell.row * cellHeight + Math.random() * Math.max(cellHeight - size - gap, 0);
+
+        button.style.width = size + "px";
+        button.style.height = size * 0.9691 + "px";
         button.style.left = x + "px";
         button.style.top = y + "px";
     });
 }
 
 
-// «ещё раз»: всё как до темноты, прокрутка — в начало переулка, повороты проговариваются заново
+// «ещё раз»: всё как до темноты, прокрутка — к реплике «последний поворот…»:
+// первые повороты уже проговорены, заново печатается только она и всё, что после неё
 function retryAlley() {
     resetAlleyDark();
     setAlleyTurns(0);
     document.body.classList.remove("is-choice-locked");
 
-    const base = getAlleyBase();
+    const lastTurn = findLine(".speech--alley-" + alleyTurns);
+    const from = getLineFrom(lastTurn);
 
-    if (base !== null) {
-        window.scrollTo(0, hero.offsetTop + (base + 0.05) * window.innerHeight);
+    if (from !== Infinity) {
+        lastTurn.isFinished = false;
+        window.scrollTo(0, hero.offsetTop + (from + 0.05) * window.innerHeight);
     }
 }
 
